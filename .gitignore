@@ -1,0 +1,17 @@
+# Archivos de sistema y logs
+.DS_Store
+Thumbs.db
+error_log
+php_errors.log
+
+# IDEs
+.vscode/
+.idea/
+
+# Carpetas de desarrollo innecesarias en prod si existen
+node_modules/
+dist/
+src/
+.astro/
+package-lock.json
+package.json

@@ -80,33 +80,10 @@
               <a href="#" class="nav-link">Contact</a>
             </li>
           </ul>
-          <!--fin::Enlaces de Navegación de Inicio-->
+        
 
           <!--inicio::Enlaces de Navegación de Fin-->
           <ul class="navbar-nav ms-auto">
-            <li class="nav-item">
-              <div class="navbar-search-block">
-                <form class="form-inline">
-                  <div class="input-group input-group-sm">
-                    <input
-                      class="form-control form-control-navbar"
-                      type="search"
-                      placeholder="Buscar"
-                      aria-label="Search"
-                    />
-                    <div class="input-group-append">
-                      <button class="btn btn-navbar" type="submit">
-                        <i class="bi bi-search"></i>
-                      </button>
-                      <button class="btn btn-navbar" type="button" data-widget="navbar-search">
-                        <i class="bi bi-x-lg"></i>
-                      </button>
-                    </div>
-                  </div>
-                </form>
-              </div>
-            </li>
-            <!--fin::Buscador en el Navbar-->
 
             <!-- Menú de Usuario -->
             <li class="nav-item dropdown user-menu">
