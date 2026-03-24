@@ -86,6 +86,7 @@
           <ul class="navbar-nav ms-auto">
 
             <!-- Menú de Usuario -->
+
             <li class="nav-item dropdown user-menu">
               <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
                 <img
