@@ -1,4 +1,5 @@
 <?php
+session_start();
 
 // Front Controller - index.php
 // Este archivo recibe todas las peticiones y llama al controlador correspondiente.

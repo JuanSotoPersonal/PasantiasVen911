@@ -19,30 +19,30 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     
     try {
-      // 2. Aquí iría el fetch real hacia el controlador:
-      // const response = await fetch('index.php?controller=auth&action=login', {
-      //   method: 'POST',
-      //   body: new FormData(loginForm)
-      // });
-      // const data = await response.json();
+      // Petición real al backend
+      const response = await fetch('index.php?url=auth/authenticate', {
+        method: 'POST',
+        headers: {
+          // Si envías FormData no necesitas Content-Type
+        },
+        body: new FormData(loginForm)
+      });
       
-      // Simulamos un retraso de red de 1.5s
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const data = await response.json();
       
-      // Validación frontend temporal para exhibición (El backend usará password_verify)
-      if(email.includes('ven911') && password.length >= 6) {
+      if (data.success) {
         Swal.fire({
           icon: 'success',
           title: 'Acceso Autorizado',
-          text: 'Bienvenido al sistema VEN 911.',
+          text: data.message || 'Bienvenido al sistema VEN 911.',
           showConfirmButton: false,
           timer: 1500
         }).then(() => {
-          // Simular la recarga/redirección hacia el index que maneje los controladores
+          // Redireccionar al Dashboard Principal
           window.location.href = 'index.php?url=home';
         });
       } else {
-        throw new Error('Credenciales inválidas. Intente nuevamente.');
+        throw new Error(data.message || 'Credenciales inválidas. Intente nuevamente.');
       }
       
     } catch (error) {
