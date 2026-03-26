@@ -1,14 +1,15 @@
-/* Diseño Base / Estilos Globales */
+/* Diseño Base / Estilos Globales (Tema Verde Medio - Tarjetas Claras) */
 body {
   font-family: 'Inter', sans-serif;
   margin: 0;
-  /* Fondo oscuro premium con un leve gradiente */
-  background: linear-gradient(135deg, #090e17 0%, #1e293b 100%);
+  /* Fondo muy oscuro y elegante con tinte verde para no causar fatiga visual */
+  background: linear-gradient(135deg, #28695a 0%, #718aaa 100%);
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffffff;
+  /* El texto ahora es blanco/verde muy claro para máximo contraste */
+  color: #f0fdf4;
   overflow: hidden;
 }
 
@@ -20,45 +21,60 @@ body {
   z-index: 0;
   animation: float 10s infinite alternate;
 }
+
 .shape-1 {
   width: 400px;
   height: 400px;
-  background: rgba(59, 130, 246, 0.2);
+  background: rgba(134, 239, 172, 0.4);
+  /* Verde esmeralda brillante difuminado */
   top: -100px;
   left: -100px;
 }
+
 .shape-2 {
   width: 500px;
   height: 500px;
-  background: rgba(168, 85, 247, 0.15);
+  background: rgba(74, 222, 128, 0.1);
   bottom: -150px;
   right: -100px;
   animation-delay: -5s;
 }
+
 @keyframes float {
-  0% { transform: translateY(0) scale(1); }
-  100% { transform: translateY(50px) scale(1.1); }
+  0% {
+    transform: translateY(0) scale(1);
+  }
+
+  100% {
+    transform: translateY(50px) scale(1.1);
+  }
 }
 
-/* Tarjeta de Login - Efecto Glassmorphism */
+/* Tarjeta de Login - Efecto Glassmorphism Claro */
 .login-wrapper {
   position: relative;
   z-index: 10;
   width: 100%;
   max-width: 420px;
   padding: 3rem 2.5rem;
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  /* Fondo casi blanco para contraste excelente con el fondo verde medio */
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border: 1px solid rgba(255, 255, 255, 1);
   border-radius: 1.5rem;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 25px 50px -12px rgba(6, 78, 59, 0.6);
+  /* Sombra oscura verde */
   animation: fadeIn 0.8s ease-out forwards;
   opacity: 0;
   transform: translateY(20px);
 }
+
 @keyframes fadeIn {
-  to { opacity: 1; transform: translateY(0); }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Estilos del Logo */
@@ -66,63 +82,79 @@ body {
   text-align: center;
   margin-bottom: 2rem;
 }
+
 .logo-img {
   max-width: 110px;
-  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.4));
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.15));
   transition: transform 0.3s ease;
 }
+
 .logo-img:hover {
   transform: scale(1.05);
 }
 
 /* Títulos */
 .login-title {
-  font-weight: 700;
-  font-size: 1.5rem;
+  font-weight: 800;
+  font-size: 1.6rem;
   letter-spacing: -0.5px;
   margin-bottom: 0.5rem;
   text-align: center;
+  color: #064e3b;
+  /* Verde pino muy oscuro */
 }
+
 .login-subtitle {
-  font-weight: 400;
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.6);
+  font-weight: 500;
+  font-size: 0.95rem;
+  color: #166534;
+  /* Verde medio-oscuro */
   text-align: center;
   margin-bottom: 2rem;
 }
 
 /* Estilos de los inputs */
 .form-label {
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.8);
-  margin-bottom: 0.4rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #166534;
+  margin-bottom: 0.5rem;
+  display: block;
 }
+
 .input-group-custom {
   position: relative;
 }
+
+/* Inputs amigables y legibles */
 .form-control {
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #fff;
+  background: #f0fdf4;
+  /* Verde extremadamente claro (casi blanco) */
+  border: 1px solid #072513;
+  color: #072513;
   border-radius: 0.75rem;
   padding: 0.85rem 1rem;
   font-size: 0.95rem;
   transition: all 0.3s ease;
-}
-.form-control::placeholder {
-  color: rgba(255, 255, 255, 0.3);
-}
-.form-control:focus {
-  background: rgba(0, 0, 0, 0.3);
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-  color: #fff;
+  box-shadow: inset 0 2px 4px 0 rgba(22, 163, 74, 0.05);
+  /* Sombra interna levemente verde */
 }
 
-/* Botón de Acceso */
+.form-control::placeholder {
+  color: #072513;
+  /* Placeholder agradable a la vista */
+}
+
+.form-control:focus {
+  background: #ffffff;
+  border-color: #22c55e;
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.2);
+  color: #064e3b;
+}
+
+/* Botón de Acceso (Verde sólido) */
 .btn-login {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
   border: none;
   border-radius: 0.75rem;
   padding: 0.85rem;
@@ -131,14 +163,18 @@ body {
   letter-spacing: 0.5px;
   width: 100%;
   margin-top: 1.5rem;
+  color: #ffffff;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.4), 0 2px 4px -1px rgba(37, 99, 235, 0.2);
+  box-shadow: 0 4px 6px -1px rgba(22, 163, 74, 0.4);
 }
+
 .btn-login:hover {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  background: linear-gradient(135deg, #15803d 0%, #14532d 100%);
   transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.5), 0 4px 6px -2px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 10px 15px -3px rgba(22, 163, 74, 0.6);
+  color: #ffffff;
 }
+
 .btn-login:active {
   transform: translateY(0);
 }
@@ -147,14 +183,25 @@ body {
 .system-notice {
   text-align: center;
   font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(20, 83, 45, 0.7);
+  /* Verde oscuro semitransparente */
   margin-top: 2rem;
+  font-weight: 500;
 }
 
-/* Configuración SweetAlert para que combine con dark theme */
+/* Configuración SweetAlert - Tema Claro Verdoso */
 div:where(.swal2-container) div:where(.swal2-popup) {
-  background: #1e293b !important;
-  color: #fff !important;
+  background: #ffffff !important;
+  color: #064e3b !important;
   border-radius: 1rem !important;
-  border: 1px solid rgba(255,255,255,0.1) !important;
+  border: 1px solid #bbf7d0 !important;
+  box-shadow: 0 25px 50px -12px rgba(6, 78, 59, 0.5) !important;
+}
+
+.swal2-title {
+  color: #064e3b !important;
+}
+
+.swal2-html-container {
+  color: #14532d !important;
 }

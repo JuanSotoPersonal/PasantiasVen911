@@ -13,7 +13,7 @@ spl_autoload_register(function ($class) {
 });
 
 // Enrutador muy básico
-$url = isset($_GET['url']) ? rtrim($_GET['url'], '/') : 'home';
+$url = isset($_GET['url']) ? rtrim($_GET['url'], '/') : 'auth';
 $url = filter_var($url, FILTER_SANITIZE_URL);
 $url = explode('/', $url);
 
@@ -29,7 +29,7 @@ if (file_exists('app/Controllers/' . $controllerName . '.php')) {
         call_user_func_array([$controller, $method], $url);
     } else {
         // Por defecto llama al método index
-        $controller->index();
+        $controller->auth();
     }
 } else {
     // 404
