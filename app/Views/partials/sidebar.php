@@ -12,8 +12,8 @@
     <a href="./index.html" class="brand-link">
       <!--inicio::Imagen de Marca-->
       <img
-        src="public/assets/img/AdminLTELogo.png"
-        alt="AdminLTE Logo"
+        src="public/assets/img/ven911_logo.png"
+        alt="Ven911 Logo"
         class="brand-image opacity-75 shadow"
       />
       <!--fin::Imagen de Marca-->
