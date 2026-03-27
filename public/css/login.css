@@ -140,6 +140,27 @@ body {
   /* Sombra interna levemente verde */
 }
 
+/* Ajuste para que el texto no tape el ojo */
+#password {
+  padding-right: 3rem;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #166534;
+  font-size: 1.1rem;
+  z-index: 20;
+  transition: color 0.3s ease;
+}
+
+.toggle-password:hover {
+  color: #22c55e;
+}
+
 .form-control::placeholder {
   color: #072513;
   /* Placeholder agradable a la vista */

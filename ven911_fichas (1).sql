@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 26-03-2026 a las 18:36:36
+-- Tiempo de generación: 27-03-2026 a las 14:37:34
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -136,6 +136,16 @@ CREATE TABLE `roles` (
   `nombre` varchar(30) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Volcado de datos para la tabla `roles`
+--
+
+INSERT INTO `roles` (`id`, `nombre`) VALUES
+(3, 'Despachador'),
+(4, 'Jefatura'),
+(2, 'Operador'),
+(1, 'Super Admin');
+
 -- --------------------------------------------------------
 
 --
@@ -172,7 +182,7 @@ CREATE TABLE `usuarios` (
   `usuario` varchar(30) NOT NULL,
   `password` varchar(255) NOT NULL,
   `nombre_completo` varchar(150) NOT NULL,
-  `numero_asignado` varchar(50) DEFAULT NULL,
+  `cedula` varchar(12) DEFAULT NULL,
   `rol_id` int(10) UNSIGNED NOT NULL,
   `codigo_operador` varchar(20) DEFAULT NULL,
   `estado` enum('activo','inactivo') NOT NULL DEFAULT 'activo'
@@ -317,7 +327,7 @@ ALTER TABLE `parroquias`
 -- AUTO_INCREMENT de la tabla `roles`
 --
 ALTER TABLE `roles`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT de la tabla `solicitantes`
@@ -335,7 +345,7 @@ ALTER TABLE `tipos_emergencia`
 -- AUTO_INCREMENT de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- Restricciones para tablas volcadas

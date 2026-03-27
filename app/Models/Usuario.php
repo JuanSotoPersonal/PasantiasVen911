@@ -17,10 +17,8 @@ class Usuario {
     }
 
     /**
-     * Busca un usuario por su nombre de usuario (email o string de acceso).
-     * Retorna el registro con un INNER JOIN a `roles` para traer también 
-     * el nombre del rol.
-     *
+     * Busca un usuario por su nombre de usuario (cedula).
+     * Retorna el registro con un INNER JOIN a roles para traer también el nombre del rol.
      * @param string $username
      * @return array|false
      */

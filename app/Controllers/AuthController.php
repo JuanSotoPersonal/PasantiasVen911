@@ -16,7 +16,6 @@ class AuthController {
      * Procesa la solicitud POST de inicio de sesión
      */
     public function authenticate() {
-        // Asegurarnos que la respuesta sea JSON
         header('Content-Type: application/json');
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -24,17 +23,33 @@ class AuthController {
             return;
         }
 
-        $usuario = trim($_POST['usuario'] ?? '');
-        $password = $_POST['password'] ?? '';
+        $usuario = trim($_POST['usuario']);
+        $password = $_POST['password'];
 
-        if (empty($usuario) || empty($password)) {
-            echo json_encode(['success' => false, 'message' => 'Por favor, ingrese todos los datos.']);
+        $campos_requeridos = ['usuario', 'password'];
+
+        foreach ($campos_requeridos as $campo) {
+            if (!isset($_POST[$campo]) || trim($_POST[$campo]) === '') {
+                echo json_encode([
+                    'success' => false, 
+                    'message' => "El campo {$campo} es obligatorio."
+                ]);
+                return; // Uso return para seguir la consistencia de la clase
+            }
+        }
+
+        if (!preg_match('/^[a-zA-Z0-9]+$/', $usuario)) {
+            echo json_encode(['success' => false, 'message' => 'El usuario solo puede contener letras y números, sin signos especiales.']);
             return;
         }
 
-        // Validación opcional: verificar que el usuario tenga un formato de 8 dígitos (si así se requiere estrictamente numérico, o alfanumérico)
-        if (strlen($usuario) < 8) {
-            echo json_encode(['success' => false, 'message' => 'El usuario (cédula) debe tener al menos 8 caracteres.']);
+        if (strlen($usuario) < 7) {
+            echo json_encode(['success' => false, 'message' => 'El usuario debe tener al menos 7 caracteres.']);
+            return;
+        }
+
+        if (strlen($password) < 6) {
+            echo json_encode(['success' => false, 'message' => 'La contraseña debe tener al menos 6 caracteres.']);
             return;
         }
 

@@ -16,6 +16,9 @@
   <!-- SweetAlert2 -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
   
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  
   <!-- Estilos propios del Login -->
   <link rel="stylesheet" href="public/css/login.css">
 </head>
@@ -47,6 +50,7 @@
         <label for="password" class="form-label">Contraseña</label>
         <div class="input-group-custom">
           <input type="password" class="form-control" id="password" name="password" placeholder="••••••••"  autocomplete="current-password">
+          <i class="bi bi-eye-slash toggle-password" id="togglePassword"></i>
         </div>
       </div>
       
