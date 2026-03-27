@@ -8,7 +8,7 @@ class AuthController {
     /**
      * Muestra la pantalla de inicio de sesión
      */
-    public function auth() {
+    public function index() {
         require_once 'app/Views/login.php';
     }
 
@@ -24,16 +24,22 @@ class AuthController {
             return;
         }
 
-        $email = trim($_POST['email'] ?? '');
+        $usuario = trim($_POST['usuario'] ?? '');
         $password = $_POST['password'] ?? '';
 
-        if (empty($email) || empty($password)) {
+        if (empty($usuario) || empty($password)) {
             echo json_encode(['success' => false, 'message' => 'Por favor, ingrese todos los datos.']);
             return;
         }
 
+        // Validación opcional: verificar que el usuario tenga un formato de 8 dígitos (si así se requiere estrictamente numérico, o alfanumérico)
+        if (strlen($usuario) < 8) {
+            echo json_encode(['success' => false, 'message' => 'El usuario (cédula) debe tener al menos 8 caracteres.']);
+            return;
+        }
+
         $usuarioModel = new Usuario();
-        $user = $usuarioModel->getUsuarioByUsername($email);
+        $user = $usuarioModel->getUsuarioByUsername($usuario);
 
         if ($user) {
             // Verificar contraseña cifrada

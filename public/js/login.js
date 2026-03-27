@@ -4,8 +4,18 @@ document.addEventListener("DOMContentLoaded", () => {
   loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     
-    const email = document.getElementById("email").value;
+    const usuario = document.getElementById("usuario").value;
     const password = document.getElementById("password").value;
+    
+    if (usuario.trim().length < 8) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Cédula Inválida',
+        text: 'La cédula debe contener al menos 8 dígitos.',
+        confirmButtonColor: '#2563eb'
+      });
+      return;
+    }
     
     // 1. Mostrar pantalla de carga
     Swal.fire({

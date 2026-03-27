@@ -36,17 +36,17 @@
     
     <form id="loginForm">
       <div class="mb-4">
-        <label for="email" class="form-label">Correo Electrónico</label>
+        <label for="usuario" class="form-label">Usuario</label>
         <div class="input-group-custom">
           <!-- TODO: Agregar icono SVG aquí si se desea -->
-          <input type="email" class="form-control" id="email" name="email" placeholder="operador@ven911.gob.ve" required autocomplete="email">
+          <input type="text" class="form-control" id="usuario" name="usuario" placeholder="V00000000"  autocomplete="Usuario">
         </div>
       </div>
       
       <div class="mb-4">
         <label for="password" class="form-label">Contraseña</label>
         <div class="input-group-custom">
-          <input type="password" class="form-control" id="password" name="password" placeholder="••••••••" required autocomplete="current-password">
+          <input type="password" class="form-control" id="password" name="password" placeholder="••••••••"  autocomplete="current-password">
         </div>
       </div>
       
