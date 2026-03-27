@@ -14,7 +14,7 @@
       <img
         src="public/assets/img/ven911_logo.png"
         alt="Ven911 Logo"
-        class="brand-image opacity-75 shadow"
+        class="brand-image opacity-100 shadow-sm"
       />
       <!--fin::Imagen de Marca-->
       <!--inicio::Texto de Marca-->

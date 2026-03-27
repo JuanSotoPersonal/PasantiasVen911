@@ -12,7 +12,7 @@
   <!--inicio::Copyright-->
   <strong>
     Copyright &copy; 2024&nbsp;
-    <a href="#" class="text-decoration-none">Ven911</a>.
+    <a href="#" class="text-decoration-none">Ven911</a>
   </strong>
   Todos los derechos reservados.
   <!--fin::Copyright-->

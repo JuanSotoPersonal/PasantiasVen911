@@ -17,7 +17,7 @@ $userRol = $_SESSION['user_rol'] ?? 'S/R';
     <span class="d-none d-md-inline"><?= htmlspecialchars($userName) ?></span>
   </a>
   <ul class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
-    <li class="user-header text-bg-primary">
+    <li class="user-header">
       <img
         src="public/assets/img/user2-160x160.jpg"
         class="rounded-circle shadow"

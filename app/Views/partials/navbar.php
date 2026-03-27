@@ -5,7 +5,7 @@
  */
 ?>
 <!--inicio::Cabecera-->
-<nav class="app-header navbar navbar-expand bg-body">
+<nav class="app-header navbar navbar-expand bg-white shadow-sm border-bottom-success">
   <!--inicio::Contenedor-->
   <div class="container-fluid">
     <!--inicio::Enlaces de Navegación de Inicio-->

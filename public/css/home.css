@@ -1,0 +1,120 @@
+/* Custom Dashboard Theme for VEN 911 */
+
+:root {
+  --ven-primary: #16a34a;       /* Verde Principal */
+  --ven-primary-hover: #15803d; /* Verde Hover */
+  --ven-dark: #064e3b;          /* Verde Pino (Sidebar/Brand) */
+  --ven-accent: #22c55e;        /* Verde Acento */
+  --ven-bg-soft: #f0fdf4;       /* Fondo suave verdoso */
+}
+
+/* Sidebar Branding */
+.brand-link {
+  background-color: var(--ven-dark) !important;
+  color: #ffffff !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.brand-text {
+  color: #ffffff !important;
+  font-weight: 600 !important;
+}
+
+.brand-link .brand-image {
+  transition: transform 0.3s ease;
+}
+
+.brand-link:hover .brand-image {
+  transform: scale(1.08);
+}
+
+/* Sidebar Background */
+.app-sidebar {
+  background-color: #042f24 !important; /* Más oscuro que el brand para contraste */
+}
+
+/* Active Menu Items */
+.sidebar-menu .nav-link.active {
+  background-color: var(--ven-primary) !important;
+  color: #ffffff !important;
+}
+
+.sidebar-menu .nav-link:hover {
+  background-color: rgba(22, 197, 94, 0.1) !important;
+  color: var(--ven-accent) !important;
+}
+
+/* Navbar Personalization */
+.app-header.navbar {
+  background-color: #ffffff !important;
+  border-bottom: 2px solid var(--ven-primary) !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important;
+}
+
+.app-header .nav-link {
+  color: var(--ven-dark) !important;
+  font-weight: 500;
+}
+
+.app-header .nav-link:hover {
+  color: var(--ven-primary) !important;
+}
+
+/* Card Header Accent */
+.card {
+  border-radius: 0.75rem !important;
+  border: none !important;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+}
+
+.card-header {
+  background-color: transparent !important;
+  border-bottom: 1px solid rgba(0,0,0,0.05) !important;
+  padding: 1rem 1.25rem !important;
+}
+
+.card-title {
+  color: var(--ven-dark) !important;
+  font-weight: 700 !important;
+}
+
+/* Breadcrumbs */
+.breadcrumb-item a {
+  color: var(--ven-primary) !important;
+  text-decoration: none;
+}
+
+.breadcrumb-item.active {
+  color: var(--ven-dark) !important;
+}
+
+/* Forzar encabezados a Negro */
+h1, h2, h3, h4, h5, h6, .brand-text {
+  color: #000000 !important;
+}
+
+/* Sidebar Brand Text (Excepción para que sea legible sobre verde oscuro) */
+.brand-link .brand-text {
+  color: #ffffff !important;
+}
+
+/* User Profile Header */
+.user-header {
+  background-color: var(--ven-primary) !important;
+  color: #ffffff !important;
+}
+
+/* Footer Colors */
+.app-footer {
+  border-top: 1px solid rgba(0,0,0,0.05) !important;
+  color: #6c757d !important;
+}
+
+.app-footer a {
+  color: var(--ven-primary) !important;
+  font-weight: 600;
+}
+
+.app-footer a:hover {
+  color: var(--ven-primary-hover) !important;
+}
