@@ -29,27 +29,21 @@
     <!--inicio::Fuentes-->
     <link
       rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/@fontsource/source-sans-3@5.0.12/index.css"
-      integrity="sha256-tXJfXfp6Ewt1ilPzLDtQnJV4hclT9XuaZUKyUvmyr+Q="
-      crossorigin="anonymous"
-      media="print"
-      onload="this.media = 'all'"
+      href="public/libs/source-sans-3/index.css"
     />
     <!--fin::Fuentes-->
 
     <!--inicio::Plugin de Terceros(OverlayScrollbars)-->
     <link
       rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.11.0/styles/overlayscrollbars.min.css"
-      crossorigin="anonymous"
+      href="public/libs/overlayscrollbars/overlayscrollbars.min.css"
     />
     <!--fin::Plugin de Terceros(OverlayScrollbars)-->
 
     <!--inicio::Plugin de Terceros(Bootstrap Icons)-->
     <link
       rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
-      crossorigin="anonymous"
+      href="public/libs/bootstrap-icons/bootstrap-icons.min.css"
     />
     <!--fin::Plugin de Terceros(Bootstrap Icons)-->
 
@@ -127,22 +121,13 @@
 
     <!--inicio::Script-->
     <!--begin::Third Party Plugin(OverlayScrollbars)-->
-    <script
-      src="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.11.0/browser/overlayscrollbars.browser.es6.min.js"
-      crossorigin="anonymous"
-    ></script>
+    <script src="public/libs/overlayscrollbars/overlayscrollbars.browser.es6.min.js"></script>
     <!--end::Third Party Plugin(OverlayScrollbars)-->
     <!--begin::Required Plugin(popperjs for Bootstrap 5)-->
-    <script
-      src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
-      crossorigin="anonymous"
-    ></script>
+    <script src="public/libs/popperjs/popper.min.js"></script>
     <!--end::Required Plugin(popperjs for Bootstrap 5)-->
     <!--begin::Required Plugin(Bootstrap 5)-->
-    <script
-      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.min.js"
-      crossorigin="anonymous"
-    ></script>
+    <script src="public/libs/bootstrap/bootstrap.min.js"></script>
     <!--end::Required Plugin(Bootstrap 5)-->
     <!--begin::Required Plugin(AdminLTE)-->
     <script src="public/js/adminlte.js"></script>

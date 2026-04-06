@@ -6,18 +6,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <!-- Bootstrap 5 -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="public/libs/bootstrap/bootstrap.min.css" rel="stylesheet">
   
-  <!-- Google Fonts: Inter para un look moderno -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Inter (self-hosted) -->
+  <link href="public/libs/inter/index.css" rel="stylesheet">
   
   <!-- SweetAlert2 -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+  <link rel="stylesheet" href="public/libs/sweetalert2/sweetalert2.min.css">
   
   <!-- Bootstrap Icons -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="public/libs/bootstrap-icons/bootstrap-icons.min.css">
   
   <!-- Estilos propios del Login -->
   <link rel="stylesheet" href="public/css/login.css">
@@ -65,7 +63,7 @@
   </div>
 
   <!-- Scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="public/libs/sweetalert2/sweetalert2.min.js"></script>
   
   <!-- Lógica y manejo del flujo del Login -->
   <script src="public/js/login.js"></script>
