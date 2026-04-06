@@ -70,7 +70,7 @@
                     </h3>
                     <button
                       type="button"
-                      class="btn btn-primary btn-sm"
+                      class="btn btn-ven-primary btn-sm"
                       id="btn-abrir-modal-crear"
                       data-bs-toggle="modal"
                       data-bs-target="#modalCrearUsuario"
@@ -121,14 +121,14 @@
     <!-- ============================================================
          MODAL: Crear Usuario
          ============================================================ -->
-    <div class="modal fade" id="modalCrearUsuario" tabindex="-1" aria-labelledby="modalCrearUsuarioLabel" aria-hidden="true">
+    <div class="modal fade" id="modalCrearUsuario" tabindex="-1" aria-labelledby="modalCrearUsuarioLabel" aria-hidden="true" data-bs-backdrop="static">
       <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
-          <div class="modal-header bg-primary text-white">
+          <div class="modal-header modal-header-ven">
             <h5 class="modal-title" id="modalCrearUsuarioLabel">
               <i class="bi bi-person-plus-fill me-2"></i>Agregar Nuevo Usuario
             </h5>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
           </div>
           <form id="formCrearUsuario" novalidate>
             <div class="modal-body">
@@ -173,10 +173,10 @@
               </div>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+              <button type="button" class="btn btn-ven-cancel" data-bs-dismiss="modal">
                 <i class="bi bi-x-lg me-1"></i>Cancelar
               </button>
-              <button type="submit" class="btn btn-primary" id="btn-guardar-crear">
+              <button type="submit" class="btn btn-ven-primary" id="btn-guardar-crear">
                 <i class="bi bi-check-lg me-1"></i>Guardar Usuario
               </button>
             </div>
@@ -188,10 +188,10 @@
     <!-- ============================================================
          MODAL: Editar Usuario
          ============================================================ -->
-    <div class="modal fade" id="modalEditarUsuario" tabindex="-1" aria-labelledby="modalEditarUsuarioLabel" aria-hidden="true">
+    <div class="modal fade" id="modalEditarUsuario" tabindex="-1" aria-labelledby="modalEditarUsuarioLabel" aria-hidden="true" data-bs-backdrop="static">
       <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
-          <div class="modal-header bg-warning text-dark">
+          <div class="modal-header modal-header-ven">
             <h5 class="modal-title" id="modalEditarUsuarioLabel">
               <i class="bi bi-pencil-square me-2"></i>Editar Usuario
             </h5>
@@ -230,10 +230,10 @@
               </div>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+              <button type="button" class="btn btn-ven-cancel" data-bs-dismiss="modal">
                 <i class="bi bi-x-lg me-1"></i>Cancelar
               </button>
-              <button type="submit" class="btn btn-warning" id="btn-guardar-editar">
+              <button type="submit" class="btn btn-ven-edit" id="btn-guardar-editar">
                 <i class="bi bi-save me-1"></i>Guardar Cambios
               </button>
             </div>
@@ -245,14 +245,14 @@
     <!-- ============================================================
          MODAL: Cambiar Contraseña
          ============================================================ -->
-    <div class="modal fade" id="modalCambiarPassword" tabindex="-1" aria-labelledby="modalPasswordLabel" aria-hidden="true">
+    <div class="modal fade" id="modalCambiarPassword" tabindex="-1" aria-labelledby="modalPasswordLabel" aria-hidden="true" data-bs-backdrop="static">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-          <div class="modal-header bg-info text-white">
+          <div class="modal-header modal-header-ven">
             <h5 class="modal-title" id="modalPasswordLabel">
               <i class="bi bi-shield-lock-fill me-2"></i>Cambiar Contraseña
             </h5>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
           </div>
           <form id="formCambiarPassword" novalidate>
             <input type="hidden" id="pwd-id" name="id" />
@@ -280,10 +280,10 @@
               </div>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+              <button type="button" class="btn btn-ven-cancel" data-bs-dismiss="modal">
                 <i class="bi bi-x-lg me-1"></i>Cancelar
               </button>
-              <button type="submit" class="btn btn-info text-white">
+              <button type="submit" class="btn btn-ven-password">
                 <i class="bi bi-shield-check me-1"></i>Actualizar Contraseña
               </button>
             </div>
@@ -379,7 +379,7 @@
             render: (d, type, row) => `
               <button
                 type="button"
-                class="btn btn-warning btn-accion btn-editar me-1"
+                class="btn btn-ven-edit btn-accion btn-editar me-1"
                 data-id="${row.id}"
                 data-nombre="${row.nombre_completo}"
                 data-cedula="${row.cedula || ''}"
@@ -392,7 +392,7 @@
               </button>
               <button
                 type="button"
-                class="btn btn-info btn-accion btn-password text-white"
+                class="btn btn-ven-password btn-accion btn-password"
                 data-id="${row.id}"
                 data-nombre="${row.nombre_completo}"
                 title="Cambiar contraseña"
@@ -594,7 +594,8 @@
           showCancelButton:  true,
           confirmButtonText: `Sí, ${accion}`,
           cancelButtonText:  'Cancelar',
-          confirmButtonColor: estado === 'activo' ? '#dc3545' : '#198754',
+          confirmButtonColor: '#16a34a',
+          cancelButtonColor: '#f0fdf4',
         }).then(function (result) {
           if (!result.isConfirmed) return;
 

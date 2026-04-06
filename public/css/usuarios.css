@@ -1,8 +1,163 @@
 /* =============================================
-   Módulo de Usuarios — Estilos específicos
+   Módulo de Usuarios
+   Paleta de colores tomada de login.css
    ============================================= */
 
-/* ---- Badges de Estado ---- */
+/* ---- Variables de color del tema ---- */
+:root {
+    --ven-green-primary:  #16a34a;
+    --ven-green-dark:     #15803d;
+    --ven-green-darker:   #14532d;
+    --ven-green-deepest:  #064e3b;
+    --ven-green-accent:   #22c55e;
+    --ven-green-light:    #f0fdf4;
+    --ven-green-border:   #bbf7d0;
+    --ven-green-shadow:   rgba(22, 163, 74, 0.4);
+    --ven-green-glow:     rgba(34, 197, 94, 0.2);
+    --ven-text-dark:      #072513;
+}
+
+/* =============================================
+   BOTONES CON EL TEMA VERDE
+   ============================================= */
+
+/* Botón principal — Agregar / Guardar */
+.btn-ven-primary {
+    background: linear-gradient(135deg, var(--ven-green-primary) 0%, var(--ven-green-dark) 100%);
+    border: none;
+    border-radius: 0.6rem;
+    color: #fff;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 6px -1px var(--ven-green-shadow);
+}
+
+.btn-ven-primary:hover,
+.btn-ven-primary:focus {
+    background: linear-gradient(135deg, var(--ven-green-dark) 0%, var(--ven-green-darker) 100%);
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(22, 163, 74, 0.55);
+}
+
+.btn-ven-primary:active { transform: translateY(0); }
+
+/* Botón editar — Tono verde medio */
+.btn-ven-edit {
+    background: linear-gradient(135deg, #166534 0%, #14532d 100%);
+    border: none;
+    border-radius: 0.5rem;
+    color: #fff;
+    font-weight: 600;
+    transition: all 0.25s ease;
+    box-shadow: 0 3px 6px rgba(22, 101, 52, 0.4);
+}
+
+.btn-ven-edit:hover,
+.btn-ven-edit:focus {
+    background: linear-gradient(135deg, #14532d 0%, #064e3b 100%);
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 14px rgba(6, 78, 59, 0.45);
+}
+
+.btn-ven-edit:active { transform: translateY(0); }
+
+/* Botón contraseña — Acento brillante */
+.btn-ven-password {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    border: none;
+    border-radius: 0.5rem;
+    color: #fff;
+    font-weight: 600;
+    transition: all 0.25s ease;
+    box-shadow: 0 3px 6px var(--ven-green-glow);
+}
+
+.btn-ven-password:hover,
+.btn-ven-password:focus {
+    background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 14px var(--ven-green-shadow);
+}
+
+.btn-ven-password:active { transform: translateY(0); }
+
+/* Botón cancelar — Neutro oscuro */
+.btn-ven-cancel {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 0.6rem;
+    color: var(--ven-green-deepest);
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.btn-ven-cancel:hover,
+.btn-ven-cancel:focus {
+    background: #dcfce7;
+    border-color: #86efac;
+    color: var(--ven-green-deepest);
+    transform: translateY(-1px);
+}
+
+/* =============================================
+   CABECERAS DE MODALES — TEMA VERDE
+   ============================================= */
+
+.modal-header-ven {
+    background: linear-gradient(135deg, var(--ven-green-primary) 0%, var(--ven-green-deepest) 100%);
+    color: #fff;
+    border-bottom: none;
+    border-radius: calc(0.5rem - 1px) calc(0.5rem - 1px) 0 0;
+    padding: 1.1rem 1.5rem;
+}
+
+.modal-header-ven .btn-close {
+    filter: brightness(0) invert(1);
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+
+.modal-header-ven .btn-close:hover { opacity: 1; }
+
+.modal-header-ven .modal-title {
+    font-weight: 700;
+    font-size: 1.05rem;
+    letter-spacing: 0.2px;
+}
+
+/* =============================================
+   MODALES — BACKDROP TRANSPARENTE Y GLASSMORPHISM
+   ============================================= */
+
+/* Fondo del modal: transparente con blur (sin negro) */
+.modal-backdrop {
+    background-color: rgba(6, 78, 59, 0.18) !important;
+    backdrop-filter: blur(4px) !important;
+    -webkit-backdrop-filter: blur(4px) !important;
+}
+
+/* El overlay por defecto que Bootstrap agrega */
+.modal-backdrop.show { opacity: 1 !important; }
+
+/* Contenido del modal con efecto glassmorphism suave */
+.modal-content {
+    border: 1px solid rgba(187, 247, 208, 0.5);
+    border-radius: 1rem;
+    box-shadow: 0 25px 50px -12px rgba(6, 78, 59, 0.35);
+    overflow: hidden;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    background: rgba(255, 255, 255, 0.97);
+}
+
+/* =============================================
+   BADGES DE ESTADO
+   ============================================= */
+
 .badge-estado {
     font-size: 0.78rem;
     padding: 0.35em 0.75em;
@@ -12,16 +167,20 @@
 }
 
 .badge-activo {
-    background-color: #198754;
+    background: linear-gradient(135deg, var(--ven-green-primary), var(--ven-green-dark));
     color: #fff;
+    box-shadow: 0 2px 6px var(--ven-green-shadow);
 }
 
 .badge-inactivo {
-    background-color: #6c757d;
+    background: #6b7280;
     color: #fff;
 }
 
-/* ---- Botón toggle de estado ---- */
+/* =============================================
+   BOTÓN TOGGLE DE ESTADO
+   ============================================= */
+
 .btn-toggle-estado {
     cursor: pointer;
     transition: opacity 0.2s ease, transform 0.15s ease;
@@ -31,11 +190,14 @@
 }
 
 .btn-toggle-estado:hover {
-    opacity: 0.8;
+    opacity: 0.82;
     transform: scale(1.08);
 }
 
-/* ---- Acciones de la tabla ---- */
+/* =============================================
+   BOTONES DE ACCIÓN EN LA TABLA
+   ============================================= */
+
 .btn-accion {
     width: 32px;
     height: 32px;
@@ -52,7 +214,25 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* ---- Campo de contraseña con toggle ---- */
+/* =============================================
+   INPUTS EN MODALES — TEMA VERDE
+   ============================================= */
+
+.modal .form-control:focus,
+.modal .form-select:focus {
+    border-color: var(--ven-green-accent);
+    box-shadow: 0 0 0 0.25rem var(--ven-green-glow);
+}
+
+.modal .form-label {
+    color: var(--ven-green-deepest);
+    font-weight: 600;
+}
+
+/* =============================================
+   CAMPO CONTRASEÑA CON TOGGLE OJO
+   ============================================= */
+
 .password-wrapper {
     position: relative;
 }
@@ -64,7 +244,7 @@
     transform: translateY(-50%);
     background: transparent;
     border: none;
-    color: #6c757d;
+    color: var(--ven-green-primary);
     cursor: pointer;
     padding: 0;
     line-height: 1;
@@ -72,20 +252,23 @@
 }
 
 .password-wrapper .btn-eye:hover {
-    color: #0d6efd;
+    color: var(--ven-green-darker);
 }
 
-/* ---- DataTable custom ---- */
+/* =============================================
+   DATATABLE — ESTILO VERDE
+   ============================================= */
+
 #tablaUsuarios_wrapper .dataTables_filter input {
     border-radius: 8px;
-    border: 1px solid #dee2e6;
+    border: 1px solid #d1fae5;
     padding: 0.375rem 0.75rem;
     transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 #tablaUsuarios_wrapper .dataTables_filter input:focus {
-    border-color: #86b7fe;
-    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    border-color: var(--ven-green-accent);
+    box-shadow: 0 0 0 0.25rem var(--ven-green-glow);
     outline: none;
 }
 
@@ -93,7 +276,10 @@
     border-radius: 8px;
 }
 
-/* ---- Card header del módulo ---- */
+/* =============================================
+   CARD HEADER DEL MÓDULO
+   ============================================= */
+
 .card-usuarios .card-header {
     display: flex;
     align-items: center;
@@ -101,7 +287,10 @@
     gap: 1rem;
 }
 
-/* ---- Animación entrada modal ---- */
+/* =============================================
+   ANIMACIÓN ENTRADA MODAL
+   ============================================= */
+
 .modal.fade .modal-dialog {
     transform: scale(0.95) translateY(-20px);
     transition: transform 0.25s ease;
@@ -109,4 +298,39 @@
 
 .modal.show .modal-dialog {
     transform: scale(1) translateY(0);
+}
+
+/* =============================================
+   SWEETALERT2 — TEMA VERDE (igual que login)
+   ============================================= */
+
+div:where(.swal2-container) div:where(.swal2-popup) {
+    background: #ffffff !important;
+    color: var(--ven-green-deepest) !important;
+    border-radius: 1rem !important;
+    border: 1px solid var(--ven-green-border) !important;
+    box-shadow: 0 25px 50px -12px rgba(6, 78, 59, 0.5) !important;
+}
+
+.swal2-title { color: var(--ven-green-deepest) !important; }
+.swal2-html-container { color: var(--ven-green-darker) !important; }
+
+.swal2-confirm {
+    background: linear-gradient(135deg, var(--ven-green-primary) 0%, var(--ven-green-dark) 100%) !important;
+    border: none !important;
+    box-shadow: 0 4px 6px var(--ven-green-shadow) !important;
+}
+
+.swal2-confirm:hover {
+    background: linear-gradient(135deg, var(--ven-green-dark) 0%, var(--ven-green-darker) 100%) !important;
+}
+
+.swal2-cancel {
+    background: #f0fdf4 !important;
+    color: var(--ven-green-deepest) !important;
+    border: 1px solid var(--ven-green-border) !important;
+}
+
+.swal2-cancel:hover {
+    background: #dcfce7 !important;
 }
