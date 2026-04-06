@@ -1,0 +1,112 @@
+/* =============================================
+   Módulo de Usuarios — Estilos específicos
+   ============================================= */
+
+/* ---- Badges de Estado ---- */
+.badge-estado {
+    font-size: 0.78rem;
+    padding: 0.35em 0.75em;
+    border-radius: 50px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+}
+
+.badge-activo {
+    background-color: #198754;
+    color: #fff;
+}
+
+.badge-inactivo {
+    background-color: #6c757d;
+    color: #fff;
+}
+
+/* ---- Botón toggle de estado ---- */
+.btn-toggle-estado {
+    cursor: pointer;
+    transition: opacity 0.2s ease, transform 0.15s ease;
+    border: none;
+    background: transparent;
+    padding: 0;
+}
+
+.btn-toggle-estado:hover {
+    opacity: 0.8;
+    transform: scale(1.08);
+}
+
+/* ---- Acciones de la tabla ---- */
+.btn-accion {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn-accion:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* ---- Campo de contraseña con toggle ---- */
+.password-wrapper {
+    position: relative;
+}
+
+.password-wrapper .btn-eye {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    transition: color 0.2s;
+}
+
+.password-wrapper .btn-eye:hover {
+    color: #0d6efd;
+}
+
+/* ---- DataTable custom ---- */
+#tablaUsuarios_wrapper .dataTables_filter input {
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    padding: 0.375rem 0.75rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+#tablaUsuarios_wrapper .dataTables_filter input:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    outline: none;
+}
+
+#tablaUsuarios_wrapper .dataTables_length select {
+    border-radius: 8px;
+}
+
+/* ---- Card header del módulo ---- */
+.card-usuarios .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+/* ---- Animación entrada modal ---- */
+.modal.fade .modal-dialog {
+    transform: scale(0.95) translateY(-20px);
+    transition: transform 0.25s ease;
+}
+
+.modal.show .modal-dialog {
+    transform: scale(1) translateY(0);
+}

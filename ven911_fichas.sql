@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 27-03-2026 a las 14:37:34
+-- Tiempo de generación: 06-04-2026 a las 19:49:15
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -189,6 +189,13 @@ CREATE TABLE `usuarios` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
+-- Volcado de datos para la tabla `usuarios`
+--
+
+INSERT INTO `usuarios` (`id`, `usuario`, `password`, `nombre_completo`, `cedula`, `rol_id`, `codigo_operador`, `estado`) VALUES
+(7, '31034138', '$2y$10$MM96aCGRM17pGNvvR5CjpO6NHFHIS/NjEew6aDv9u4kIhMpmo/Dqy', 'Administrador del Sistema', '10200300', 1, 'SA-001', 'activo');
+
+--
 -- Índices para tablas volcadas
 --
 
@@ -345,7 +352,7 @@ ALTER TABLE `tipos_emergencia`
 -- AUTO_INCREMENT de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- Restricciones para tablas volcadas

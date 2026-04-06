@@ -3,22 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <title>VEN 911 | Iniciar Sesión</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <!-- Bootstrap 5 -->
-  <link href="public/libs/bootstrap/bootstrap.min.css" rel="stylesheet">
-  
-  <!-- Inter (self-hosted) -->
-  <link href="public/libs/inter/index.css" rel="stylesheet">
-  
-  <!-- SweetAlert2 -->
-  <link rel="stylesheet" href="public/libs/sweetalert2/sweetalert2.min.css">
-  
-  <!-- Bootstrap Icons -->
-  <link rel="stylesheet" href="public/libs/bootstrap-icons/bootstrap-icons.min.css">
-  
-  <!-- Estilos propios del Login -->
-  <link rel="stylesheet" href="public/css/login.css">
+  <?php 
+  $pageName = 'login';
+  require __DIR__ . '/partials/head.php'; 
+  ?>
 </head>
 <body>
 
@@ -63,9 +51,53 @@
   </div>
 
   <!-- Scripts -->
-  <script src="public/libs/sweetalert2/sweetalert2.min.js"></script>
-  
-  <!-- Lógica y manejo del flujo del Login -->
+ <?php
+/**
+ * Partial: Scripts globales
+ * Utiliza la variable $pageName para cargar condicionalmente los JS
+ */
+$pageName = $pageName ?? 'home';
+?>
+<!-- SweetAlert2 (Para notificaciones comunes) -->
+<script src="public/libs/sweetalert2/sweetalert2.min.js"></script>
+
+<?php if ($pageName === 'login'): ?>
+  <!-- Scripts exclusivos del Login -->
   <script src="public/js/login.js"></script>
+<?php else: ?>
+  <!-- Scripts exclusivos del Dashboard / Sistema -->
+  <script src="public/libs/overlayscrollbars/overlayscrollbars.browser.es6.min.js"></script>
+  <script src="public/libs/popperjs/popper.min.js"></script>
+  <script src="public/libs/bootstrap/bootstrap.min.js"></script>
+  <script src="public/js/adminlte.js"></script>
+
+  <!-- Configuración de Scrollbars -->
+  <script>
+    const SELECTOR_SIDEBAR_WRAPPER = '.sidebar-wrapper';
+    const Default = {
+      scrollbarTheme: 'os-theme-light',
+      scrollbarAutoHide: 'leave',
+      scrollbarClickScroll: true,
+    };
+    document.addEventListener('DOMContentLoaded', function () {
+      const sidebarWrapper = document.querySelector(SELECTOR_SIDEBAR_WRAPPER);
+      const isMobile = window.innerWidth <= 992;
+      if (
+        sidebarWrapper &&
+        OverlayScrollbarsGlobal?.OverlayScrollbars !== undefined &&
+        !isMobile
+      ) {
+        OverlayScrollbarsGlobal.OverlayScrollbars(sidebarWrapper, {
+          scrollbars: {
+            theme: Default.scrollbarTheme,
+            autoHide: Default.scrollbarAutoHide,
+            clickScroll: Default.scrollbarClickScroll,
+          },
+        });
+      }
+    });
+  </script>
+<?php endif; ?>
+
 </body>
 </html>
