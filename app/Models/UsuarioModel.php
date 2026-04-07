@@ -85,13 +85,13 @@ class UsuarioModel {
                     (:usuario, :password, :nombre_completo, :cedula, :rol_id, :codigo_operador, :estado)";
 
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':usuario',          $data['usuario'],          PDO::PARAM_STR);
-        $stmt->bindParam(':password',         $data['password'],         PDO::PARAM_STR);
-        $stmt->bindParam(':nombre_completo',  $data['nombre_completo'],  PDO::PARAM_STR);
-        $stmt->bindParam(':cedula',           $data['cedula'],           PDO::PARAM_STR);
-        $stmt->bindParam(':rol_id',           $data['rol_id'],           PDO::PARAM_INT);
-        $stmt->bindParam(':codigo_operador',  $data['codigo_operador'],  PDO::PARAM_STR);
-        $stmt->bindParam(':estado',           $data['estado'],           PDO::PARAM_STR);
+        $stmt->bindValue(':usuario',         $data['usuario'],                                           PDO::PARAM_STR);
+        $stmt->bindValue(':password',        $data['password'],                                          PDO::PARAM_STR);
+        $stmt->bindValue(':nombre_completo', $data['nombre_completo'],                                   PDO::PARAM_STR);
+        $stmt->bindValue(':cedula',          $data['cedula'],          $data['cedula']         ? PDO::PARAM_STR : PDO::PARAM_NULL);
+        $stmt->bindValue(':rol_id',          $data['rol_id'],                                            PDO::PARAM_INT);
+        $stmt->bindValue(':codigo_operador', $data['codigo_operador'], $data['codigo_operador'] ? PDO::PARAM_STR : PDO::PARAM_NULL);
+        $stmt->bindValue(':estado',          $data['estado'],                                            PDO::PARAM_STR);
         return $stmt->execute();
     }
 
@@ -108,12 +108,12 @@ class UsuarioModel {
                   WHERE id = :id";
 
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':nombre_completo', $data['nombre_completo'], PDO::PARAM_STR);
-        $stmt->bindParam(':cedula',          $data['cedula'],          PDO::PARAM_STR);
-        $stmt->bindParam(':usuario',         $data['usuario'],         PDO::PARAM_STR);
-        $stmt->bindParam(':rol_id',          $data['rol_id'],          PDO::PARAM_INT);
-        $stmt->bindParam(':codigo_operador', $data['codigo_operador'], PDO::PARAM_STR);
-        $stmt->bindParam(':id',              $id,                      PDO::PARAM_INT);
+        $stmt->bindValue(':nombre_completo', $data['nombre_completo'],                                   PDO::PARAM_STR);
+        $stmt->bindValue(':cedula',          $data['cedula'],          $data['cedula']         ? PDO::PARAM_STR : PDO::PARAM_NULL);
+        $stmt->bindValue(':usuario',         $data['usuario'],                                           PDO::PARAM_STR);
+        $stmt->bindValue(':rol_id',          $data['rol_id'],                                            PDO::PARAM_INT);
+        $stmt->bindValue(':codigo_operador', $data['codigo_operador'], $data['codigo_operador'] ? PDO::PARAM_STR : PDO::PARAM_NULL);
+        $stmt->bindValue(':id',              $id,                                                        PDO::PARAM_INT);
         return $stmt->execute();
     }
 

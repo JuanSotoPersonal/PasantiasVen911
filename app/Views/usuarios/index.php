@@ -302,7 +302,7 @@
     <!--begin::Required Plugin(AdminLTE)-->
     <script src="public/js/adminlte.js"></script>
     <!-- SweetAlert2 -->
-    <script src="public/libs/sweetalert2/sweetalert2.all.min.js"></script>
+    <script src="public/libs/sweetalert2/sweetalert2.min.js"></script>
     <!-- jQuery (requerido por DataTables) -->
     <script src="public/libs/datatables/jquery-3.7.1.min.js"></script>
     <!-- DataTables -->
@@ -339,7 +339,7 @@
           },
         },
         columns: [
-          { data: 'id', width: '50px' },
+          { data: null, width: '50px', orderable: false, searchable: false, render: (d, type, row, meta) => meta.row + 1 },
           { data: 'nombre_completo' },
           { data: 'usuario' },
           {
@@ -357,6 +357,14 @@
               const isActivo = d === 'activo';
               const badgeClass = isActivo ? 'badge-activo' : 'badge-inactivo';
               const icon = isActivo ? 'bi-toggle-on' : 'bi-toggle-off';
+              if (row.rol_id === 1) {
+                return `
+                <h3>
+                  <span class="badge badge-estado ${badgeClass}">
+                    <i class="bi bi-shield-lock-fill me-1"></i>Activo
+                  </span>
+                </h3>`;
+            }else{
               return `
                 <button
                   type="button"
@@ -369,37 +377,57 @@
                     <i class="bi ${icon} me-1"></i>${isActivo ? 'Activo' : 'Inactivo'}
                   </span>
                 </button>`;
-            },
+            }}
           },
           {
             data: null,
             orderable: false,
             searchable: false,
             className: 'text-center',
-            render: (d, type, row) => `
-              <button
-                type="button"
-                class="btn btn-ven-edit btn-accion btn-editar me-1"
-                data-id="${row.id}"
-                data-nombre="${row.nombre_completo}"
-                data-cedula="${row.cedula || ''}"
-                data-usuario="${row.usuario}"
-                data-rol="${row.rol_id}"
-                data-codigo="${row.codigo_operador || ''}"
-                title="Editar usuario"
-              >
-                <i class="bi bi-pencil-fill"></i>
-              </button>
-              <button
-                type="button"
-                class="btn btn-ven-password btn-accion btn-password"
-                data-id="${row.id}"
-                data-nombre="${row.nombre_completo}"
-                title="Cambiar contraseña"
-              >
-                <i class="bi bi-key-fill"></i>
-              </button>
-            `,
+            render: (d, type, row) => {
+              if (row.rol_id === 1) {
+                return `
+                  <span class="btn-ven-edit btn-accion me-1 d-inline-flex align-items-center justify-content-center" 
+                        style="cursor: help; opacity: 0.9;" title="Administrador Protegido">
+                    <i class="bi bi-shield-lock-fill"></i>
+                  </span>
+                  <button
+                    type="button"
+                    class="btn btn-ven-password btn-accion btn-password"
+                    data-id="${row.id}"
+                    data-nombre="${row.nombre_completo}"
+                    title="Cambiar contraseña"
+                  >
+                    <i class="bi bi-key-fill"></i>
+                  </button>
+                `;
+              }
+              return `
+                <button
+                  type="button"
+                  class="btn btn-ven-edit btn-accion btn-editar me-1"
+                  data-id="${row.id}"
+                  data-nombre="${row.nombre_completo}"
+                  data-cedula="${row.cedula || ''}"
+                  data-usuario="${row.usuario}"
+                  data-rol="${row.rol_id}"
+                  data-id-rol="${row.rol_id}"
+                  data-codigo="${row.codigo_operador || ''}"
+                  title="Editar usuario"
+                >
+                  <i class="bi bi-pencil-fill"></i>
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-ven-password btn-accion btn-password"
+                  data-id="${row.id}"
+                  data-nombre="${row.nombre_completo}"
+                  title="Cambiar contraseña"
+                >
+                  <i class="bi bi-key-fill"></i>
+                </button>
+              `;
+            },
           },
         ],
         language: {

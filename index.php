@@ -1,4 +1,5 @@
 <?php
+ob_start();
 session_start();
 
 // Front Controller - index.php
@@ -51,6 +52,8 @@ if (file_exists('app/Controllers/' . $controllerName . '.php')) {
         unset($url[0], $url[1]);
         // Re-indexar los parámetros restantes si hubieren
         $params = $url ? array_values($url) : [];
+        // Limpiar buffer antes de ejecutar métodos que responden JSON
+        ob_end_clean();
         call_user_func_array([$controller, $method], $params);
     } else {
         // Si el método no existe dentro de ese controlador específico
