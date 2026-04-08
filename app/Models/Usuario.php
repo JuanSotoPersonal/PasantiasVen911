@@ -8,6 +8,10 @@ use PDO;
 require_once 'app/Config/Database.php';
 
 class Usuario {
+
+    //--------------------------------------------------------------------
+    // Constructor
+    //--------------------------------------------------------------------
     private $conn;
     private $table_name = "usuarios";
 
@@ -16,12 +20,11 @@ class Usuario {
         $this->conn = $database->getConnection();
     }
 
-    /**
-     * Busca un usuario por su nombre de usuario (cedula).
-     * Retorna el registro con un INNER JOIN a roles para traer también el nombre del rol.
-     * @param string $username
-     * @return array|false
-     */
+    //--------------------------------------------------------------------
+    // Busca un usuario por su nombre de usuario (cedula).
+    // Retorna el registro con un INNER JOIN a roles para traer también el nombre del rol.
+    //--------------------------------------------------------------------
+
     public function getUsuarioByUsername($username) {
         $query = "SELECT u.*, r.nombre as nombre_rol 
                   FROM " . $this->table_name . " u

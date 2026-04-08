@@ -1,4 +1,4 @@
-// usuarios_roles.js
+// usuarios/roles.js
 // Inicializa un DataTable individual por cada tabla de rol (data-rol-id)
 
 $(function () {

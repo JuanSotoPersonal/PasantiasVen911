@@ -1,4 +1,4 @@
-// usuarios_datatable.js
+// usuarios/datatable.js
 // Módulo Usuarios: DataTable, CRUD (crear, editar, contraseña, toggle estado)
 $(function () {
 

@@ -375,12 +375,12 @@
     <script src="public/libs/datatables/dataTables.bootstrap5.min.js"></script>
 
     <!--inicio::Configuración de OverlayScrollbars-->
-    <script src="public/js/usuarios_overlay.js"></script>
+    <script src="public/js/usuarios/overlay.js"></script>
     <!--fin::Configuración de OverlayScrollbars-->
 
     <!--inicio::Módulo Usuarios JS-->
-    <script src="public/js/usuarios_datatable.js"></script>
-    <script src="public/js/usuarios_roles.js"></script>
+    <script src="public/js/usuarios/datatable.js"></script>
+    <script src="public/js/usuarios/roles.js"></script>
     <!--fin::Módulo Usuarios JS-->
     <!--fin::Scripts-->
 
