@@ -1,10 +1,10 @@
 <?php
-/**
- * Partial: Burbuja de Perfil de Usuario (User Menu)
- * Incluido en: partials/navbar.php
- */
-$userName = $_SESSION['user_name'] ?? 'Invitado';
-$userRol = $_SESSION['user_rol'] ?? 'S/R';
+    //--------------------------------------------------------------------
+    // Partial: Burbuja de Perfil de Usuario (User Menu)
+    // Incluido en: partials/navbar.php
+    //--------------------------------------------------------------------
+    $userName = $_SESSION['user_name'] ?? 'Invitado';
+    $userRol = $_SESSION['user_rol'] ?? 'S/R';
 ?>
 <!--inicio::Menú de Usuario-->
 <li class="nav-item dropdown user-menu">

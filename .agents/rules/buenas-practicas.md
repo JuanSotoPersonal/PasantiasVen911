@@ -33,3 +33,5 @@ Validación en la Frontera: Valida todos los datos en el punto de entrada (API o
 Falla con Elegancia: Un error no debe detener todo el sistema. Implementa bloques try-catch que registren el incidente pero mantengan la interfaz operativa para el usuario.
 
 Integridad Referencial: Delega la seguridad de los datos a la base de datos siempre que sea posible mediante restricciones y tipos de datos estrictos, liberando al código de esa carga.
+
+5. cada que se cree una datatable se cree un js en public/js/tablas para no saturar el codigo de vista

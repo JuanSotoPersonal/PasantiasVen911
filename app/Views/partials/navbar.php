@@ -1,8 +1,8 @@
 <?php
-/**
- * Partial: Navbar (Barra de Navegación Superior)
- * Incluido en: home.php (y cualquier otra vista que lo necesite)
- */
+    //--------------------------------------------------------------------
+    // Partial: Navbar (Barra de Navegación Superior)
+    // Incluido en: home.php (y cualquier otra vista que lo necesite)
+    //--------------------------------------------------------------------
 ?>
 <!--inicio::Cabecera-->
 <nav class="app-header navbar navbar-expand bg-white shadow-sm border-bottom-success">

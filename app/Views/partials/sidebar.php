@@ -1,12 +1,11 @@
 <?php
-/**
- * Partial: Sidebar (Barra Lateral)
- * Incluido en: home.php (y cualquier otra vista que lo necesite)
- */
-
-// Detectar la sección activa desde la URL
-$urlActual = isset($_GET['url']) ? rtrim($_GET['url'], '/') : '';
-$seccion   = explode('/', $urlActual)[0] ?? '';
+    //--------------------------------------------------------------------
+    // Partial: Sidebar (Barra Later  al)
+    // Incluido en: home.php (y cualquier otra vista que lo necesite)
+    //--------------------------------------------------------------------
+    // Detectar la sección activa desde la URL
+    $urlActual = isset($_GET['url']) ? rtrim($_GET['url'], '/') : '';
+    $seccion   = explode('/', $urlActual)[0] ?? '';
 ?>
 <!--inicio::Barra Lateral-->
 <aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
@@ -47,7 +46,6 @@ $seccion   = explode('/', $urlActual)[0] ?? '';
             <p>Dashboard</p>
           </a>
         </li>
-
         <?php if (isset($_SESSION['user_rol_id']) && $_SESSION['user_rol_id'] == 1): ?>
         <!--Módulo de Usuarios (Solo Super Admin)-->
         <li class="nav-item">

@@ -1,9 +1,9 @@
 <?php
-/**
- * Partial: Head y Librerías CSS globales
- * Utiliza la variable $pageName para cargar de forma condicional estilos específicos
- */
-$pageName = $pageName ?? 'home';
+    //--------------------------------------------------------------------
+    // Partial: Head y Librerías CSS globales
+    // Utiliza la variable $pageName para cargar de forma condicional estilos específicos
+    //--------------------------------------------------------------------
+    $pageName = $pageName ?? 'home';
 ?>
 <!--inicio::Encabezado global-->
 <meta charset="UTF-8">

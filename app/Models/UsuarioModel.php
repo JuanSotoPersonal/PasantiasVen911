@@ -16,9 +16,9 @@ class UsuarioModel {
         $this->conn = $database->getConnection();
     }
 
-    /**
-     * Retorna todos los usuarios con su nombre de rol.
-     */
+    //--------------------------------------------------------------------
+    // Retorna todos los usuarios con su nombre de rol.
+    //--------------------------------------------------------------------
     public function getAll(): array {
         $query = "SELECT u.id, u.usuario, u.nombre_completo, u.cedula,
                          u.codigo_operador, u.estado, u.rol_id, r.nombre AS nombre_rol
@@ -31,9 +31,26 @@ class UsuarioModel {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    /**
-     * Retorna un usuario por ID.
-     */
+    //--------------------------------------------------------------------
+    // Retorna usuarios filtrados por rol_id (para DataTables por rol)
+    //--------------------------------------------------------------------
+    public function getByRol(int $rolId): array {
+        $query = "SELECT u.id, u.usuario, u.nombre_completo, u.cedula,
+                         u.codigo_operador, u.estado, u.rol_id, r.nombre AS nombre_rol
+                  FROM {$this->table_name} u
+                  INNER JOIN roles r ON u.rol_id = r.id
+                  WHERE u.rol_id = :rol_id
+                  ORDER BY u.id ASC";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':rol_id', $rolId, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    //--------------------------------------------------------------------
+    // Retorna un usuario por ID.
+    //--------------------------------------------------------------------
     public function getById(int $id): array|false {
         $query = "SELECT u.*, r.nombre AS nombre_rol
                   FROM {$this->table_name} u
@@ -47,9 +64,9 @@ class UsuarioModel {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    /**
-     * Verifica si un nombre de usuario ya existe (excluyendo un ID específico).
-     */
+    //--------------------------------------------------------------------
+    // Verifica si un nombre de usuario ya existe (excluyendo un ID específico).
+    //--------------------------------------------------------------------
     public function usuarioExists(string $usuario, int $excludeId = 0): bool {
         $query = "SELECT COUNT(*) FROM {$this->table_name}
                   WHERE usuario = :usuario AND id != :exclude_id";
@@ -61,9 +78,9 @@ class UsuarioModel {
         return (int)$stmt->fetchColumn() > 0;
     }
 
-    /**
-     * Verifica si un código de operador ya existe (excluyendo un ID específico).
-     */
+    //--------------------------------------------------------------------
+    // Verifica si un código de operador ya existe (excluyendo un ID específico).
+    //--------------------------------------------------------------------
     public function codigoExists(string $codigo, int $excludeId = 0): bool {
         $query = "SELECT COUNT(*) FROM {$this->table_name}
                   WHERE codigo_operador = :codigo AND id != :exclude_id";
@@ -75,9 +92,23 @@ class UsuarioModel {
         return (int)$stmt->fetchColumn() > 0;
     }
 
-    /**
-     * Crea un nuevo usuario. La contraseña ya debe venir hasheada.
-     */
+    //--------------------------------------------------------------------
+    // Verifica si una cédula ya existe (excluyendo un ID específico).
+    //--------------------------------------------------------------------
+    public function cedulaExists(string $cedula, int $excludeId = 0): bool {
+        $query = "SELECT COUNT(*) FROM {$this->table_name}
+                  WHERE cedula = :cedula AND id != :exclude_id";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':cedula',     $cedula,    PDO::PARAM_STR);
+        $stmt->bindParam(':exclude_id', $excludeId, PDO::PARAM_INT);
+        $stmt->execute();
+        return (int)$stmt->fetchColumn() > 0;
+    }
+
+    //--------------------------------------------------------------------
+    // Crea un nuevo usuario. La contraseña ya debe venir hasheada. 
+    //--------------------------------------------------------------------
     public function create(array $data): bool {
         $query = "INSERT INTO {$this->table_name}
                     (usuario, password, nombre_completo, cedula, rol_id, codigo_operador, estado)
@@ -85,19 +116,19 @@ class UsuarioModel {
                     (:usuario, :password, :nombre_completo, :cedula, :rol_id, :codigo_operador, :estado)";
 
         $stmt = $this->conn->prepare($query);
-        $stmt->bindValue(':usuario',         $data['usuario'],                                           PDO::PARAM_STR);
-        $stmt->bindValue(':password',        $data['password'],                                          PDO::PARAM_STR);
-        $stmt->bindValue(':nombre_completo', $data['nombre_completo'],                                   PDO::PARAM_STR);
-        $stmt->bindValue(':cedula',          $data['cedula'],          $data['cedula']         ? PDO::PARAM_STR : PDO::PARAM_NULL);
-        $stmt->bindValue(':rol_id',          $data['rol_id'],                                            PDO::PARAM_INT);
+        $stmt->bindValue(':usuario',         $data['usuario'],PDO::PARAM_STR);
+        $stmt->bindValue(':password',        $data['password'],PDO::PARAM_STR);
+        $stmt->bindValue(':nombre_completo', $data['nombre_completo'],PDO::PARAM_STR);
+        $stmt->bindValue(':cedula',          $data['cedula'],$data['cedula'] ? PDO::PARAM_STR : PDO::PARAM_NULL);
+        $stmt->bindValue(':rol_id',          $data['rol_id'],PDO::PARAM_INT);
         $stmt->bindValue(':codigo_operador', $data['codigo_operador'], $data['codigo_operador'] ? PDO::PARAM_STR : PDO::PARAM_NULL);
-        $stmt->bindValue(':estado',          $data['estado'],                                            PDO::PARAM_STR);
+        $stmt->bindValue(':estado',          $data['estado'],PDO::PARAM_STR);
         return $stmt->execute();
     }
 
-    /**
-     * Actualiza nombre_completo, cedula, usuario, rol y codigo_operador.
-     */
+    //--------------------------------------------------------------------
+    // Actualiza nombre_completo, cedula, usuario, rol y codigo_operador.
+    //--------------------------------------------------------------------
     public function updateInfo(int $id, array $data): bool {
         $query = "UPDATE {$this->table_name}
                   SET nombre_completo = :nombre_completo,
@@ -108,18 +139,18 @@ class UsuarioModel {
                   WHERE id = :id";
 
         $stmt = $this->conn->prepare($query);
-        $stmt->bindValue(':nombre_completo', $data['nombre_completo'],                                   PDO::PARAM_STR);
-        $stmt->bindValue(':cedula',          $data['cedula'],          $data['cedula']         ? PDO::PARAM_STR : PDO::PARAM_NULL);
-        $stmt->bindValue(':usuario',         $data['usuario'],                                           PDO::PARAM_STR);
-        $stmt->bindValue(':rol_id',          $data['rol_id'],                                            PDO::PARAM_INT);
+        $stmt->bindValue(':nombre_completo', $data['nombre_completo'],PDO::PARAM_STR);
+        $stmt->bindValue(':cedula',          $data['cedula'],$data['cedula'] ? PDO::PARAM_STR : PDO::PARAM_NULL);
+        $stmt->bindValue(':usuario',         $data['usuario'],PDO::PARAM_STR);
+        $stmt->bindValue(':rol_id',          $data['rol_id'],PDO::PARAM_INT);
         $stmt->bindValue(':codigo_operador', $data['codigo_operador'], $data['codigo_operador'] ? PDO::PARAM_STR : PDO::PARAM_NULL);
-        $stmt->bindValue(':id',              $id,                                                        PDO::PARAM_INT);
+        $stmt->bindValue(':id',              $id,PDO::PARAM_INT);
         return $stmt->execute();
     }
 
-    /**
-     * Actualiza únicamente la contraseña (ya hasheada).
-     */
+    //--------------------------------------------------------------------
+    // Actualiza únicamente la contraseña (ya hasheada).
+    //--------------------------------------------------------------------
     public function updatePassword(int $id, string $hashedPassword): bool {
         $query = "UPDATE {$this->table_name} SET password = :password WHERE id = :id";
 
@@ -129,9 +160,9 @@ class UsuarioModel {
         return $stmt->execute();
     }
 
-    /**
-     * Alterna el estado entre activo/inactivo.
-     */
+    //--------------------------------------------------------------------
+    // Alterna el estado entre activo/inactivo.
+    //--------------------------------------------------------------------
     public function toggleEstado(int $id): array|false {
         // Primero obtenemos el estado actual
         $query = "SELECT estado FROM {$this->table_name} WHERE id = :id LIMIT 1";
@@ -153,9 +184,9 @@ class UsuarioModel {
         return ['nuevo_estado' => $nuevoEstado];
     }
 
-    /**
-     * Retorna todos los roles disponibles.
-     */
+    //--------------------------------------------------------------------
+    // Retorna todos los roles disponibles.
+    //--------------------------------------------------------------------
     public function getRoles(): array {
         $stmt = $this->conn->prepare("SELECT id, nombre FROM roles ORDER BY id ASC");
         $stmt->execute();
