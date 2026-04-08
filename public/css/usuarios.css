@@ -280,7 +280,8 @@
    CARD HEADER DEL MÓDULO
    ============================================= */
 
-.card-usuarios .card-header {
+.card-usuarios .card-header,
+.card-usuarios-inactivos .card-header {
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
@@ -288,8 +289,28 @@
 }
 
 .card-usuarios .card-header::after,
-.card-usuarios .card-header::before {
+.card-usuarios .card-header::before,
+.card-usuarios-inactivos .card-header::after,
+.card-usuarios-inactivos .card-header::before {
     display: none;
+}
+
+/* =============================================
+   CARD INACTIVOS (GRIS CON VERDE OSCURO)
+   ============================================= */
+
+.card-usuarios-inactivos .card-header {
+    background: #e2e8f0 !important;
+    border-bottom: 2px solid var(--ven-green-darker);
+}
+
+.card-usuarios-inactivos .card-header .card-title {
+    color: var(--ven-green-deepest) !important;
+    font-weight: 700 !important;
+}
+
+.card-usuarios-inactivos .card-tools .badge {
+    background-color: var(--ven-green-darker) !important;
 }
 
 /* =============================================

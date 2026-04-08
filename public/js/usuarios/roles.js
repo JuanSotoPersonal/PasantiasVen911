@@ -108,7 +108,7 @@ $(function () {
     const dt = $tabla.DataTable({
       autoWidth: false,
       ajax: {
-        url: `index.php?url=usuario/getDataByRol&rol_id=${rolId}`,
+        url: `index.php?url=usuario/getDataByRol&rol_id=${rolId}&estado=activo`,
         dataSrc: 'data',
         error: function () {
           Swal.fire('Error', `No se pudo cargar la tabla del rol ${rolNombre}.`, 'error');

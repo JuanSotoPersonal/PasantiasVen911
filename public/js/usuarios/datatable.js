@@ -9,96 +9,61 @@ $(function () {
   });
 
   // ========================
-  // 1. DATATABLE
+  // 1. Opciones comunes para DataTables
   // ========================
-  const tabla = $('#tablaUsuarios').DataTable({
-    autoWidth: false,
-    ajax: {
-      url: 'index.php?url=usuario/getData',
-      dataSrc: 'data',
-      error: function () {
-        Swal.fire('Error', 'No se pudieron cargar los datos de usuarios.', 'error');
+  const configuracionColumnas = [
+    { data: null, width: '50px', orderable: false, searchable: false, render: (d, type, row, meta) => meta.row + 1 },
+    { data: 'nombre_completo' },
+    { data: 'usuario' },
+    {
+      data: 'cedula',
+      render: (d) => d ? `V-${d}` : '<span class="text-muted fst-italic small">Sin cédula</span>',
+    },
+    { data: 'nombre_rol' },
+    {
+      data: 'codigo_operador',
+      render: (d) => d ? `<code>${d}</code>` : '<span class="text-muted fst-italic small">—</span>',
+    },
+    {
+      data: 'estado',
+      render: (d, type, row) => {
+        const isActivo   = d === 'activo';
+        const badgeClass = isActivo ? 'badge-activo' : 'badge-inactivo';
+        const icon       = isActivo ? 'bi-toggle-on' : 'bi-toggle-off';
+        if (row.rol_id === 1) {
+          return `
+          <h3>
+            <span class="badge badge-estado ${badgeClass}">
+              <i class="bi bi-shield-lock-fill me-1"></i>Activo
+            </span>
+          </h3>`;
+        }
+        return `
+          <button
+            type="button"
+            class="btn-toggle-estado"
+            data-id="${row.id}"
+            data-estado="${d}"
+            title="Clic para cambiar estado"
+          >
+            <span class="badge badge-estado ${badgeClass}">
+              <i class="bi ${icon} me-1"></i>${isActivo ? 'Activo' : 'Inactivo'}
+            </span>
+          </button>`;
       },
     },
-    columns: [
-      { data: null, width: '50px', orderable: false, searchable: false, render: (d, type, row, meta) => meta.row + 1 },
-      { data: 'nombre_completo' },
-      { data: 'usuario' },
-      {
-        data: 'cedula',
-        render: (d) => d ? `V-${d}` : '<span class="text-muted fst-italic small">Sin cédula</span>',
-      },
-      { data: 'nombre_rol' },
-      {
-        data: 'codigo_operador',
-        render: (d) => d ? `<code>${d}</code>` : '<span class="text-muted fst-italic small">—</span>',
-      },
-      {
-        data: 'estado',
-        render: (d, type, row) => {
-          const isActivo   = d === 'activo';
-          const badgeClass = isActivo ? 'badge-activo' : 'badge-inactivo';
-          const icon       = isActivo ? 'bi-toggle-on' : 'bi-toggle-off';
-          if (row.rol_id === 1) {
-            return `
-            <h3>
-              <span class="badge badge-estado ${badgeClass}">
-                <i class="bi bi-shield-lock-fill me-1"></i>Activo
-              </span>
-            </h3>`;
-          }
+    {
+      data: null,
+      orderable: false,
+      searchable: false,
+      className: 'text-center',
+      render: (d, type, row) => {
+        if (row.rol_id === 1) {
           return `
-            <button
-              type="button"
-              class="btn-toggle-estado"
-              data-id="${row.id}"
-              data-estado="${d}"
-              title="Clic para cambiar estado"
-            >
-              <span class="badge badge-estado ${badgeClass}">
-                <i class="bi ${icon} me-1"></i>${isActivo ? 'Activo' : 'Inactivo'}
-              </span>
-            </button>`;
-        },
-      },
-      {
-        data: null,
-        orderable: false,
-        searchable: false,
-        className: 'text-center',
-        render: (d, type, row) => {
-          if (row.rol_id === 1) {
-            return `
-              <span class="btn-ven-edit btn-accion me-1 d-inline-flex align-items-center justify-content-center"
-                    style="cursor: help; opacity: 0.9;" title="Administrador Protegido">
-                <i class="bi bi-shield-lock-fill"></i>
-              </span>
-              <button
-                type="button"
-                class="btn btn-ven-password btn-accion btn-password"
-                data-id="${row.id}"
-                data-nombre="${row.nombre_completo}"
-                title="Cambiar contraseña"
-              >
-                <i class="bi bi-key-fill"></i>
-              </button>
-            `;
-          }
-          return `
-            <button
-              type="button"
-              class="btn btn-ven-edit btn-accion btn-editar me-1"
-              data-id="${row.id}"
-              data-nombre="${row.nombre_completo}"
-              data-cedula="${row.cedula || ''}"
-              data-usuario="${row.usuario}"
-              data-rol="${row.rol_id}"
-              data-id-rol="${row.rol_id}"
-              data-codigo="${row.codigo_operador || ''}"
-              title="Editar usuario"
-            >
-              <i class="bi bi-pencil-fill"></i>
-            </button>
+            <span class="btn-ven-edit btn-accion me-1 d-inline-flex align-items-center justify-content-center"
+                  style="cursor: help; opacity: 0.9;" title="Administrador Protegido">
+              <i class="bi bi-shield-lock-fill"></i>
+            </span>
             <button
               type="button"
               class="btn btn-ven-password btn-accion btn-password"
@@ -109,46 +74,111 @@ $(function () {
               <i class="bi bi-key-fill"></i>
             </button>
           `;
-        },
-      },
-    ],
-    language: {
-      url: '',
-      decimal:        ',',
-      emptyTable:     'No hay usuarios registrados.',
-      info:           'Mostrando _START_ a _END_ de _TOTAL_ usuarios',
-      infoEmpty:      'Sin registros disponibles',
-      infoFiltered:   '(filtrado de _MAX_ registros totales)',
-      lengthMenu:     'Mostrar _MENU_ registros',
-      loadingRecords: 'Cargando...',
-      processing:     'Procesando...',
-      search:         'Buscar:',
-      zeroRecords:    'No se encontraron coincidencias.',
-      paginate: {
-        first:    '«',
-        last:     '»',
-        next:     '›',
-        previous: '‹',
+        }
+        return `
+          <button
+            type="button"
+            class="btn btn-ven-edit btn-accion btn-editar me-1"
+            data-id="${row.id}"
+            data-nombre="${row.nombre_completo}"
+            data-cedula="${row.cedula || ''}"
+            data-usuario="${row.usuario}"
+            data-rol="${row.rol_id}"
+            data-id-rol="${row.rol_id}"
+            data-codigo="${row.codigo_operador || ''}"
+            title="Editar usuario"
+          >
+            <i class="bi bi-pencil-fill"></i>
+          </button>
+          <button
+            type="button"
+            class="btn btn-ven-password btn-accion btn-password"
+            data-id="${row.id}"
+            data-nombre="${row.nombre_completo}"
+            title="Cambiar contraseña"
+          >
+            <i class="bi bi-key-fill"></i>
+          </button>
+        `;
       },
     },
+  ];
+
+  const configuracionLenguaje = {
+    url: '',
+    decimal:        ',',
+    emptyTable:     'No hay usuarios registrados.',
+    info:           'Mostrando _START_ a _END_ de _TOTAL_ usuarios',
+    infoEmpty:      'Sin registros disponibles',
+    infoFiltered:   '(filtrado de _MAX_ registros totales)',
+    lengthMenu:     'Mostrar _MENU_ registros',
+    loadingRecords: 'Cargando...',
+    processing:     'Procesando...',
+    search:         'Buscar:',
+    zeroRecords:    'No se encontraron coincidencias.',
+    paginate: {
+      first:    '«',
+      last:     '»',
+      next:     '›',
+      previous: '‹',
+    },
+  };
+
+  // ========================
+  // 2. INICIALIZAR DATATABLES
+  // ========================
+  const tabla = $('#tablaUsuarios').DataTable({
+    autoWidth: false,
+    ajax: {
+      url: 'index.php?url=usuario/getData&estado=activo',
+      dataSrc: 'data',
+      error: function () {
+        Swal.fire('Error', 'No se pudieron cargar los datos de usuarios.', 'error');
+      },
+    },
+    columns: configuracionColumnas,
+    language: configuracionLenguaje,
     responsive: true,
     order: [[0, 'asc']],
     pageLength: 10,
   });
 
-  // Actualizar el badge de total cuando cargan los datos
+  const tablaInactivos = $('#tablaInactivos').DataTable({
+    autoWidth: false,
+    ajax: {
+      url: 'index.php?url=usuario/getData&estado=inactivo',
+      dataSrc: 'data',
+      error: function () {
+        Swal.fire('Error', 'No se pudieron cargar los datos inactivos.', 'error');
+      },
+    },
+    columns: configuracionColumnas,
+    language: { ...configuracionLenguaje, emptyTable: 'No hay usuarios inactivos.' },
+    responsive: true,
+    order: [[0, 'asc']],
+    pageLength: 10,
+  });
+
+  // Actualizar el badge del total cuando cargan los datos
   tabla.on('xhr.dt', function (e, settings, json) {
     const total = (json && json.data) ? json.data.length : 0;
     $('#badge-count-total').text(`${total} usuario${total !== 1 ? 's' : ''}`);
   });
 
+  // Actualizar badge de inactivos
+  tablaInactivos.on('xhr.dt', function (e, settings, json) {
+    const total = (json && json.data) ? json.data.length : 0;
+    $('#badge-count-inactivos').text(`${total} usuario${total !== 1 ? 's' : ''}`);
+  });
+
   // Escuchar evento global de recarga
   $(document).on('usuarios:reload', function () {
     tabla.ajax.reload(null, false);
+    tablaInactivos.ajax.reload(null, false);
   });
 
   // ========================
-  // 2. HELPERS
+  // 3. HELPERS
   // ========================
   function recargarTabla() { 
     $(document).trigger('usuarios:reload');
@@ -174,7 +204,7 @@ $(function () {
   });
 
   // ========================
-  // 3. CREAR USUARIO
+  // 4. CREAR USUARIO
   // ========================
   $('#formCrearUsuario').on('submit', function (e) {
     e.preventDefault();
@@ -212,7 +242,7 @@ $(function () {
   });
 
   // ========================
-  // 4. EDITAR USUARIO
+  // 5. EDITAR USUARIO
   // ========================
   $(document).on('click', '.btn-editar', function () {
     const $btn = $(this);
@@ -255,7 +285,7 @@ $(function () {
   });
 
   // ========================
-  // 5. CAMBIAR CONTRASEÑA
+  // 6. CAMBIAR CONTRASEÑA
   // ========================
   $(document).on('click', '.btn-password', function () {
     const $btn = $(this);
@@ -297,7 +327,7 @@ $(function () {
   });
 
   // ========================
-  // 6. TOGGLE ESTADO
+  // 7. TOGGLE ESTADO
   // ========================
   $(document).on('click', '.btn-toggle-estado', function () {
     const id     = $(this).data('id');

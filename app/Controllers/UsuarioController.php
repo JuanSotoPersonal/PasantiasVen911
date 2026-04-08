@@ -35,7 +35,8 @@ class UsuarioController {
 
     public function getData(): void {
         header('Content-Type: application/json');
-        $usuarios = $this->model->getAll();
+        $estado = $_GET['estado'] ?? 'activo';
+        $usuarios = $this->model->getAll($estado);
         echo json_encode(['data' => $usuarios]);
     }
 
@@ -46,11 +47,12 @@ class UsuarioController {
     public function getDataByRol(): void {
         header('Content-Type: application/json');
         $rolId = (int)($_GET['rol_id'] ?? 0);
+        $estado = $_GET['estado'] ?? 'activo';
         if (!$rolId || $rolId === 1) {
             echo json_encode(['data' => []]);
             return;
         }
-        $usuarios = $this->model->getByRol($rolId);
+        $usuarios = $this->model->getByRol($rolId, $estado);
         echo json_encode(['data' => $usuarios]);
     }
 

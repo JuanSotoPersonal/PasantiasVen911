@@ -17,33 +17,36 @@ class UsuarioModel {
     }
 
     //--------------------------------------------------------------------
-    // Retorna todos los usuarios con su nombre de rol.
+    // Retorna todos los usuarios con su nombre de rol, filtrados por estado.
     //--------------------------------------------------------------------
-    public function getAll(): array {
+    public function getAll(string $estado = 'activo'): array {
         $query = "SELECT u.id, u.usuario, u.nombre_completo, u.cedula,
                          u.codigo_operador, u.estado, u.rol_id, r.nombre AS nombre_rol
                   FROM {$this->table_name} u
                   INNER JOIN roles r ON u.rol_id = r.id
+                  WHERE u.estado = :estado
                   ORDER BY u.id ASC";
 
         $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':estado', $estado, PDO::PARAM_STR);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     //--------------------------------------------------------------------
-    // Retorna usuarios filtrados por rol_id (para DataTables por rol)
+    // Retorna usuarios filtrados por rol_id y estado (para DataTables por rol)
     //--------------------------------------------------------------------
-    public function getByRol(int $rolId): array {
+    public function getByRol(int $rolId, string $estado = 'activo'): array {
         $query = "SELECT u.id, u.usuario, u.nombre_completo, u.cedula,
                          u.codigo_operador, u.estado, u.rol_id, r.nombre AS nombre_rol
                   FROM {$this->table_name} u
                   INNER JOIN roles r ON u.rol_id = r.id
-                  WHERE u.rol_id = :rol_id
+                  WHERE u.rol_id = :rol_id AND u.estado = :estado
                   ORDER BY u.id ASC";
 
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':rol_id', $rolId, PDO::PARAM_INT);
+        $stmt->bindParam(':estado', $estado, PDO::PARAM_STR);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
