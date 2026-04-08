@@ -21,7 +21,7 @@
       />
       <!--fin::Imagen de Marca-->
       <!--inicio::Texto de Marca-->
-      <span class="brand-text fw-light">Ven 911</span>
+      <span class="brand-text fw-light">Ven 911 Carabobo</span>
       <!--fin::Texto de Marca-->
     </a>
     <!--fin::Enlace de Marca-->

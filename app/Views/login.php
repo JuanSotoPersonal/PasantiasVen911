@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>VEN 911 | Iniciar Sesión</title>
+  <title> VEN 911 Carabobo | Iniciar Sesión</title>
   <?php 
   $pageName = 'login';
   require __DIR__ . '/partials/head.php'; 
@@ -20,7 +20,7 @@
       <img src="public/assets/img/ven911_logo.png" alt="Logo VEN 911" class="logo-img">
     </div>
     
-    <h1 class="login-title">VEN 911</h1>
+    <h1 class="login-title">VEN 911 Carabobo</h1>
     <p class="login-subtitle">Sistema Integrado de Gestión de Emergencias</p>
     
     <form id="loginForm">

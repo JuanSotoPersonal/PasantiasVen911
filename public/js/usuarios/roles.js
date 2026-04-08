@@ -21,82 +21,100 @@ $(function () {
   // Inicializar un DataTable por cada tabla con data-rol-id
   $('table[data-rol-id]').each(function () {
     const $tabla  = $(this);
-    const rolId   = $tabla.data('rol-id');
-    const tablaId = $tabla.attr('id');
+    const rolId     = $tabla.data('rol-id');
+    const rolNombre = $tabla.data('rol-nombre');
+    const tablaId   = $tabla.attr('id');
+
+    // Definición base de columnas
+    let columnas = [
+      {
+        data: null,
+        width: '50px',
+        orderable: false,
+        searchable: false,
+        render: (d, type, row, meta) => meta.row + 1,
+      },
+      { data: 'nombre_completo' },
+      { data: 'usuario' },
+      {
+        data: 'cedula',
+        render: (d) => d ? `V-${d}` : '<span class="text-muted fst-italic small">Sin cédula</span>',
+      },
+      {
+        data: 'codigo_operador',
+        render: (d) => d ? `<code>${d}</code>` : '<span class="text-muted fst-italic small">—</span>',
+      },
+      {
+        data: 'estado',
+        render: (d, type, row) => {
+          const activo     = d === 'activo';
+          const badgeClass = activo ? 'badge-activo' : 'badge-inactivo';
+          const icon       = activo ? 'bi-toggle-on' : 'bi-toggle-off';
+          
+          return `
+            <button
+              type="button"
+              class="btn-toggle-estado"
+              data-id="${row.id}"
+              data-estado="${d}"
+              title="Clic para cambiar estado"
+            >
+              <span class="badge badge-estado ${badgeClass}">
+                <i class="bi ${icon} me-1"></i>${activo ? 'Activo' : 'Inactivo'}
+              </span>
+            </button>`;
+        },
+      },
+      {
+        data: null,
+        orderable: false,
+        searchable: false,
+        className: 'text-center',
+        render: (d, type, row) => {
+          return `
+            <button
+              type="button"
+              class="btn btn-ven-edit btn-accion btn-editar me-1"
+              data-id="${row.id}"
+              data-nombre="${row.nombre_completo}"
+              data-cedula="${row.cedula || ''}"
+              data-usuario="${row.usuario}"
+              data-rol="${row.rol_id}"
+              data-id-rol="${row.rol_id}"
+              data-codigo="${row.codigo_operador || ''}"
+              title="Editar usuario"
+            >
+              <i class="bi bi-pencil-fill"></i>
+            </button>
+            <button
+              type="button"
+              class="btn btn-ven-password btn-accion btn-password"
+              data-id="${row.id}"
+              data-nombre="${row.nombre_completo}"
+              title="Cambiar contraseña"
+            >
+              <i class="bi bi-key-fill"></i>
+            </button>
+          `;
+        },
+      },
+    ];
+
+    // Si es Despachador o Jefe/Jefatura, removemos la columna de Código Operador (índice 4)
+    if (rolNombre === 'Despachador' || rolNombre === 'Jefe' || rolNombre === 'Jefatura') {
+      columnas.splice(4, 1);
+    }
 
     const dt = $tabla.DataTable({
+      autoWidth: false,
       ajax: {
         url: `index.php?url=usuario/getDataByRol&rol_id=${rolId}`,
         dataSrc: 'data',
         error: function () {
-          Swal.fire('Error', `No se pudo cargar la tabla del rol ${rolId}.`, 'error');
+          Swal.fire('Error', `No se pudo cargar la tabla del rol ${rolNombre}.`, 'error');
         },
       },
-      columns: [
-        {
-          data: null,
-          width: '50px',
-          orderable: false,
-          searchable: false,
-          render: (d, type, row, meta) => meta.row + 1,
-        },
-        { data: 'nombre_completo' },
-        { data: 'usuario' },
-        {
-          data: 'cedula',
-          render: (d) => d ? `V-${d}` : '<span class="text-muted fst-italic small">Sin cédula</span>',
-        },
-        {
-          data: 'codigo_operador',
-          render: (d) => d ? `<code>${d}</code>` : '<span class="text-muted fst-italic small">—</span>',
-        },
-        {
-          data: 'estado',
-          render: (d) => {
-            const activo     = d === 'activo';
-            const badgeClass = activo ? 'badge-activo' : 'badge-inactivo';
-            const icon       = activo ? 'bi-toggle-on' : 'bi-toggle-off';
-            return `<span class="badge badge-estado ${badgeClass}">
-                      <i class="bi ${icon} me-1"></i>${activo ? 'Activo' : 'Inactivo'}
-                    </span>`;
-          },
-        },
-        {
-          data: null,
-          orderable: false,
-          searchable: false,
-          className: 'text-center',
-          render: (d, type, row) => {
-            // Nota: En estas tablas no habrá Super Admins (ID 1) por filtro de backend,
-            // pero mantenemos la lógica por consistencia.
-            return `
-              <button
-                type="button"
-                class="btn btn-ven-edit btn-accion btn-editar me-1"
-                data-id="${row.id}"
-                data-nombre="${row.nombre_completo}"
-                data-cedula="${row.cedula || ''}"
-                data-usuario="${row.usuario}"
-                data-rol="${row.rol_id}"
-                data-id-rol="${row.rol_id}"
-                data-codigo="${row.codigo_operador || ''}"
-                title="Editar usuario"
-              >
-                <i class="bi bi-pencil-fill"></i>
-              </button>
-              <button
-                type="button"
-                class="btn btn-ven-password btn-accion btn-password"
-                data-id="${row.id}"
-                data-nombre="${row.nombre_completo}"
-                title="Cambiar contraseña"
-              >
-                <i class="bi bi-key-fill"></i>
-              </button>
-            `;
-          },
-        },
-      ],
+      columns: columnas,
       language: lang,
       responsive: true,
       order: [[0, 'asc']],

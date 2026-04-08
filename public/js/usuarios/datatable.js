@@ -1,11 +1,18 @@
 // usuarios/datatable.js
 // Módulo Usuarios: DataTable, CRUD (crear, editar, contraseña, toggle estado)
 $(function () {
+  
+  // Configuración global de SweetAlert para evitar que modifique el padding y altura del body y achique la vista
+  window.Swal = Swal.mixin({
+    heightAuto: false,
+    scrollbarPadding: false
+  });
 
   // ========================
   // 1. DATATABLE
   // ========================
   const tabla = $('#tablaUsuarios').DataTable({
+    autoWidth: false,
     ajax: {
       url: 'index.php?url=usuario/getData',
       dataSrc: 'data',

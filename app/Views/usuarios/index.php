@@ -68,8 +68,8 @@
                     <h3 class="card-title mb-0">
                       <i class="bi bi-people-fill me-2"></i>Listado de Usuarios
                     </h3>
-                    <span class="badge bg-success fs-6 ms-2" id="badge-count-total">— usuarios</span>
-                    <div class="card-tools ms-auto">
+                    <div class="card-tools ms-auto d-flex align-items-center">
+                      <span class="badge bg-success fs-6 me-3" id="badge-count-total">— usuarios</span>
                       <button
                         type="button"
                         class="btn btn-ven-primary btn-sm"
@@ -116,6 +116,7 @@
                         'Despachador'   => 'bi-broadcast',
                         'Operador'      => 'bi-headset',
                         'Jefe'          => 'bi-star-fill',
+                        'Jefatura'      => 'bi-star-fill',
                     ];
                     foreach ($roles as $rol):
                         if ($rol['id'] == 1) continue;
@@ -128,9 +129,11 @@
                   <div class="card card-usuarios">
                     <div class="card-header d-flex justify-content-between align-items-center">
                       <h3 class="card-title mb-0">
-                        <i class="bi <?= $icono ?> me-2"></i><?= $rolNombre ?>s Registrados
+                        <i class="bi <?php echo $icono; ?> me-2"></i><?php echo $rolNombre; ?>s Registrados
                       </h3>
-                      <span class="badge bg-success fs-6" id="badge-count-<?= $rolId ?>">— usuarios</span>
+                      <div class="card-tools d-flex align-items-center gap-2">
+                         <span class="badge bg-success fs-6" id="badge-count-<?php echo $rolId; ?>">0 usuarios</span>
+                      </div>
                     </div>
                     <div class="card-body">
                       <div class="table-responsive">
@@ -139,17 +142,20 @@
                           class="table table-bordered table-striped table-hover align-middle"
                           style="width:100%"
                           data-rol-id="<?= $rolId ?>"
+                          data-rol-nombre="<?= $rolNombre ?>"
                         >
                           <thead class="table-dark">
-                            <tr>
-                              <th>#</th>
-                              <th>Nombre Completo</th>
-                              <th>Usuario (Cédula)</th>
-                              <th>Cédula</th>
-                              <th>Cód. Operador</th>
-                              <th>Estado</th>
-                              <th class="text-center">Acciones</th>
-                            </tr>
+                             <tr>
+                               <th>#</th>
+                               <th>Nombre Completo</th>
+                               <th>Usuario (Cédula)</th>
+                               <th>Cédula</th>
+                               <?php if ($rolNombre !== 'Despachador' && $rolNombre !== 'Jefe' && $rolNombre !== 'Jefatura'): ?>
+                               <th>Cód. Operador</th>
+                               <?php endif; ?>
+                               <th>Estado</th>
+                               <th class="text-center">Acciones</th>
+                             </tr>
                           </thead>
                           <tbody><!-- DataTables AJAX --></tbody>
                         </table>
