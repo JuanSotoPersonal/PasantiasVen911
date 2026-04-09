@@ -54,6 +54,13 @@
             <p>Usuarios</p>
           </a>
         </li>
+        <!--Historial de Logs (Solo Super Admin)-->
+        <li class="nav-item">
+          <a href="index.php?url=log" class="nav-link <?= $seccion === 'log' ? 'active' : '' ?>">
+            <i class="nav-icon bi bi-clock-history"></i>
+            <p>Historial</p>
+          </a>
+        </li>
         <?php endif; ?>
 
       </ul>

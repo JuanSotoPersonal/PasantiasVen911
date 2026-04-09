@@ -317,27 +317,31 @@
    DATATABLE — PAGINACIÓN VERDE
    ============================================= */
 
-.card-usuarios .page-item.active .page-link {
+.card-usuarios .page-item.active .page-link,
+.card-usuarios-inactivos .page-item.active .page-link {
     background-color: var(--ven-green-primary) !important;
     border-color: var(--ven-green-primary) !important;
     color: #fff !important;
     box-shadow: 0 2px 4px var(--ven-green-shadow);
 }
 
-.card-usuarios .page-link {
+.card-usuarios .page-link,
+.card-usuarios-inactivos .page-link {
     color: var(--ven-green-darker);
     border-radius: 6px;
     margin: 0 2px;
     transition: all 0.2s;
 }
 
-.card-usuarios .page-link:hover {
+.card-usuarios .page-link:hover,
+.card-usuarios-inactivos .page-link:hover {
     background-color: var(--ven-green-light);
     border-color: var(--ven-green-border);
     color: var(--ven-green-primary);
 }
 
-.card-usuarios .page-link:focus {
+.card-usuarios .page-link:focus,
+.card-usuarios-inactivos .page-link:focus {
     box-shadow: 0 0 0 0.2rem var(--ven-green-glow);
 }
 

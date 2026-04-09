@@ -1,7 +1,9 @@
 <?php
 
 require_once 'app/Models/Usuario.php';
+require_once 'app/Models/LogModel.php';
 use App\Models\Usuario;
+use App\Models\LogModel;
 
 class AuthController {
 
@@ -64,10 +66,14 @@ class AuthController {
             if (password_verify($password, $user['password'])) {
                 
                 // Guardar datos en sesión
-                $_SESSION['user_id'] = $user['id'];
-                $_SESSION['user_name'] = $user['nombre_completo'];
-                $_SESSION['user_rol'] = $user['nombre_rol'];
+                $_SESSION['user_id']     = $user['id'];
+                $_SESSION['user_name']   = $user['nombre_completo'];
+                $_SESSION['user_rol']    = $user['nombre_rol'];
                 $_SESSION['user_rol_id'] = $user['rol_id'];
+
+                // Registrar log de sesión iniciada
+                $log = new LogModel();
+                $log->registrar((int)$user['id'], 'LOGIN', 'usuarios', (int)$user['id'], null, null, "Usuario '{$usuario}' inició sesión.");
 
                 echo json_encode(['success' => true, 'message' => 'Autenticación exitosa.']);
             } else {
@@ -83,6 +89,11 @@ class AuthController {
     //--------------------------------------------------------------------
 
     public function logout() {
+        // Registrar log antes de destruir la sesión
+        if (isset($_SESSION['user_id'])) {
+            $log = new LogModel();
+            $log->registrar((int)$_SESSION['user_id'], 'LOGOUT', 'usuarios', (int)$_SESSION['user_id'], null, null, "Usuario '{$_SESSION['user_name']}' cerró sesión.");
+        }
         session_destroy();
         header('Location: index.php?url=auth');
         exit;

@@ -100,7 +100,7 @@ $(function () {
       },
     ];
 
-    // Si es Despachador o Jefe/Jefatura, removemos la columna de Código Operador (índice 4)
+    // Si es Despachador o Jefe/Jefatura, removemos la columna de Código Operador
     if (rolNombre === 'Despachador' || rolNombre === 'Jefe' || rolNombre === 'Jefatura') {
       columnas.splice(4, 1);
     }

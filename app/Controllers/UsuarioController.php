@@ -1,7 +1,9 @@
 <?php
 
 require_once 'app/Models/UsuarioModel.php';
+require_once 'app/Models/LogModel.php';
 use App\Models\UsuarioModel;
+use App\Models\LogModel;
 
 class UsuarioController {
 
@@ -11,6 +13,8 @@ class UsuarioController {
     // Constructor
     //--------------------------------------------------------------------
 
+    private LogModel $log;
+
     public function __construct() {
         // Validacion que solo el Super Admin Pueda Acceder
         if (!isset($_SESSION['user_id']) || $_SESSION['user_rol_id'] != 1) {
@@ -18,6 +22,7 @@ class UsuarioController {
             exit;
         }
         $this->model = new UsuarioModel();
+        $this->log   = new LogModel();
     }
 
     //--------------------------------------------------------------------
@@ -113,6 +118,11 @@ class UsuarioController {
             echo json_encode(['success' => false, 'message' => 'La contraseña debe tener al menos 6 caracteres.']);
             return;
         }
+        //Validacion de complejidad: al menos 1 mayúscula y 1 número
+        if (!preg_match('/[A-Z]/', $password) || !preg_match('/[0-9]/', $password)) {
+            echo json_encode(['success' => false, 'message' => 'La contraseña debe contener al menos una mayúscula y un número.']);
+            return;
+        }
         //Validacion de usuario existente
         if ($this->model->usuarioExists($usuario)) {
             echo json_encode(['success' => false, 'message' => "El usuario '{$usuario}' ya está registrado."]);
@@ -140,6 +150,13 @@ class UsuarioController {
         ];
         
         if ($this->model->create($data)) {
+            $adminId = (int)$_SESSION['user_id'];
+            $this->log->registrar($adminId, 'INSERT', 'usuarios', null, null, [
+                'usuario' => $usuario, 
+                'nombre_completo' => $nombreCompleto, 
+                'cedula' => $cedula, 
+                'rol_id' => $rolId
+            ], "Usuario '{$usuario}' creado.");
             echo json_encode(['success' => true, 'message' => 'Usuario creado correctamente.']);
         } else {
             echo json_encode(['success' => false, 'message' => 'Error al crear el usuario.']);
@@ -202,7 +219,25 @@ class UsuarioController {
             'codigo_operador' => $codigoOperador,
         ];
 
+        $usuarioAnterior = $this->model->getById($id);
+
         if ($this->model->updateInfo($id, $data)) {
+            $adminId = (int)$_SESSION['user_id'];
+            $this->log->registrar($adminId, 'UPDATE', 'usuarios', $id, 
+                $usuarioAnterior ? [
+                    'usuario'         => $usuarioAnterior['usuario'],
+                    'nombre_completo' => $usuarioAnterior['nombre_completo'],
+                    'cedula'          => $usuarioAnterior['cedula'],
+                    'rol_id'          => $usuarioAnterior['rol_id'],
+                ] : null,
+                [
+                    'usuario'         => $usuario,
+                    'nombre_completo' => $nombreCompleto,
+                    'cedula'          => $cedula,
+                    'rol_id'          => $rolId,
+                ],
+                "Usuario ID {$id} editado."
+            );
             echo json_encode(['success' => true, 'message' => 'Usuario actualizado correctamente.']);
         } else {
             echo json_encode(['success' => false, 'message' => 'Error al actualizar el usuario.']);
@@ -233,15 +268,33 @@ class UsuarioController {
             echo json_encode(['success' => false, 'message' => 'La contraseña debe tener al menos 6 caracteres.']);
             return;
         }
+        //Validacion de complejidad: al menos 1 mayúscula y 1 número
+        if (!preg_match('/[A-Z]/', $newPassword) || !preg_match('/[0-9]/', $newPassword)) {
+            echo json_encode(['success' => false, 'message' => 'La contraseña debe contener al menos una mayúscula y un número.']);
+            return;
+        }
         //validacion de que las contraseñas coincidan
         if ($newPassword !== $confirmPass) {
             echo json_encode(['success' => false, 'message' => 'Las contraseñas no coinciden.']);
             return;
         }
-        //encriptacion de contraseña
+        // Obtener datos antes de cambiar la contraseña
+        $usuarioAnterior = $this->model->getById($id);
+
+        // Encriptar la nueva contraseña
         $hashed = password_hash($newPassword, PASSWORD_DEFAULT);
+
         //actualizacion de contraseña
         if ($this->model->updatePassword($id, $hashed)) {
+            $adminId = (int)$_SESSION['user_id'];
+            $this->log->registrar($adminId, 'UPDATE', 'usuarios', $id, 
+                $usuarioAnterior ? [
+                    'usuario'         => $usuarioAnterior['usuario'],
+                    'nombre_completo' => $usuarioAnterior['nombre_completo']
+                ] : null,
+                null, 
+                "Contraseña del usuario ID {$id} actualizada."
+            );
             echo json_encode(['success' => true, 'message' => 'Contraseña actualizada correctamente.']);
         } else {
             echo json_encode(['success' => false, 'message' => 'Error al actualizar la contraseña.']);
@@ -273,13 +326,24 @@ class UsuarioController {
             return;
         }
 
+        // Obtener estado previo antes de cambiarlo
+        $usuarioAnterior = $this->model->getById($id);
+        $estadoAnterior = $usuarioAnterior ? $usuarioAnterior['estado'] : null;
+
         $resultado = $this->model->toggleEstado($id);
         //validacion de que el estado se haya actualizado correctamente
         if ($resultado !== false) {
+            $adminId     = (int)$_SESSION['user_id'];
+            $nuevoEstado = $resultado['nuevo_estado'];
+            $this->log->registrar($adminId, 'CAMBIO_ESTADO', 'usuarios', $id, 
+                ['estado' => $estadoAnterior], 
+                ['estado' => $nuevoEstado], 
+                "Usuario ID {$id} cambiado a '{$nuevoEstado}'."
+            );
             echo json_encode([
                 'success'       => true,
                 'message'       => 'Estado actualizado correctamente.',
-                'nuevo_estado'  => $resultado['nuevo_estado'],
+                'nuevo_estado'  => $nuevoEstado,
             ]);
         } else {
             echo json_encode(['success' => false, 'message' => 'Usuario no encontrado.']);

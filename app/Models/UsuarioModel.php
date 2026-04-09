@@ -57,7 +57,7 @@ class UsuarioModel {
     public function getById(int $id): array|false {
         $query = "SELECT u.*, r.nombre AS nombre_rol
                   FROM {$this->table_name} u
-                  INNER JOIN roles r ON u.rol_id = r.id
+                  LEFT JOIN roles r ON u.rol_id = r.id
                   WHERE u.id = :id
                   LIMIT 1";
 

@@ -34,4 +34,4 @@ Falla con Elegancia: Un error no debe detener todo el sistema. Implementa bloque
 
 Integridad Referencial: Delega la seguridad de los datos a la base de datos siempre que sea posible mediante restricciones y tipos de datos estrictos, liberando al código de esa carga.
 
-5. cada que se cree una datatable se cree un js en public/js/tablas para no saturar el codigo de vista
+5. cada que se cree una datatable se cree un js en public/js/tablas para no saturar el codigo de vista y usar siempre el mismo estilo de tabla en todo los modulos el estilo sea el de la tabla de usuarios y en lo modales usar el mismoe estilo tambien y botones
