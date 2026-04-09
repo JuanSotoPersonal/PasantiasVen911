@@ -73,6 +73,15 @@ $(function () {
             >
               <i class="bi bi-key-fill"></i>
             </button>
+            <button
+              type="button"
+              class="btn btn-ven-primary btn-accion btn-config-seguridad"
+              data-id="${row.id}"
+              data-nombre="${row.nombre_completo}"
+              title="Configurar Preguntas de Seguridad"
+            >
+              <i class="bi bi-shield-check"></i>
+            </button>
           `;
         }
         return `
@@ -206,6 +215,16 @@ $(function () {
   // ========================
   // 4. CREAR USUARIO
   // ========================
+  
+  // Mostrar/ocultar campos de seguridad según el rol
+  $('#crear-rol').on('change', function() {
+      const rolId = parseInt($(this).val());
+      if (rolId === 1) {
+          $('#seccion-seguridad-crear').slideDown();
+      } else {
+          $('#seccion-seguridad-crear').slideUp();
+      }
+  });
   $('#formCrearUsuario').on('submit', function (e) {
     e.preventDefault();
     const $btn         = $('#btn-guardar-crear');
@@ -287,13 +306,32 @@ $(function () {
   // ========================
   // 6. CAMBIAR CONTRASEÑA
   // ========================
-  $(document).on('click', '.btn-password', function () {
+  $(document).on('click', '.btn-password', async function () {
     const $btn = $(this);
-    $('#pwd-id').val($btn.data('id'));
+    const id = $btn.data('id');
+    
+    $('#pwd-id').val(id);
     $('#pwd-nombre-usuario').text($btn.data('nombre'));
     $('#pwd-nueva').val('').attr('type', 'password');
     $('#pwd-confirmar').val('').attr('type', 'password');
     $('#formCambiarPassword').find('.btn-eye i').removeClass('bi-eye-slash').addClass('bi-eye');
+    
+    // Resetear sección de seguridad
+    $('#seccion-validacion-seguridad').hide();
+    $('#ans-1, #ans-2').val('').prop('required', false);
+
+    // Si es SuperAdmin (detectamos por el icono de escudo en la fila o simplemente intentamos cargar)
+    // En este caso, mejor preguntamos al servidor si tiene preguntas
+    try {
+        const res = await $.getJSON(`index.php?url=usuario/getSecurityQuestions&id=${id}`);
+        if (res.success) {
+            $('#label-pregunta-1').text(res.questions.p1_texto);
+            $('#label-pregunta-2').text(res.questions.p2_texto);
+            $('#ans-1, #ans-2').prop('required', true);
+            $('#seccion-validacion-seguridad').slideDown();
+        }
+    } catch (e) { console.log("Usuario sin preguntas de seguridad o error."); }
+
     $('#modalCambiarPassword').modal('show');
   });
 
@@ -364,6 +402,49 @@ $(function () {
         Swal.fire({ icon: 'error', title: 'Error', text: 'Error de comunicación con el servidor.' });
       });
     });
+  });
+
+  // ========================
+  // 8. CONFIGURAR SEGURIDAD (SUPERADMIN)
+  // ========================
+  $(document).on('click', '.btn-config-seguridad', function() {
+      const $btn = $(this);
+      $('#seg-id').val($btn.data('id'));
+      $('#seg-factory-code').val('');
+      $('#formConfigSeguridad')[0].reset();
+      // Re-establecer el ID oculto porque reset lo borra
+      $('#seg-id').val($btn.data('id'));
+      $('#modalConfigSeguridad').modal('show');
+  });
+
+  $('#formConfigSeguridad').on('submit', function(e) {
+      e.preventDefault();
+      const $btn = $(this).find('[type="submit"]');
+      const $form = $(this);
+      const originalHtml = $btn.html();
+
+      bloquearBtn($btn, 'Actualizando...');
+
+      $.ajax({
+          url: 'index.php?url=usuario/updateSecurityQuestions',
+          method: 'POST',
+          data: $form.serialize(),
+          dataType: 'json'
+      })
+      .done(function(res) {
+          if (res.success) {
+              Swal.fire({ icon: 'success', title: '¡Actualizado!', text: res.message, timer: 2000, showConfirmButton: false });
+              $('#modalConfigSeguridad').modal('hide');
+          } else {
+              Swal.fire({ icon: 'warning', title: 'Atención', text: res.message });
+          }
+      })
+      .fail(function() {
+          Swal.fire({ icon: 'error', title: 'Error', text: 'Error de comunicación.' });
+      })
+      .always(function() {
+          desbloquearBtn($btn, originalHtml);
+      });
   });
 
 }); // fin $(function)

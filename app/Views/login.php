@@ -44,6 +44,30 @@
         Ingresar al Sistema
       </button>
     </form>
+
+    <?php if (isset($canRegister) && $canRegister): ?>
+    <div class="mt-4 text-center">
+      <hr style="border-color: rgba(0,0,0,0.1)">
+      <p class="text-muted small mb-2 fw-bold">Primer inicio detectado</p>
+      <a href="index.php?url=setup" class="btn btn-outline-success btn-sm w-100 py-2 border-2 fw-bold btn-setup-activation">
+         <i class="bi bi-shield-lock-fill me-2"></i>Registrar y Activar Sistema
+      </a>
+      <style>
+        .btn-setup-activation {
+            color: #16a34a;
+            border-color: #16a34a;
+            transition: all 0.3s ease;
+        }
+        .btn-setup-activation:hover {
+            background-color: #16a34a;
+            color: #ffffff !important;
+            border-color: #16a34a;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2);
+        }
+      </style>
+    </div>
+    <?php endif; ?>
     
     <div class="system-notice">
       Acceso restringido. Uso exclusivo para personal de respuesta a incidencias.

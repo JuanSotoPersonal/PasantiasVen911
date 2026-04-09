@@ -38,4 +38,14 @@ class Usuario {
 
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
+
+    //--------------------------------------------------------------------
+    // Retorna la cantidad total de usuarios registrados en el sistema.
+    //--------------------------------------------------------------------
+    public function countUsers(): int {
+        $query = "SELECT COUNT(*) FROM " . $this->table_name;
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        return (int)$stmt->fetchColumn();
+    }
 }

@@ -2,8 +2,10 @@
 
 require_once 'app/Models/UsuarioModel.php';
 require_once 'app/Models/LogModel.php';
+require_once 'app/Models/SetupModel.php';
 use App\Models\UsuarioModel;
 use App\Models\LogModel;
+use App\Models\SetupModel;
 
 class UsuarioController {
 
@@ -31,6 +33,8 @@ class UsuarioController {
 
     public function index(): void {
         $roles = $this->model->getRoles();
+        $setupModel = new SetupModel();
+        $preguntas = $setupModel->getSecurityQuestions();
         require_once 'app/Views/usuarios/index.php';
     }
 
@@ -138,6 +142,29 @@ class UsuarioController {
             echo json_encode(['success' => false, 'message' => 'El código de operador ya está en uso.']);
             return;
         }
+
+        // RESTRICCIÓN: Solo un SuperAdmin
+        if ($rolId === 1) {
+            echo json_encode(['success' => false, 'message' => 'Solo puede existir un SuperAdministrador en el sistema.']);
+            return;
+        }
+        // Atributos de seguridad si es SuperAdmin (Rol 1)
+        $p1 = (int)($_POST['pregunta_1'] ?? 0);
+        $p2 = (int)($_POST['pregunta_2'] ?? 0);
+        $r1 = trim($_POST['respuesta_1'] ?? '');
+        $r2 = trim($_POST['respuesta_2'] ?? '');
+
+        if ($rolId === 1) {
+            if ($p1 === 0 || $p2 === 0 || empty($r1) || empty($r2)) {
+                echo json_encode(['success' => false, 'message' => 'Los SuperAdministradores deben configurar sus preguntas de seguridad.']);
+                return;
+            }
+            if ($p1 === $p2) {
+                echo json_encode(['success' => false, 'message' => 'Debes elegir dos preguntas diferentes.']);
+                return;
+            }
+        }
+
         //Creacion de usuario
         $data = [
             'usuario'         => $usuario,
@@ -147,6 +174,10 @@ class UsuarioController {
             'rol_id'          => $rolId,
             'codigo_operador' => $codigoOperador,
             'estado'          => $estado,
+            'pregunta_1_id'   => ($rolId === 1) ? $p1 : null,
+            'pregunta_2_id'   => ($rolId === 1) ? $p2 : null,
+            'respuesta_1'     => ($rolId === 1) ? password_hash(strtolower($r1), PASSWORD_DEFAULT) : null,
+            'respuesta_2'     => ($rolId === 1) ? password_hash(strtolower($r2), PASSWORD_DEFAULT) : null,
         ];
         
         if ($this->model->create($data)) {
@@ -210,6 +241,25 @@ class UsuarioController {
             echo json_encode(['success' => false, 'message' => 'El código de operador ya está en uso.']);
             return;
         }
+        $usuarioAnterior = $this->model->getById($id);
+
+        // RESTRICCIÓN: SuperAdmin Único
+        if ($usuarioAnterior) {
+            $oldRol = (int)$usuarioAnterior['rol_id'];
+            
+            // 1. No se puede promover a nadie a Rol 1
+            if ($rolId === 1 && $oldRol !== 1) {
+                echo json_encode(['success' => false, 'message' => 'No se puede promover a un usuario al rol de SuperAdministrador.']);
+                return;
+            }
+            
+            // 2. El SuperAdmin no puede degradarse a sí mismo
+            if ($oldRol === 1 && $rolId !== 1) {
+                echo json_encode(['success' => false, 'message' => 'El SuperAdministrador no puede cambiar su propio rol.']);
+                return;
+            }
+        }
+
         //Actualizacion de usuario
         $data = [
             'nombre_completo' => $nombreCompleto,
@@ -218,8 +268,6 @@ class UsuarioController {
             'rol_id'          => $rolId,
             'codigo_operador' => $codigoOperador,
         ];
-
-        $usuarioAnterior = $this->model->getById($id);
 
         if ($this->model->updateInfo($id, $data)) {
             $adminId = (int)$_SESSION['user_id'];
@@ -278,8 +326,25 @@ class UsuarioController {
             echo json_encode(['success' => false, 'message' => 'Las contraseñas no coinciden.']);
             return;
         }
+
         // Obtener datos antes de cambiar la contraseña
         $usuarioAnterior = $this->model->getById($id);
+
+        // EXTRA: Verificación de Seguridad para SuperAdmin
+        if ($usuarioAnterior && (int)$usuarioAnterior['rol_id'] === 1) {
+            $ans1 = trim($_POST['ans_1'] ?? '');
+            $ans2 = trim($_POST['ans_2'] ?? '');
+            
+            if (empty($ans1) || empty($ans2)) {
+                echo json_encode(['success' => false, 'message' => 'Debes responder las preguntas de seguridad.']);
+                return;
+            }
+
+            if (!$this->model->verifySecurityAnswers($id, $ans1, $ans2)) {
+                echo json_encode(['success' => false, 'message' => 'Respuestas de seguridad incorrectas. Acceso denegado.']);
+                return;
+            }
+        }
 
         // Encriptar la nueva contraseña
         $hashed = password_hash($newPassword, PASSWORD_DEFAULT);
@@ -320,9 +385,16 @@ class UsuarioController {
             return;
         }
 
-        // Protección: no permitir deshabilitar al propio Super Admin que está logueado
+        // Protección: no permitir deshabilitar al propio usuario logueado
         if ($id === (int)$_SESSION['user_id']) {
             echo json_encode(['success' => false, 'message' => 'No puedes cambiar tu propio estado.']);
+            return;
+        }
+
+        // RESTRICCIÓN: No se puede desactivar al SuperAdmin
+        $usuarioAfectado = $this->model->getById($id);
+        if ($usuarioAfectado && (int)$usuarioAfectado['rol_id'] === 1) {
+            echo json_encode(['success' => false, 'message' => 'El SuperAdministrador no puede ser desactivado.']);
             return;
         }
 
@@ -348,5 +420,80 @@ class UsuarioController {
         } else {
             echo json_encode(['success' => false, 'message' => 'Usuario no encontrado.']);
         }
+    }
+
+    //--------------------------------------------------------------------
+    // GET Obtiene las preguntas de seguridad de un usuario (AJAX)
+    //--------------------------------------------------------------------
+    public function getSecurityQuestions(): void {
+        header('Content-Type: application/json');
+        $id = (int)($_GET['id'] ?? 0);
+        if (!$id) {
+            echo json_encode(['success' => false, 'message' => 'ID inválido.']);
+            return;
+        }
+
+        $questions = $this->model->getUserQuestions($id);
+        if ($questions) {
+            echo json_encode(['success' => true, 'questions' => $questions]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'El usuario no tiene preguntas configuradas.']);
+        }
+    }
+
+    //--------------------------------------------------------------------
+    // POST Actualiza las preguntas de seguridad (Requiere Código de Fábrica)
+    //--------------------------------------------------------------------
+    public function updateSecurityQuestions(): void {
+        header('Content-Type: application/json');
+        $id          = (int)($_POST['id'] ?? 0);
+        $factoryCode = trim($_POST['factory_code'] ?? '');
+        $p1          = (int)($_POST['pregunta_1'] ?? 0);
+        $p2          = (int)($_POST['pregunta_2'] ?? 0);
+        $r1          = trim($_POST['respuesta_1'] ?? '');
+        $r2          = trim($_POST['respuesta_2'] ?? '');
+
+        if (!$id || empty($factoryCode) || !$p1 || !$p2 || empty($r1) || empty($r2)) {
+            echo json_encode(['success' => false, 'message' => 'Todos los campos son obligatorios.']);
+            return;
+        }
+
+        // Validar Código de Fábrica
+        $setupModel = new SetupModel();
+        if (!$setupModel->validateActivationKey($factoryCode)) {
+            echo json_encode(['success' => false, 'message' => 'Código de Fábrica inválido. No tienes permiso para esta acción.']);
+            return;
+        }
+
+        $data = [
+            'pregunta_1_id' => $p1,
+            'pregunta_2_id' => $p2,
+            'respuesta_1'   => password_hash(strtolower($r1), PASSWORD_DEFAULT),
+            'respuesta_2'   => password_hash(strtolower($r2), PASSWORD_DEFAULT)
+        ];
+
+        // Necesitamos un método en el modelo para esto específicamente
+        // Para simplificar, lo haré directamente aquí si es necesario, 
+        // pero mejor añado updateSecurityFields al modelo.
+        if ($this->updateSecurityFields($id, $data)) {
+            $adminId = (int)$_SESSION['user_id'];
+            $this->log->registrar($adminId, 'UPDATE', 'usuarios', $id, null, null, "Preguntas de seguridad del usuario ID {$id} actualizadas.");
+            echo json_encode(['success' => true, 'message' => 'Preguntas de seguridad actualizadas correctamente.']);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Error al actualizar las preguntas.']);
+        }
+    }
+
+    // Pequeño helper para no saturar el modelo con métodos de Update específicos
+    private function updateSecurityFields($id, $data) {
+        $db = (new \App\Config\Database())->getConnection();
+        $sql = "UPDATE usuarios SET pregunta_1_id = :p1, pregunta_2_id = :p2, respuesta_1 = :r1, respuesta_2 = :r2 WHERE id = :id";
+        $stmt = $db->prepare($sql);
+        $stmt->bindValue(':p1', $data['pregunta_1_id'], \PDO::PARAM_INT);
+        $stmt->bindValue(':p2', $data['pregunta_2_id'], \PDO::PARAM_INT);
+        $stmt->bindValue(':r1', $data['respuesta_1'], \PDO::PARAM_STR);
+        $stmt->bindValue(':r2', $data['respuesta_2'], \PDO::PARAM_STR);
+        $stmt->bindValue(':id', $id, \PDO::PARAM_INT);
+        return $stmt->execute();
     }
 }

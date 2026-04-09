@@ -114,9 +114,11 @@ class UsuarioModel {
     //--------------------------------------------------------------------
     public function create(array $data): bool {
         $query = "INSERT INTO {$this->table_name}
-                    (usuario, password, nombre_completo, cedula, rol_id, codigo_operador, estado)
+                    (usuario, password, nombre_completo, cedula, rol_id, codigo_operador, estado, 
+                     pregunta_1_id, pregunta_2_id, respuesta_1, respuesta_2)
                   VALUES
-                    (:usuario, :password, :nombre_completo, :cedula, :rol_id, :codigo_operador, :estado)";
+                    (:usuario, :password, :nombre_completo, :cedula, :rol_id, :codigo_operador, :estado,
+                     :p1, :p2, :r1, :r2)";
 
         $stmt = $this->conn->prepare($query);
         $stmt->bindValue(':usuario',         $data['usuario'],PDO::PARAM_STR);
@@ -126,6 +128,13 @@ class UsuarioModel {
         $stmt->bindValue(':rol_id',          $data['rol_id'],PDO::PARAM_INT);
         $stmt->bindValue(':codigo_operador', $data['codigo_operador'], $data['codigo_operador'] ? PDO::PARAM_STR : PDO::PARAM_NULL);
         $stmt->bindValue(':estado',          $data['estado'],PDO::PARAM_STR);
+        
+        // Nuevos campos de seguridad (pueden ser nulos para otros roles)
+        $stmt->bindValue(':p1', $data['pregunta_1_id'] ?? null, $data['pregunta_1_id'] ?? null ? PDO::PARAM_INT : PDO::PARAM_NULL);
+        $stmt->bindValue(':p2', $data['pregunta_2_id'] ?? null, $data['pregunta_2_id'] ?? null ? PDO::PARAM_INT : PDO::PARAM_NULL);
+        $stmt->bindValue(':r1', $data['respuesta_1'] ?? null, PDO::PARAM_STR);
+        $stmt->bindValue(':r2', $data['respuesta_2'] ?? null, PDO::PARAM_STR);
+        
         return $stmt->execute();
     }
 
@@ -194,5 +203,36 @@ class UsuarioModel {
         $stmt = $this->conn->prepare("SELECT id, nombre FROM roles ORDER BY id ASC");
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    //--------------------------------------------------------------------
+    // Verifica las respuestas de seguridad de un usuario.
+    //--------------------------------------------------------------------
+    public function verifySecurityAnswers(int $id, string $ans1, string $ans2): bool {
+        $query = "SELECT respuesta_1, respuesta_2 FROM {$this->table_name} WHERE id = :id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+        $stmt->execute();
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$user) return false;
+
+        // Comparación flexible e insensible a mayúsculas
+        return password_verify(strtolower($ans1), $user['respuesta_1']) && 
+               password_verify(strtolower($ans2), $user['respuesta_2']);
+    }
+
+    //--------------------------------------------------------------------
+    // Obtiene las preguntas (texto) asignadas a un usuario específico.
+    //--------------------------------------------------------------------
+    public function getUserQuestions(int $id): array|false {
+        $query = "SELECT p1.pregunta as p1_texto, p2.pregunta as p2_texto
+                  FROM {$this->table_name} u
+                  JOIN preguntas_seguridad p1 ON u.pregunta_1_id = p1.id
+                  JOIN preguntas_seguridad p2 ON u.pregunta_2_id = p2.id
+                  WHERE u.id = :id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 }

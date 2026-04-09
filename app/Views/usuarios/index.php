@@ -267,6 +267,8 @@
                     <?php endforeach; ?>
                   </select>
                 </div>
+                <!-- Sección de Seguridad Oculta (SuperAdmin Único vía Setup) -->
+                <div id="seccion-seguridad-crear" style="display: none;"></div>
                 <div class="col-md-6">
                   <label for="crear-password" class="form-label fw-semibold">Contraseña <span class="text-danger">*</span></label>
                   <div class="password-wrapper">
@@ -389,6 +391,18 @@
                   </button>
                 </div>
               </div>
+              <!-- Sección de Validación de Seguridad (Autocargado vía JS si es SuperAdmin) -->
+              <div id="seccion-validacion-seguridad" style="display: none;" class="mt-3 p-3 bg-warning bg-opacity-10 border border-warning border-opacity-25 rounded">
+                 <h6 class="text-dark fw-bold mb-2 small"><i class="bi bi-shield-fill-exclamation me-2"></i>Verificación de Identidad</h6>
+                 <div class="mb-2">
+                    <label id="label-pregunta-1" class="form-label small fw-bold mb-1"></label>
+                    <input type="text" class="form-control form-control-sm" id="ans-1" name="ans_1" placeholder="Respuesta 1">
+                 </div>
+                 <div class="mb-0">
+                    <label id="label-pregunta-2" class="form-label small fw-bold mb-1"></label>
+                    <input type="text" class="form-control form-control-sm" id="ans-2" name="ans_2" placeholder="Respuesta 2">
+                 </div>
+              </div>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-ven-cancel" data-bs-dismiss="modal">
@@ -396,6 +410,68 @@
               </button>
               <button type="submit" class="btn btn-ven-password">
                 <i class="bi bi-shield-check me-1"></i>Actualizar Contraseña
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         MODAL: Actualizar Preguntas de Seguridad (SuperAdmin)
+         ============================================================ -->
+    <div class="modal fade" id="modalConfigSeguridad" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header modal-header-ven">
+            <h5 class="modal-title">
+              <i class="bi bi-shield-lock-fill me-2"></i>Configurar Preguntas de Seguridad
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <form id="formConfigSeguridad" novalidate>
+            <input type="hidden" id="seg-id" name="id" />
+            <div class="modal-body">
+              <div class="alert alert-info py-2 small">
+                <i class="bi bi-info-circle me-1"></i> Requiere el <strong>Código de Fábrica</strong> para autorizar el cambio.
+              </div>
+              
+              <div class="mb-3">
+                <label for="seg-factory-code" class="form-label fw-bold">Código de Fábrica</label>
+                <input type="text" class="form-control border-danger border-opacity-50" id="seg-factory-code" name="factory_code" placeholder="XXXX-XXXX-XXXX" maxlength="12" required>
+              </div>
+
+              <div class="row g-3">
+                <div class="col-12">
+                  <label class="form-label small fw-bold">Nueva Pregunta 1</label>
+                  <select class="form-select form-select-sm" name="pregunta_1" required>
+                    <option value="">-- Seleccionar --</option>
+                    <?php foreach ($preguntas as $p): ?>
+                      <option value="<?= $p['id'] ?>"><?= htmlspecialchars($p['pregunta']) ?></option>
+                    <?php endforeach; ?>
+                  </select>
+                </div>
+                <div class="col-12">
+                  <input type="text" class="form-control form-control-sm" name="respuesta_1" placeholder="Nueva respuesta 1" required>
+                </div>
+                <div class="col-12">
+                  <label class="form-label small fw-bold">Nueva Pregunta 2</label>
+                  <select class="form-select form-select-sm" name="pregunta_2" required>
+                    <option value="">-- Seleccionar --</option>
+                    <?php foreach ($preguntas as $p): ?>
+                      <option value="<?= $p['id'] ?>"><?= htmlspecialchars($p['pregunta']) ?></option>
+                    <?php endforeach; ?>
+                  </select>
+                </div>
+                <div class="col-12">
+                  <input type="text" class="form-control form-control-sm" name="respuesta_2" placeholder="Nueva respuesta 2" required>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-ven-cancel" data-bs-dismiss="modal">Cancelar</button>
+              <button type="submit" class="btn btn-ven-primary">
+                <i class="bi bi-check-circle me-1"></i>Actualizar Seguridad
               </button>
             </div>
           </form>

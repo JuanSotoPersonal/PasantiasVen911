@@ -12,6 +12,10 @@ class AuthController {
     //--------------------------------------------------------------------
 
     public function index() {
+        $usuarioModel = new Usuario();
+        $userCount = $usuarioModel->countUsers();
+        $canRegister = ($userCount === 0);
+        
         require_once 'app/Views/login.php';
     }
 

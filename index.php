@@ -28,8 +28,8 @@ $controllerName = $controllerBaseName . 'Controller';
 $isLoggedIn = isset($_SESSION['user_id']);
 $methodRequested = isset($url[1]) ? $url[1] : '';
 
-// 1. Si NO está logeado y la ruta no es 'auth', redirigir al login
-if (!$isLoggedIn && $controllerBaseName !== 'Auth') {
+// 1. Si NO está logeado y la ruta no es 'auth' o 'setup', redirigir al login
+if (!$isLoggedIn && $controllerBaseName !== 'Auth' && $controllerBaseName !== 'Setup') {
     header('Location: index.php?url=auth');
     exit;
 }

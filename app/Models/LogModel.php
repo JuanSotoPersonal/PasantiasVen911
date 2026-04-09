@@ -24,8 +24,8 @@ class LogModel {
     // @param string  $accion          INSERT, UPDATE, DELETE, LOGIN, LOGOUT, CAMBIO_ESTADO.
     // @param string  $tabla_afectada  Nombre de la tabla modificada.
     // @param int|null $registro_id    ID del registro afectado.
-    // @param array|null $anterior     Datos antes del cambio (se guardará como JSON).
-    // @param array|null $nuevo        Datos después del cambio (se guardará como JSON).
+    // @param array|null $anterior     Datos antes del cambio.
+    // @param array|null $nuevo        Datos después del cambio.
     // @param string|null $detalles    Cualquier nota adicional.
     //--------------------------------------------------------------------
     public function registrar(

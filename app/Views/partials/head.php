@@ -14,8 +14,8 @@
 <!-- SweetAlert2 (Para notificaciones comunes) -->
 <link rel="stylesheet" href="public/libs/sweetalert2/sweetalert2.min.css" />
 
-<?php if ($pageName === 'login'): ?>
-  <!-- Estilos Exclusivos para Login -->
+<?php if ($pageName === 'login' || $pageName === 'setup'): ?>
+  <!-- Estilos Exclusivos para Login y Setup -->
   <link href="public/libs/bootstrap/bootstrap.min.css" rel="stylesheet">
   <link href="public/libs/inter/index.css" rel="stylesheet">
   <link rel="stylesheet" href="public/css/login.css">
