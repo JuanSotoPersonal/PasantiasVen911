@@ -8,7 +8,6 @@ class LogController {
     private LogModel $model;
 
     public function __construct() {
-        // Protección: Solo Super Admin (Rol ID 1) puede ver los logs
         if (!isset($_SESSION['user_id']) || $_SESSION['user_rol_id'] != 1) {
             header('Location: index.php?url=home');
             exit;

@@ -17,7 +17,7 @@
   <!-- Contenedor del Login -->
   <div class="login-wrapper">
     <div class="logo-container">
-      <img src="public/assets/img/ven911_logo.png" alt="Logo VEN 911" class="logo-img">
+      <img src="public/assets/img/ven911_logo.webp" alt="Logo VEN 911" class="logo-img">
     </div>
     
     <h1 class="login-title">VEN 911 Carabobo</h1>

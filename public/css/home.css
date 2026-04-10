@@ -8,24 +8,49 @@
   --ven-bg-soft: #f0fdf4;       /* Fondo suave verdoso */
 }
 
-/* Sidebar Branding */
-.brand-link {
-  background-color: var(--ven-dark) !important;
-  color: #ffffff !important;
+/* Sidebar Branding Refined */
+.sidebar-brand {
+  height: auto !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background: linear-gradient(135deg, rgba(6, 78, 59, 1) 0%, rgba(4, 47, 36, 1) 100%) !important;
+}
+
+.brand-link {
+  height: 85px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important; /* Centrado tras quitar logo */
+  padding: 1rem !important;
+  background: transparent !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
+  text-decoration: none !important;
+}
+
+.brand-image {
+  display: none !important; /* Asegurar que no quede rastro */
 }
 
 .brand-text {
+  margin-left: 0 !important; /* Quitar margen */
+  text-align: center;
+}
+
+.brand-text-main {
+  font-size: 1.3rem !important; /* Más grande */
+  font-weight: 800 !important;
   color: #ffffff !important;
-  font-weight: 600 !important;
+  letter-spacing: 0.5px;
+  line-height: 1;
 }
 
-.brand-link .brand-image {
-  transition: transform 0.3s ease;
-}
-
-.brand-link:hover .brand-image {
-  transform: scale(1.08);
+.brand-text-sub {
+  font-weight: 400 !important;
+  font-size: 0.85rem !important;
+  color: #22c55e !important;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  margin-top: 5px;
 }
 
 /* Sidebar Background */
@@ -117,4 +142,67 @@ h1, h2, h3, h4, h5, h6, .brand-text {
 
 .app-footer a:hover {
   color: var(--ven-primary-hover) !important;
+}
+
+/* Floating Help Button */
+.btn-floating-help {
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  width: 55px;
+  height: 55px;
+  background-color: var(--ven-primary) !important;
+  color: #ffffff !important;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  z-index: 9999;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  cursor: help;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  text-decoration: none !important;
+}
+
+.btn-floating-help:hover {
+  transform: scale(1.1) translateY(-5px);
+  background-color: var(--ven-accent) !important;
+  box-shadow: 0 8px 20px rgba(22, 163, 74, 0.4);
+}
+
+/* Sidebar Footer Adjustments */
+.sidebar-wrapper {
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  height: calc(100vh - 110px) !important; /* Ajuste para evitar desbordamiento inferior */
+  overflow-y: auto;
+  padding-bottom: 50px !important;
+}
+
+.sidebar-wrapper nav {
+  flex-grow: 1 !important;
+}
+
+.sidebar-footer-nav {
+  position: absolute !important;
+  bottom: 5px !important; /* Margen de seguridad desde el fondo */
+  left: 0 !important;
+  width: 100% !important;
+  background-color: #042f24 !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
+  padding: 8px 0 !important;
+  z-index: 10;
+}
+
+.sidebar-footer-nav .nav-link {
+  color: rgba(255, 255, 255, 0.5) !important;
+  transition: all 0.3s ease;
+}
+
+.sidebar-footer-nav .nav-link:hover {
+  color: var(--ven-accent) !important;
+  background-color: rgba(255, 255, 255, 0.05) !important;
 }

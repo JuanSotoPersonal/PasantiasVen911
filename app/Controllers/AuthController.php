@@ -1,8 +1,8 @@
 <?php
 
-require_once 'app/Models/Usuario.php';
+require_once 'app/Models/UsuarioModel.php';
 require_once 'app/Models/LogModel.php';
-use App\Models\Usuario;
+use App\Models\UsuarioModel;
 use App\Models\LogModel;
 
 class AuthController {
@@ -12,7 +12,7 @@ class AuthController {
     //--------------------------------------------------------------------
 
     public function index() {
-        $usuarioModel = new Usuario();
+        $usuarioModel = new UsuarioModel();
         $userCount = $usuarioModel->countUsers();
         $canRegister = ($userCount === 0);
         
@@ -56,13 +56,22 @@ class AuthController {
             echo json_encode(['success' => false, 'message' => 'El usuario debe tener al menos 7 caracteres.']);
             return;
         }
+        if (strlen($usuario) > 32) {
+            echo json_encode(['success' => false, 'message' => 'El usuario no puede exceder los 32 caracteres.']);
+            return;
+        }
+
         //validacion de longitud de contraseña
         if (strlen($password) < 6) {
             echo json_encode(['success' => false, 'message' => 'La contraseña debe tener al menos 6 caracteres.']);
             return;
         }
+        if (strlen($password) > 128) {
+            echo json_encode(['success' => false, 'message' => 'La contraseña no puede exceder los 128 caracteres.']);
+            return;
+        }
         //validacion de usuario
-        $usuarioModel = new Usuario();
+        $usuarioModel = new UsuarioModel();
         $user = $usuarioModel->getUsuarioByUsername($usuario);
 
         if ($user) {

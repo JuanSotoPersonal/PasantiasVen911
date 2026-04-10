@@ -1,11 +1,9 @@
 <?php
 
-require_once 'app/Models/Usuario.php';
 require_once 'app/Models/UsuarioModel.php';
 require_once 'app/Models/SetupModel.php';
 require_once 'app/Models/LogModel.php';
 
-use App\Models\Usuario;
 use App\Models\UsuarioModel;
 use App\Models\SetupModel;
 use App\Models\LogModel;
@@ -16,7 +14,7 @@ class SetupController {
     private $setupModel;
 
     public function __construct() {
-        $this->userModel = new Usuario(); // Para el conteo inicial
+        $this->userModel = new UsuarioModel(); // Ahora usa el modelo consolidado
         $this->setupModel = new SetupModel();
     }
 
@@ -75,9 +73,61 @@ class SetupController {
             return;
         }
 
-        // Crear el usuario con UsuarioModel (el que maneja la creación avanzada)
-        $fullModel = new UsuarioModel();
-        
+        // Validación de Cédula (6 a 8 dígitos numéricos)
+        if (strlen($cedula) < 6 || strlen($cedula) > 8) {
+            echo json_encode(['success' => false, 'message' => 'La cédula debe tener entre 6 y 8 caracteres.']);
+            return;
+        }
+        if (!ctype_digit($cedula)) {
+            echo json_encode(['success' => false, 'message' => 'La cédula debe contener solo números.']);
+            return;
+        }
+
+        // Validación de Usuario (Mínimo 7 caracteres, alfanumérico)
+        if (strlen($usuario) < 7) {
+            echo json_encode(['success' => false, 'message' => 'El usuario debe tener al menos 7 caracteres.']);
+            return;
+        }
+        if (strlen($usuario) > 32) {
+            echo json_encode(['success' => false, 'message' => 'El usuario no puede exceder los 32 caracteres.']);
+            return;
+        }
+        if (!preg_match('/^[a-zA-Z0-9]+$/', $usuario)) {
+            echo json_encode(['success' => false, 'message' => 'El usuario solo puede contener letras y números.']);
+            return;
+        }
+
+        // Validación de Nombre Completo
+        if (strlen($nombreCompleto) > 128) {
+            echo json_encode(['success' => false, 'message' => 'el nombre completo no puede exceder los 128 caracteres.']);
+            return;
+        }
+
+        // Validación de respuestas de seguridad (Alfanumérico)
+        if (strlen($r1) > 128 || strlen($r2) > 128) {
+            echo json_encode(['success' => false, 'message' => 'Las respuestas de seguridad no pueden exceder los 128 caracteres.']);
+            return;
+        }
+        if (!preg_match('/^[a-zA-Z0-9 ]+$/', $r1) || !preg_match('/^[a-zA-Z0-9 ]+$/', $r2)) {
+            echo json_encode(['success' => false, 'message' => 'Las respuestas de seguridad solo pueden contener letras, números y espacios.']);
+            return;
+        }
+
+        // Validación de longitud de contraseña (Ya añadida previamente)
+        if (strlen($password) < 6) {
+            echo json_encode(['success' => false, 'message' => 'La contraseña debe tener al menos 6 caracteres.']);
+            return;
+        }
+        if (strlen($password) > 128) {
+            echo json_encode(['success' => false, 'message' => 'La contraseña no puede exceder los 128 caracteres.']);
+            return;
+        }
+        if (!preg_match('/[A-Z]/', $password) || !preg_match('/[0-9]/', $password)) {
+            echo json_encode(['success' => false, 'message' => 'La contraseña debe contener al menos una mayúscula y un número.']);
+            return;
+        }
+
+        // Crear el usuario con el modelo consolidado
         $data = [
             'usuario'         => $usuario,
             'password'        => password_hash($password, PASSWORD_DEFAULT),
@@ -88,11 +138,11 @@ class SetupController {
             'estado'          => 'activo',
             'pregunta_1_id'   => $p1,
             'pregunta_2_id'   => $p2,
-            'respuesta_1'     => password_hash(strtolower($r1), PASSWORD_DEFAULT), // Hasheadas y en minúsculas
+            'respuesta_1'     => password_hash(strtolower($r1), PASSWORD_DEFAULT),
             'respuesta_2'     => password_hash(strtolower($r2), PASSWORD_DEFAULT)
         ];
 
-        if ($fullModel->create($data)) {
+        if ($this->userModel->create($data)) {
             // El primer login es manual tras el setup
             $log = new LogModel();
             $log->registrar(0, 'INSERT', 'usuarios', null, null, ['usuario' => $usuario], "Sistema inicializado con SuperAdmin: {$usuario}.");

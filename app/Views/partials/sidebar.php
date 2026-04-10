@@ -13,15 +13,11 @@
   <div class="sidebar-brand">
     <!--inicio::Enlace de Marca-->
     <a href="index.php?url=home" class="brand-link">
-      <!--inicio::Imagen de Marca-->
-      <img
-        src="public/assets/img/ven911_logo.png"
-        alt="Ven911 Logo"
-        class="brand-image opacity-100 shadow-sm"
-      />
-      <!--fin::Imagen de Marca-->
       <!--inicio::Texto de Marca-->
-      <span class="brand-text fw-light">Ven 911 Carabobo</span>
+      <span class="brand-text">
+        <span class="brand-text-main">Ven 911</span>
+        <span class="brand-text-sub">Carabobo</span>
+      </span>
       <!--fin::Texto de Marca-->
     </a>
     <!--fin::Enlace de Marca-->
@@ -43,7 +39,7 @@
         <li class="nav-item">
           <a href="index.php?url=home" class="nav-link <?= $seccion === 'home' ? 'active' : '' ?>">
             <i class="nav-icon bi bi-speedometer"></i>
-            <p>Dashboard</p>
+            <p>Inicio</p>
           </a>
         </li>
         <?php if (isset($_SESSION['user_rol_id']) && $_SESSION['user_rol_id'] == 1): ?>
@@ -65,7 +61,20 @@
 
       </ul>
       <!--fin::Menú de la Barra Lateral-->
+
     </nav>
+    <!--inicio::Pie de Sidebar-->
+    <div class="sidebar-footer-nav">
+      <ul class="nav sidebar-menu flex-column">
+        <li class="nav-item">
+          <a href="#" class="nav-link">
+            <i class="nav-icon bi bi-question-circle"></i>
+            <p>Preguntas Frecuentes</p>
+          </a>
+        </li>
+      </ul>
+    </div>
+    <!--fin::Pie de Sidebar-->
   </div>
   <!--fin::Envoltorio de la Barra Lateral-->
 </aside>

@@ -63,13 +63,18 @@ class LogModel {
     // Incluye el nombre del usuario que realizó la acción.
     //--------------------------------------------------------------------
     public function getAll(): array {
-        $query = "SELECT l.*, u.usuario as nombre_admin 
-                  FROM {$this->table_name} l
-                  LEFT JOIN usuarios u ON l.usuario_id = u.id
-                  ORDER BY l.fecha DESC";
-                  
-        $stmt = $this->conn->prepare($query);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        try {
+            $query = "SELECT l.*, u.usuario as nombre_admin 
+                      FROM {$this->table_name} l
+                      LEFT JOIN usuarios u ON l.usuario_id = u.id
+                      ORDER BY l.fecha DESC";
+                      
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            error_log("[LogModel] Error en getAll: " . $e->getMessage());
+            return [];
+        }
     }
 }

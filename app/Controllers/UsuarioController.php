@@ -112,14 +112,32 @@ class UsuarioController {
             echo json_encode(['success' => false, 'message' => 'El usuario debe tener al menos 7 caracteres.']);
             return;
         }
+        if (strlen($usuario) > 32) {
+            echo json_encode(['success' => false, 'message' => 'El usuario no puede exceder los 32 caracteres.']);
+            return;
+        }
         //Validacion de formato de usuario
         if (!preg_match('/^[a-zA-Z0-9]+$/', $usuario)) {
             echo json_encode(['success' => false, 'message' => 'El usuario solo puede contener letras y números.']);
             return;
         }
+        //Validacion de longitud de nombre completo
+        if (strlen($nombreCompleto) > 128) {
+            echo json_encode(['success' => false, 'message' => 'El nombre completo no puede exceder los 128 caracteres.']);
+            return;
+        }
+        //Validacion de codigo de operador
+        if ($codigoOperador && strlen($codigoOperador) > 128) {
+            echo json_encode(['success' => false, 'message' => 'El código de operador no puede exceder los 128 caracteres.']);
+            return;
+        }
         //Validacion de longitud de contraseña
         if (strlen($password) < 6) {
             echo json_encode(['success' => false, 'message' => 'La contraseña debe tener al menos 6 caracteres.']);
+            return;
+        }
+        if (strlen($password) > 128) {
+            echo json_encode(['success' => false, 'message' => 'La contraseña no puede exceder los 128 caracteres.']);
             return;
         }
         //Validacion de complejidad: al menos 1 mayúscula y 1 número
@@ -157,6 +175,10 @@ class UsuarioController {
         if ($rolId === 1) {
             if ($p1 === 0 || $p2 === 0 || empty($r1) || empty($r2)) {
                 echo json_encode(['success' => false, 'message' => 'Los SuperAdministradores deben configurar sus preguntas de seguridad.']);
+                return;
+            }
+            if (strlen($r1) > 128 || strlen($r2) > 128) {
+                echo json_encode(['success' => false, 'message' => 'Las respuestas de seguridad no pueden exceder los 128 caracteres.']);
                 return;
             }
             if ($p1 === $p2) {
@@ -222,6 +244,19 @@ class UsuarioController {
             return;
         }
         //Validacion de formato de cedula (solo numeros)
+        if (strlen($usuario) > 32) {
+            echo json_encode(['success' => false, 'message' => 'El usuario no puede exceder los 32 caracteres.']);
+            return;
+        }
+        if (strlen($nombreCompleto) > 128) {
+            echo json_encode(['success' => false, 'message' => 'El nombre completo no puede exceder los 128 caracteres.']);
+            return;
+        }
+        if ($codigoOperador && strlen($codigoOperador) > 128) {
+            echo json_encode(['success' => false, 'message' => 'El código de operador no puede exceder los 128 caracteres.']);
+            return;
+        }
+
         if (!ctype_digit($cedula)) {
             echo json_encode(['success' => false, 'message' => 'La cédula debe contener solo números.']);
             return;
@@ -314,6 +349,10 @@ class UsuarioController {
         //validacion de longitud de contraseña
         if (strlen($newPassword) < 6) {
             echo json_encode(['success' => false, 'message' => 'La contraseña debe tener al menos 6 caracteres.']);
+            return;
+        }
+        if (strlen($newPassword) > 128) {
+            echo json_encode(['success' => false, 'message' => 'La contraseña no puede exceder los 128 caracteres.']);
             return;
         }
         //Validacion de complejidad: al menos 1 mayúscula y 1 número
@@ -458,6 +497,12 @@ class UsuarioController {
             return;
         }
 
+        // Validación de longitud de respuestas
+        if (strlen($r1) > 128 || strlen($r2) > 128) {
+            echo json_encode(['success' => false, 'message' => 'Las respuestas de seguridad no pueden exceder los 128 caracteres.']);
+            return;
+        }
+
         // Validar Código de Fábrica
         $setupModel = new SetupModel();
         if (!$setupModel->validateActivationKey($factoryCode)) {
@@ -472,28 +517,13 @@ class UsuarioController {
             'respuesta_2'   => password_hash(strtolower($r2), PASSWORD_DEFAULT)
         ];
 
-        // Necesitamos un método en el modelo para esto específicamente
-        // Para simplificar, lo haré directamente aquí si es necesario, 
-        // pero mejor añado updateSecurityFields al modelo.
-        if ($this->updateSecurityFields($id, $data)) {
+        // Ahora usamos el método unificado en el modelo
+        if ($this->model->updateSecurityFields($id, $data)) {
             $adminId = (int)$_SESSION['user_id'];
             $this->log->registrar($adminId, 'UPDATE', 'usuarios', $id, null, null, "Preguntas de seguridad del usuario ID {$id} actualizadas.");
             echo json_encode(['success' => true, 'message' => 'Preguntas de seguridad actualizadas correctamente.']);
         } else {
             echo json_encode(['success' => false, 'message' => 'Error al actualizar las preguntas.']);
         }
-    }
-
-    // Pequeño helper para no saturar el modelo con métodos de Update específicos
-    private function updateSecurityFields($id, $data) {
-        $db = (new \App\Config\Database())->getConnection();
-        $sql = "UPDATE usuarios SET pregunta_1_id = :p1, pregunta_2_id = :p2, respuesta_1 = :r1, respuesta_2 = :r2 WHERE id = :id";
-        $stmt = $db->prepare($sql);
-        $stmt->bindValue(':p1', $data['pregunta_1_id'], \PDO::PARAM_INT);
-        $stmt->bindValue(':p2', $data['pregunta_2_id'], \PDO::PARAM_INT);
-        $stmt->bindValue(':r1', $data['respuesta_1'], \PDO::PARAM_STR);
-        $stmt->bindValue(':r2', $data['respuesta_2'], \PDO::PARAM_STR);
-        $stmt->bindValue(':id', $id, \PDO::PARAM_INT);
-        return $stmt->execute();
     }
 }

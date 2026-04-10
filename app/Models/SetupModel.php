@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Config\Database;
 use PDO;
+use Exception;
 
 require_once 'app/Config/Database.php';
 
@@ -11,38 +12,58 @@ class SetupModel {
     private $conn;
 
     public function __construct() {
-        $database = new Database();
-        $this->conn = $database->getConnection();
+        try {
+            $database = new Database();
+            $this->conn = $database->getConnection();
+        } catch (Exception $e) {
+            error_log("[SetupModel] Error en constructor: " . $e->getMessage());
+            die("Error de conexión a la base de datos.");
+        }
     }
 
     //--------------------------------------------------------------------
     // Obtiene todas las preguntas de seguridad predefinidas.
     //--------------------------------------------------------------------
     public function getSecurityQuestions(): array {
-        $query = "SELECT * FROM preguntas_seguridad ORDER BY id ASC";
-        $stmt = $this->conn->prepare($query);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        try {
+            $query = "SELECT * FROM preguntas_seguridad ORDER BY id ASC";
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            error_log("[SetupModel] Error en getSecurityQuestions: " . $e->getMessage());
+            return [];
+        }
     }
 
     //--------------------------------------------------------------------
     // Valida si la llave de activación es correcta.
     //--------------------------------------------------------------------
     public function validateActivationKey(string $key): bool {
-        $query = "SELECT COUNT(*) FROM configuracion_sistema WHERE llave_activacion = :key";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':key', $key, PDO::PARAM_STR);
-        $stmt->execute();
-        return (int)$stmt->fetchColumn() > 0;
+        try {
+            $query = "SELECT COUNT(*) FROM configuracion_sistema WHERE llave_activacion = :key";
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(':key', $key, PDO::PARAM_STR);
+            $stmt->execute();
+            return (int)$stmt->fetchColumn() > 0;
+        } catch (Exception $e) {
+            error_log("[SetupModel] Error en validateActivationKey: " . $e->getMessage());
+            return false;
+        }
     }
 
     //--------------------------------------------------------------------
     // Obtiene la llave de activación (para debug o referencia, aunque debería ser secreta).
     //--------------------------------------------------------------------
     public function getActivationKey(): string {
-        $query = "SELECT llave_activacion FROM configuracion_sistema LIMIT 1";
-        $stmt = $this->conn->prepare($query);
-        $stmt->execute();
-        return (string)$stmt->fetchColumn();
+        try {
+            $query = "SELECT llave_activacion FROM configuracion_sistema LIMIT 1";
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute();
+            return (string)$stmt->fetchColumn();
+        } catch (Exception $e) {
+            error_log("[SetupModel] Error en getActivationKey: " . $e->getMessage());
+            return "";
+        }
     }
 }

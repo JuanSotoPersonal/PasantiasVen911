@@ -5,12 +5,23 @@
     //--------------------------------------------------------------------
     $userName = $_SESSION['user_name'] ?? 'Invitado';
     $userRol = $_SESSION['user_rol'] ?? 'S/R';
+    $rolId = (int)($_SESSION['user_rol_id'] ?? 0);
+
+    // Mapeo de fotos de perfil según el rol
+    $profilePic = 'public/assets/img/user2-160x160.jpg'; // Default
+    
+    switch ($rolId) {
+        case 1: $profilePic = 'public/assets/img/administrador.webp'; break;
+        case 2: $profilePic = 'public/assets/img/Operador.webp'; break;
+        case 3: $profilePic = 'public/assets/img/Despachador.webp'; break;
+        case 4: $profilePic = 'public/assets/img/Jefatura.webp'; break;
+    }
 ?>
 <!--inicio::Menú de Usuario-->
 <li class="nav-item dropdown user-menu">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
     <img
-      src="public/assets/img/user2-160x160.jpg"
+      src="<?= $profilePic ?>"
       class="user-image rounded-circle shadow"
       alt="User Image"
     />
@@ -19,7 +30,7 @@
   <ul class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
     <li class="user-header">
       <img
-        src="public/assets/img/user2-160x160.jpg"
+        src="<?= $profilePic ?>"
         class="rounded-circle shadow"
         alt="User Image"
       />

@@ -58,7 +58,7 @@
   <div class="container d-flex align-items-center justify-content-center" style="min-height: 100vh;">
     <div class="login-wrapper setup-width">
       <div class="logo-container">
-        <img src="public/assets/img/ven911_logo.png" alt="Logo VEN 911" class="logo-img">
+        <img src="public/assets/img/ven911_logo.webp" alt="Logo VEN 911" class="logo-img">
       </div>
       
       <h2 class="login-title">Activación de Sistema</h2>
@@ -68,30 +68,39 @@
         <div class="section-title"><i class="bi bi-key-fill me-2"></i>Llave de Activación</div>
         <div class="mb-4">
           <label for="factory_code" class="form-label">Código de Fábrica (12 dígitos)</label>
-          <input type="text" class="form-control" id="factory_code" name="factory_code" placeholder="XXXX-XXXX-XXXX" maxlength="12" required>
+          <input type="text" class="form-control" id="factory_code" name="factory_code" placeholder="XXXX-XXXX-XXXX" maxlength="12" >
         </div>
 
         <div class="section-title"><i class="bi bi-person-badge-fill me-2"></i>Datos del SuperAdmin</div>
         <div class="row">
           <div class="col-md-6 mb-4">
             <label for="nombre_completo" class="form-label">Nombre Completo</label>
-            <input type="text" class="form-control" id="nombre_completo" name="nombre_completo" placeholder="Ej: Juan Pérez" required>
+            <input type="text" class="form-control" id="nombre_completo" name="nombre_completo" placeholder="Ej: Juan Pérez" >
           </div>
           <div class="col-md-6 mb-4">
             <label for="cedula" class="form-label">Cédula</label>
             <input type="text" class="form-control" id="cedula" name="cedula" placeholder="12345678" maxlength="8">
+            <div class="form-text mt-1" style="color: rgba(22, 101, 52, 0.7); font-size: 0.75rem;">
+              Solo números (6-8 dígitos).
+            </div>
           </div>
         </div>
         <div class="row">
           <div class="col-md-6 mb-4">
             <label for="usuario" class="form-label">Usuario (Mín. 7 caracteres)</label>
-            <input type="text" class="form-control" id="usuario" name="usuario" placeholder="V12345678" minlength="7" required>
+            <input type="text" class="form-control" id="usuario" name="usuario" placeholder="V12345678" >
+            <div class="form-text mt-1" style="color: rgba(22, 101, 52, 0.7); font-size: 0.75rem;">
+              Letras y números solamente.
+            </div>
           </div>
           <div class="col-md-6 mb-4">
             <label for="password" class="form-label">Contraseña</label>
             <div class="input-group-custom">
-              <input type="password" class="form-control" id="password" name="password" placeholder="••••••••" minlength="6" required>
+              <input type="password" class="form-control" id="password" name="password" placeholder="••••••••"  >
               <i class="bi bi-eye-slash toggle-password" id="togglePassword" style="cursor: pointer;"></i>
+            </div>
+            <div class="form-text mt-1" style="color: rgba(22, 101, 52, 0.7); font-size: 0.75rem;">
+              <i class="bi bi-info-circle me-1"></i> Mín. 6 caracteres. Debe incluir una mayúscula y un número.
             </div>
           </div>
         </div>
@@ -100,7 +109,7 @@
         <div class="row">
           <div class="col-md-12 mb-4">
             <label for="pregunta_1" class="form-label">Pregunta de Seguridad 1</label>
-            <select class="form-select" id="pregunta_1" name="pregunta_1" required>
+            <select class="form-select" id="pregunta_1" name="pregunta_1" >
               <option value="">Selecciona una pregunta...</option>
               <?php foreach ($preguntas as $p): ?>
                 <option value="<?= $p['id'] ?>"><?= htmlspecialchars($p['pregunta']) ?></option>
@@ -109,12 +118,15 @@
           </div>
           <div class="col-md-12 mb-4">
             <label for="respuesta_1" class="form-label">Respuesta 1</label>
-            <input type="text" class="form-control" id="respuesta_1" name="respuesta_1" placeholder="Tu respuesta secreta" required>
+            <input type="text" class="form-control" id="respuesta_1" name="respuesta_1" placeholder="Tu respuesta secreta" >
+            <div class="form-text mt-1" style="color: rgba(22, 101, 52, 0.7); font-size: 0.75rem;">
+              Letras, números y espacios permitidos.
+            </div>
           </div>
 
           <div class="col-md-12 mb-4">
             <label for="pregunta_2" class="form-label">Pregunta de Seguridad 2</label>
-            <select class="form-select" id="pregunta_2" name="pregunta_2" required>
+            <select class="form-select" id="pregunta_2" name="pregunta_2" >
               <option value="">Selecciona una pregunta...</option>
               <?php foreach ($preguntas as $p): ?>
                 <option value="<?= $p['id'] ?>"><?= htmlspecialchars($p['pregunta']) ?></option>
@@ -123,7 +135,10 @@
           </div>
           <div class="col-md-12 mb-4">
             <label for="respuesta_2" class="form-label">Respuesta 2</label>
-            <input type="text" class="form-control" id="respuesta_2" name="respuesta_2" placeholder="Tu segunda respuesta secreta" required>
+            <input type="text" class="form-control" id="respuesta_2" name="respuesta_2" placeholder="Tu segunda respuesta secreta" >
+            <div class="form-text mt-1" style="color: rgba(22, 101, 52, 0.7); font-size: 0.75rem;">
+              Solo alfanumérico y espacios.
+            </div>
           </div>
         </div>
 

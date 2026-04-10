@@ -16,8 +16,21 @@
         </a>
       </li>
       <li class="nav-item d-none d-md-block">
-        <a href="#" class="nav-link">Inicio</a>
+        <a href="index.php?url=home" class="nav-link"><i class="bi bi-house-door-fill me-1"></i>Inicio</a>
       </li>
+      
+      <?php if (isset($_SESSION['user_rol_id']) && $_SESSION['user_rol_id'] == 1): ?>
+        <li class="nav-item d-none d-md-block">
+          <a href="index.php?url=usuario" class="nav-link">
+            <i class="bi bi-people-fill me-1"></i>Usuarios
+          </a>
+        </li>
+        <li class="nav-item d-none d-md-block">
+          <a href="index.php?url=log" class="nav-link">
+            <i class="bi bi-clock-history me-1"></i>Historial
+          </a>
+        </li>
+      <?php endif; ?>
     </ul>
     <!--fin::Enlaces de Navegación de Inicio-->
 
