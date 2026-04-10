@@ -1,0 +1,52 @@
+/* Estilos específicos para la página de Activación (Setup) */
+
+body {
+    overflow-y: auto !important;
+    display: block !important;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+/* El login.css usa overflow:hidden, aquí lo liberamos */
+.login-wrapper.setup-width {
+    max-width: 650px;
+    margin: auto;
+}
+
+.section-title {
+    color: #166534;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+    font-weight: 700;
+    border-bottom: 1px solid rgba(22, 101, 52, 0.2);
+    padding-bottom: 5px;
+}
+
+/* Asegurar que los selects se vean igual que los inputs de login.css */
+.form-select {
+    background-color: #f0fdf4;
+    border: 1px solid #072513;
+    color: #072513;
+    border-radius: 0.75rem;
+    padding: 0.85rem 1rem;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+}
+
+.form-select:focus {
+    background-color: #ffffff;
+    border-color: #22c55e;
+    box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.2);
+    outline: none;
+}
+
+.setup-container {
+    min-height: 100vh;
+}
+
+.link-inherit {
+    color: inherit !important;
+}

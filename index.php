@@ -7,10 +7,10 @@ session_start();
 
 // Autocarga manual muy simple para controladores
 spl_autoload_register(function ($class) {
-    if (file_exists('app/Controllers/' . $class . '.php')) {
-        require_once 'app/Controllers/' . $class . '.php';
-    } elseif (file_exists('app/Models/' . $class . '.php')) {
-        require_once 'app/Models/' . $class . '.php';
+    if (file_exists('app/controladores/' . $class . '.php')) {
+        require_once 'app/controladores/' . $class . '.php';
+    } elseif (file_exists('app/modelos/' . $class . '.php')) {
+        require_once 'app/modelos/' . $class . '.php';
     }
 });
 
@@ -20,7 +20,13 @@ $url = filter_var($url, FILTER_SANITIZE_URL);
 $url = explode('/', $url);
 
 $controllerBaseName = ucfirst($url[0]);
-$controllerName = $controllerBaseName . 'Controller';
+
+// Mapeo especial para setup -> registro
+if ($controllerBaseName === 'Setup') {
+    $controllerBaseName = 'Registro';
+}
+
+$controllerName = $controllerBaseName . 'Controlador';
 
 // ==========================================
 // MIDDLEWARE GLOBAL DE AUTENTICACIÓN
@@ -29,7 +35,7 @@ $isLoggedIn = isset($_SESSION['user_id']);
 $methodRequested = isset($url[1]) ? $url[1] : '';
 
 // 1. Si NO está logeado y la ruta no es 'auth' o 'setup', redirigir al login
-if (!$isLoggedIn && $controllerBaseName !== 'Auth' && $controllerBaseName !== 'Setup') {
+if (!$isLoggedIn && $controllerBaseName !== 'Auth' && $controllerBaseName !== 'Registro') {
     header('Location: index.php?url=auth');
     exit;
 }
@@ -42,7 +48,7 @@ if ($isLoggedIn && $controllerBaseName === 'Auth' && $methodRequested !== 'logou
 }
 // ==========================================
 
-if (file_exists('app/Controllers/' . $controllerName . '.php')) {
+if (file_exists('app/controladores/' . $controllerName . '.php')) {
     $controller = new $controllerName();
     
     // Método por defecto en MVC siempre es 'index'

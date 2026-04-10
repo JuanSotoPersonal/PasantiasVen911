@@ -40,7 +40,6 @@
       </p>
     </li>
     <li class="user-footer">
-      <a href="#" class="btn btn-default btn-flat">Perfil</a>
       <a href="index.php?url=auth/logout" class="btn btn-default btn-flat float-end">Salir</a>
     </li>
   </ul>

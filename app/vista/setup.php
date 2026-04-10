@@ -7,47 +7,6 @@
   $pageName = 'setup';
   require __DIR__ . '/partials/head.php'; 
   ?>
-  <style>
-    /* Sobrescribir el bloqueo de scroll del login.css para formularios largos */
-    body {
-        overflow-y: auto !important;
-        display: block !important;
-        padding-top: 2rem;
-        padding-bottom: 2rem;
-    }
-    /* El login.css usa overflow:hidden, aquí lo liberamos */
-    .login-wrapper.setup-width {
-        max-width: 650px;
-        margin: auto;
-    }
-    .section-title {
-        color: #166534;
-        font-size: 0.85rem;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        margin-top: 1.5rem;
-        margin-bottom: 1rem;
-        font-weight: 700;
-        border-bottom: 1px solid rgba(22, 101, 52, 0.2);
-        padding-bottom: 5px;
-    }
-    /* Asegurar que los selects se vean igual que los inputs de login.css */
-    .form-select {
-        background-color: #f0fdf4;
-        border: 1px solid #072513;
-        color: #072513;
-        border-radius: 0.75rem;
-        padding: 0.85rem 1rem;
-        font-size: 0.95rem;
-        transition: all 0.3s ease;
-    }
-    .form-select:focus {
-        background-color: #ffffff;
-        border-color: #22c55e;
-        box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.2);
-        outline: none;
-    }
-  </style>
 </head>
 <body>
 
@@ -55,7 +14,7 @@
   <div class="bg-shape shape-1"></div>
   <div class="bg-shape shape-2"></div>
 
-  <div class="container d-flex align-items-center justify-content-center" style="min-height: 100vh;">
+  <div class="container d-flex align-items-center justify-content-center setup-container">
     <div class="login-wrapper setup-width">
       <div class="logo-container">
         <img src="public/assets/img/ven911_logo.webp" alt="Logo VEN 911" class="logo-img">
@@ -69,6 +28,9 @@
         <div class="mb-4">
           <label for="factory_code" class="form-label">Código de Fábrica (12 dígitos)</label>
           <input type="text" class="form-control" id="factory_code" name="factory_code" placeholder="XXXX-XXXX-XXXX" maxlength="12" >
+          <div class="form-text mt-1" style="color: rgba(22, 101, 52, 0.7); font-size: 0.75rem;">
+            Código único de 12 dígitos para activar el producto.
+          </div>
         </div>
 
         <div class="section-title"><i class="bi bi-person-badge-fill me-2"></i>Datos del SuperAdmin</div>
@@ -76,11 +38,14 @@
           <div class="col-md-6 mb-4">
             <label for="nombre_completo" class="form-label">Nombre Completo</label>
             <input type="text" class="form-control" id="nombre_completo" name="nombre_completo" placeholder="Ej: Juan Pérez" >
+            <div class="form-text mt-1 form-text-ven">
+              Nombre y apellido.
+            </div>
           </div>
           <div class="col-md-6 mb-4">
             <label for="cedula" class="form-label">Cédula</label>
             <input type="text" class="form-control" id="cedula" name="cedula" placeholder="12345678" maxlength="8">
-            <div class="form-text mt-1" style="color: rgba(22, 101, 52, 0.7); font-size: 0.75rem;">
+            <div class="form-text mt-1 form-text-ven">
               Solo números (6-8 dígitos).
             </div>
           </div>
@@ -89,7 +54,7 @@
           <div class="col-md-6 mb-4">
             <label for="usuario" class="form-label">Usuario (Mín. 7 caracteres)</label>
             <input type="text" class="form-control" id="usuario" name="usuario" placeholder="V12345678" >
-            <div class="form-text mt-1" style="color: rgba(22, 101, 52, 0.7); font-size: 0.75rem;">
+            <div class="form-text mt-1 form-text-ven">
               Letras y números solamente.
             </div>
           </div>
@@ -99,7 +64,7 @@
               <input type="password" class="form-control" id="password" name="password" placeholder="••••••••"  >
               <i class="bi bi-eye-slash toggle-password" id="togglePassword" style="cursor: pointer;"></i>
             </div>
-            <div class="form-text mt-1" style="color: rgba(22, 101, 52, 0.7); font-size: 0.75rem;">
+            <div class="form-text mt-1 form-text-ven">
               <i class="bi bi-info-circle me-1"></i> Mín. 6 caracteres. Debe incluir una mayúscula y un número.
             </div>
           </div>
@@ -115,11 +80,14 @@
                 <option value="<?= $p['id'] ?>"><?= htmlspecialchars($p['pregunta']) ?></option>
               <?php endforeach; ?>
             </select>
+            <div class="form-text mt-1 form-text-ven">
+              Seleccione una pregunta para la recuperación de cuenta.
+            </div>
           </div>
           <div class="col-md-12 mb-4">
             <label for="respuesta_1" class="form-label">Respuesta 1</label>
             <input type="text" class="form-control" id="respuesta_1" name="respuesta_1" placeholder="Tu respuesta secreta" >
-            <div class="form-text mt-1" style="color: rgba(22, 101, 52, 0.7); font-size: 0.75rem;">
+            <div class="form-text mt-1 form-text-ven">
               Letras, números y espacios permitidos.
             </div>
           </div>
@@ -132,11 +100,14 @@
                 <option value="<?= $p['id'] ?>"><?= htmlspecialchars($p['pregunta']) ?></option>
               <?php endforeach; ?>
             </select>
+            <div class="form-text mt-1 form-text-ven">
+              Es indispensable responder ambas preguntas para validar cambios.
+            </div>
           </div>
           <div class="col-md-12 mb-4">
             <label for="respuesta_2" class="form-label">Respuesta 2</label>
             <input type="text" class="form-control" id="respuesta_2" name="respuesta_2" placeholder="Tu segunda respuesta secreta" >
-            <div class="form-text mt-1" style="color: rgba(22, 101, 52, 0.7); font-size: 0.75rem;">
+            <div class="form-text mt-1 form-text-ven">
               Solo alfanumérico y espacios.
             </div>
           </div>
@@ -148,7 +119,7 @@
       </form>
 
       <div class="system-notice mt-4">
-        <a href="index.php?url=auth" class="text-decoration-none" style="color: inherit;">
+        <a href="index.php?url=auth" class="text-decoration-none link-inherit">
           <i class="bi bi-arrow-left-circle me-1"></i> Volver al Inicio de Sesión
         </a>
       </div>
@@ -176,7 +147,7 @@
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Procesando...';
 
-        fetch('index.php?url=setup/register', {
+        fetch('index.php?url=setup/registrar', {
             method: 'POST',
             body: formData
         })

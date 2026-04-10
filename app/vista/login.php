@@ -30,6 +30,9 @@
           <!-- TODO: Agregar icono SVG aquí si se desea -->
           <input type="text" class="form-control" id="usuario" name="usuario" placeholder="V00000000"  autocomplete="Usuario">
         </div>
+        <div class="form-text mt-1 form-text-ven">
+          Ingresa tu cédula (ej. V12345678) o usuario asignado.
+        </div>
       </div>
       
       <div class="mb-4">
@@ -37,6 +40,9 @@
         <div class="input-group-custom">
           <input type="password" class="form-control" id="password" name="password" placeholder="••••••••"  autocomplete="current-password">
           <i class="bi bi-eye-slash toggle-password" id="togglePassword"></i>
+        </div>
+        <div class="form-text mt-1 form-text-ven">
+          Respeta las letras mayúsculas y minúsculas.
         </div>
       </div>
       
@@ -47,25 +53,11 @@
 
     <?php if (isset($canRegister) && $canRegister): ?>
     <div class="mt-4 text-center">
-      <hr style="border-color: rgba(0,0,0,0.1)">
+      <hr class="login-hr">
       <p class="text-muted small mb-2 fw-bold">Primer inicio detectado</p>
       <a href="index.php?url=setup" class="btn btn-outline-success btn-sm w-100 py-2 border-2 fw-bold btn-setup-activation">
          <i class="bi bi-shield-lock-fill me-2"></i>Registrar y Activar Sistema
       </a>
-      <style>
-        .btn-setup-activation {
-            color: #16a34a;
-            border-color: #16a34a;
-            transition: all 0.3s ease;
-        }
-        .btn-setup-activation:hover {
-            background-color: #16a34a;
-            color: #ffffff !important;
-            border-color: #16a34a;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2);
-        }
-      </style>
     </div>
     <?php endif; ?>
     

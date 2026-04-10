@@ -1,22 +1,22 @@
 <?php
 
-require_once 'app/Models/UsuarioModel.php';
-require_once 'app/Models/LogModel.php';
-use App\Models\UsuarioModel;
-use App\Models\LogModel;
+require_once 'app/modelos/UsuarioModelo.php';
+require_once 'app/modelos/LogModelo.php';
+use App\modelos\UsuarioModelo;
+use App\modelos\LogModelo;
 
-class AuthController {
+class AuthControlador {
 
     //--------------------------------------------------------------------
     // Muestra la pantalla de inicio de sesión
     //--------------------------------------------------------------------
 
     public function index() {
-        $usuarioModel = new UsuarioModel();
-        $userCount = $usuarioModel->countUsers();
-        $canRegister = ($userCount === 0);
+        $usuarioModelo = new UsuarioModelo();
+        $conteoUsuarios = $usuarioModelo->contarUsuarios();
+        $puedeRegistrarse = ($conteoUsuarios === 0);
         
-        require_once 'app/Views/login.php';
+        require_once 'app/vista/login.php';
     }
 
     //--------------------------------------------------------------------
@@ -71,22 +71,22 @@ class AuthController {
             return;
         }
         //validacion de usuario
-        $usuarioModel = new UsuarioModel();
-        $user = $usuarioModel->getUsuarioByUsername($usuario);
+        $usuarioModelo = new UsuarioModelo();
+        $usuario_datos = $usuarioModelo->obtenerUsuarioPorNombre($usuario);
 
-        if ($user) {
+        if ($usuario_datos) {
             // Verificar contraseña cifrada
-            if (password_verify($password, $user['password'])) {
+            if (password_verify($password, $usuario_datos['password'])) {
                 
                 // Guardar datos en sesión
-                $_SESSION['user_id']     = $user['id'];
-                $_SESSION['user_name']   = $user['nombre_completo'];
-                $_SESSION['user_rol']    = $user['nombre_rol'];
-                $_SESSION['user_rol_id'] = $user['rol_id'];
+                $_SESSION['user_id']     = $usuario_datos['id'];
+                $_SESSION['user_name']   = $usuario_datos['nombre_completo'];
+                $_SESSION['user_rol']    = $usuario_datos['nombre_rol'];
+                $_SESSION['user_rol_id'] = $usuario_datos['rol_id'];
 
                 // Registrar log de sesión iniciada
-                $log = new LogModel();
-                $log->registrar((int)$user['id'], 'LOGIN', 'usuarios', (int)$user['id'], null, null, "Usuario '{$usuario}' inició sesión.");
+                $log = new LogModelo();
+                $log->registrar((int)$usuario_datos['id'], 'LOGIN', 'usuarios', (int)$usuario_datos['id'], null, null, "Usuario '{$usuario}' inició sesión.");
 
                 echo json_encode(['success' => true, 'message' => 'Autenticación exitosa.']);
             } else {
@@ -104,7 +104,7 @@ class AuthController {
     public function logout() {
         // Registrar log antes de destruir la sesión
         if (isset($_SESSION['user_id'])) {
-            $log = new LogModel();
+            $log = new LogModelo();
             $log->registrar((int)$_SESSION['user_id'], 'LOGOUT', 'usuarios', (int)$_SESSION['user_id'], null, null, "Usuario '{$_SESSION['user_name']}' cerró sesión.");
         }
         session_destroy();

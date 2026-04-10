@@ -124,6 +124,7 @@
 .modal-header-ven .btn-close:hover { opacity: 1; }
 
 .modal-header-ven .modal-title {
+    color: #fff !important;
     font-weight: 700;
     font-size: 1.05rem;
     letter-spacing: 0.2px;
@@ -396,4 +397,9 @@ div:where(.swal2-container) div:where(.swal2-popup) {
 
 .swal2-cancel:hover {
     background: #dcfce7 !important;
+}
+
+/* Clase de utilidad para asegurar el ancho total de las tablas */
+.table-usuarios-full {
+    width: 100% !important;
 }

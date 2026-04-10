@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Models;
+namespace App\modelos;
 
 use App\Config\Database;
 use PDO;
 
 require_once 'app/Config/Database.php';
 
-class LogModel {
+class LogModelo {
     private $conn;
     private $table_name = "logs_sistema";
 
@@ -54,7 +54,7 @@ class LogModel {
             
             $stmt->execute();
         } catch (\Exception $e) {
-            error_log("[LogModel] Error al registrar log: " . $e->getMessage());
+            error_log("[LogModelo] Error al registrar log: " . $e->getMessage());
         }
     }
 
@@ -62,7 +62,7 @@ class LogModel {
     // Retorna todos los registros de logs ordenados por fecha descendente.
     // Incluye el nombre del usuario que realizó la acción.
     //--------------------------------------------------------------------
-    public function getAll(): array {
+    public function obtenerTodos(): array {
         try {
             $query = "SELECT l.*, u.usuario as nombre_admin 
                       FROM {$this->table_name} l
@@ -72,8 +72,8 @@ class LogModel {
             $stmt = $this->conn->prepare($query);
             $stmt->execute();
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
-        } catch (Exception $e) {
-            error_log("[LogModel] Error en getAll: " . $e->getMessage());
+        } catch (\Exception $e) {
+            error_log("[LogModelo] Error en obtenerTodos: " . $e->getMessage());
             return [];
         }
     }

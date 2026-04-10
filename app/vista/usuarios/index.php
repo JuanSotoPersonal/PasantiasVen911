@@ -85,8 +85,7 @@
                     <div class="table-responsive">
                       <table
                         id="tablaUsuarios"
-                        class="table table-bordered table-striped table-hover align-middle"
-                        style="width:100%"
+                        class="table table-bordered table-striped table-hover align-middle table-usuarios-full"
                       >
                         <thead class="table-dark">
                           <tr>
@@ -139,8 +138,7 @@
                       <div class="table-responsive">
                         <table
                           id="<?= $tablaId ?>"
-                          class="table table-bordered table-striped table-hover align-middle"
-                          style="width:100%"
+                          class="table table-bordered table-striped table-hover align-middle table-usuarios-full"
                           data-rol-id="<?= $rolId ?>"
                           data-rol-nombre="<?= $rolNombre ?>"
                         >
@@ -181,8 +179,7 @@
                       <div class="table-responsive">
                         <table
                           id="tablaInactivos"
-                          class="table table-bordered table-striped table-hover align-middle"
-                          style="width:100%"
+                          class="table table-bordered table-striped table-hover align-middle table-usuarios-full"
                         >
                           <thead class="table-dark">
                              <tr>
@@ -237,6 +234,7 @@
                 <div class="col-md-6">
                   <label for="crear-nombre" class="form-label fw-semibold">Nombre Completo <span class="text-danger">*</span></label>
                   <input type="text" class="form-control" id="crear-nombre" name="nombre_completo" placeholder="Ej: Juan Pérez García" required />
+                  <div class="form-text mt-1">Nombre y apellido legal del usuario.</div>
                 </div>
                 <div class="col-md-6">
                   <label for="crear-cedula" class="form-label fw-semibold">Cédula <span class="text-danger">*</span></label>
@@ -249,11 +247,12 @@
                 <div class="col-md-6">
                   <label for="crear-usuario" class="form-label fw-semibold">Usuario (login) <span class="text-danger">*</span></label>
                   <input type="text" class="form-control" id="crear-usuario" name="usuario" placeholder="Mín. 7 caracteres, sin espacios" required />
-                  <div class="form-text">Solo letras y números. Sin signos especiales.</div>
+                  <div class="form-text mt-1">Nombre de usuario único para acceder al sistema.</div>
                 </div>
                 <div class="col-md-6">
                   <label for="crear-codigo" class="form-label fw-semibold">Código Operador</label>
                   <input type="text" class="form-control" id="crear-codigo" name="codigo_operador" placeholder="Ej: OP-001" />
+                  <div class="form-text mt-1">Código de radio operador (opcional).</div>
                 </div>
                 <div class="col-md-6">
                   <label for="crear-rol" class="form-label fw-semibold">Rol <span class="text-danger">*</span></label>
@@ -266,9 +265,10 @@
                       </option>
                     <?php endforeach; ?>
                   </select>
+                  <div class="form-text mt-1">Define los permisos de acceso al sistema.</div>
                 </div>
                 <!-- Sección de Seguridad Oculta (SuperAdmin Único vía Setup) -->
-                <div id="seccion-seguridad-crear" style="display: none;"></div>
+                <div id="seccion-seguridad-crear" class="d-none"></div>
                 <div class="col-md-6">
                   <label for="crear-password" class="form-label fw-semibold">Contraseña <span class="text-danger">*</span></label>
                   <div class="password-wrapper">
@@ -277,6 +277,7 @@
                       <i class="bi bi-eye"></i>
                     </button>
                   </div>
+                  <div class="form-text mt-1">Mínimo 6 caracteres (alfanumérico).</div>
                 </div>
               </div>
             </div>
@@ -312,6 +313,7 @@
                 <div class="col-md-6">
                   <label for="editar-nombre" class="form-label fw-semibold">Nombre Completo <span class="text-danger">*</span></label>
                   <input type="text" class="form-control" id="editar-nombre" name="nombre_completo" required />
+                  <div class="form-text mt-1">Actualice el nombre si es necesario.</div>
                 </div>
                 <div class="col-md-6">
                   <label for="editar-cedula" class="form-label fw-semibold">Cédula <span class="text-danger">*</span></label>
@@ -319,15 +321,17 @@
                     <span class="input-group-text">V-</span>
                     <input type="text" class="form-control" id="editar-cedula" name="cedula" minlength="6" maxlength="8" oninput="this.value = this.value.replace(/[^0-9]/g, '');" required />
                   </div>
-                  <div class="form-text">Solo números (entre 6 y 8).</div>
+                  <div class="form-text mt-1">Modificar solo si hubo un error en el registro inicial.</div>
                 </div>
                 <div class="col-md-6">
                   <label for="editar-usuario" class="form-label fw-semibold">Usuario (login) <span class="text-danger">*</span></label>
                   <input type="text" class="form-control" id="editar-usuario" name="usuario" required />
+                  <div class="form-text mt-1">Nombre de usuario (login).</div>
                 </div>
                 <div class="col-md-6">
                   <label for="editar-codigo" class="form-label fw-semibold">Código Operador</label>
                   <input type="text" class="form-control" id="editar-codigo" name="codigo_operador" />
+                  <div class="form-text mt-1">Código del Operador (opcional).</div>
                 </div>
                 <div class="col-md-6">
                   <label for="editar-rol" class="form-label fw-semibold">Rol <span class="text-danger">*</span></label>
@@ -339,6 +343,7 @@
                       </option>
                     <?php endforeach; ?>
                   </select>
+                  <div class="form-text mt-1">Seleccione el rol que define los permisos del usuario.</div>
                 </div>
               </div>
             </div>
@@ -381,6 +386,7 @@
                     <i class="bi bi-eye"></i>
                   </button>
                 </div>
+                <div class="form-text mt-1">La nueva contraseña debe ser segura.</div>
               </div>
               <div class="mb-3">
                 <label for="pwd-confirmar" class="form-label fw-semibold">Confirmar Contraseña <span class="text-danger">*</span></label>
@@ -390,9 +396,10 @@
                     <i class="bi bi-eye"></i>
                   </button>
                 </div>
+                <div class="form-text mt-1">Repita la nueva contraseña exactamente.</div>
               </div>
               <!-- Sección de Validación de Seguridad (Autocargado vía JS si es SuperAdmin) -->
-              <div id="seccion-validacion-seguridad" style="display: none;" class="mt-3 p-3 bg-warning bg-opacity-10 border border-warning border-opacity-25 rounded">
+              <div id="seccion-validacion-seguridad" class="mt-3 p-3 bg-warning bg-opacity-10 border border-warning border-opacity-25 rounded d-none">
                  <h6 class="text-dark fw-bold mb-2 small"><i class="bi bi-shield-fill-exclamation me-2"></i>Verificación de Identidad</h6>
                  <div class="mb-2">
                     <label id="label-pregunta-1" class="form-label small fw-bold mb-1"></label>
@@ -439,6 +446,7 @@
               <div class="mb-3">
                 <label for="seg-factory-code" class="form-label fw-bold">Código de Fábrica</label>
                 <input type="text" class="form-control border-danger border-opacity-50" id="seg-factory-code" name="factory_code" placeholder="XXXX-XXXX-XXXX" maxlength="12" required>
+                <div class="form-text mt-1">Código de 12 dígitos para autorizar el cambio de preguntas.</div>
               </div>
 
               <div class="row g-3">
@@ -450,9 +458,11 @@
                       <option value="<?= $p['id'] ?>"><?= htmlspecialchars($p['pregunta']) ?></option>
                     <?php endforeach; ?>
                   </select>
+                  <div class="form-text mt-1">Seleccione una pregunta válida.</div>
                 </div>
                 <div class="col-12">
                   <input type="text" class="form-control form-control-sm" name="respuesta_1" placeholder="Nueva respuesta 1" required>
+                  <div class="form-text mt-1">Respuesta a la primera pregunta de seguridad.</div>
                 </div>
                 <div class="col-12">
                   <label class="form-label small fw-bold">Nueva Pregunta 2</label>
@@ -462,9 +472,11 @@
                       <option value="<?= $p['id'] ?>"><?= htmlspecialchars($p['pregunta']) ?></option>
                     <?php endforeach; ?>
                   </select>
-                </div>
+                  <div class="form-text mt-1">Esta pregunta será usada como respaldo secundario.</div>
+                  </div>
                 <div class="col-12">
                   <input type="text" class="form-control form-control-sm" name="respuesta_2" placeholder="Nueva respuesta 2" required>
+                  <div class="form-text mt-1">Respuesta a la segunda pregunta de seguridad.</div>
                 </div>
               </div>
             </div>

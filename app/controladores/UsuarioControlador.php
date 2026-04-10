@@ -1,21 +1,21 @@
 <?php
 
-require_once 'app/Models/UsuarioModel.php';
-require_once 'app/Models/LogModel.php';
-require_once 'app/Models/SetupModel.php';
-use App\Models\UsuarioModel;
-use App\Models\LogModel;
-use App\Models\SetupModel;
+require_once 'app/modelos/UsuarioModelo.php';
+require_once 'app/modelos/LogModelo.php';
+require_once 'app/modelos/RegistroModelo.php';
+use App\modelos\UsuarioModelo;
+use App\modelos\LogModelo;
+use App\modelos\RegistroModelo;
 
-class UsuarioController {
+class UsuarioControlador {
 
-    private UsuarioModel $model;
+    private UsuarioModelo $modelo;
 
     //--------------------------------------------------------------------
     // Constructor
     //--------------------------------------------------------------------
 
-    private LogModel $log;
+    private LogModelo $log;
 
     public function __construct() {
         // Validacion que solo el Super Admin Pueda Acceder
@@ -23,8 +23,8 @@ class UsuarioController {
             header('Location: index.php?url=home');
             exit;
         }
-        $this->model = new UsuarioModel();
-        $this->log   = new LogModel();
+        $this->modelo = new UsuarioModelo();
+        $this->log    = new LogModelo();
     }
 
     //--------------------------------------------------------------------
@@ -32,20 +32,20 @@ class UsuarioController {
     //--------------------------------------------------------------------
 
     public function index(): void {
-        $roles = $this->model->getRoles();
-        $setupModel = new SetupModel();
-        $preguntas = $setupModel->getSecurityQuestions();
-        require_once 'app/Views/usuarios/index.php';
+        $roles = $this->modelo->obtenerRoles();
+        $registroModelo = new RegistroModelo();
+        $preguntas = $registroModelo->obtenerPreguntasSeguridad();
+        require_once 'app/vista/usuarios/index.php';
     }
 
     //--------------------------------------------------------------------
     // GET Retorna todos los usuarios en formato JSON (para DataTable)
     //--------------------------------------------------------------------
 
-    public function getData(): void {
+    public function obtenerDatos(): void {
         header('Content-Type: application/json');
         $estado = $_GET['estado'] ?? 'activo';
-        $usuarios = $this->model->getAll($estado);
+        $usuarios = $this->modelo->obtenerTodos($estado);
         echo json_encode(['data' => $usuarios]);
     }
 
@@ -53,7 +53,7 @@ class UsuarioController {
     // GET Retorna usuarios de un rol específico en JSON (para DataTables por rol)
     //--------------------------------------------------------------------
 
-    public function getDataByRol(): void {
+    public function obtenerDatosPorRol(): void {
         header('Content-Type: application/json');
         $rolId = (int)($_GET['rol_id'] ?? 0);
         $estado = $_GET['estado'] ?? 'activo';
@@ -61,15 +61,14 @@ class UsuarioController {
             echo json_encode(['data' => []]);
             return;
         }
-        $usuarios = $this->model->getByRol($rolId, $estado);
+        $usuarios = $this->modelo->obtenerPorRol($rolId, $estado);
         echo json_encode(['data' => $usuarios]);
     }
 
     //--------------------------------------------------------------------
     // POST Crea un nuevo usuario
     //--------------------------------------------------------------------
-
-    public function store(): void {
+    public function guardar(): void {
         header('Content-Type: application/json');
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -91,7 +90,7 @@ class UsuarioController {
         }
         //Asignacion de variables
         $usuario        = trim($_POST['usuario']);
-        $password       = $_POST['password'];
+        $contrasena     = $_POST['password'];
         $nombreCompleto = trim($_POST['nombre_completo']);
         $cedula         = trim($_POST['cedula'] ?? '');
         $rolId          = (int)$_POST['rol_id'];
@@ -132,31 +131,31 @@ class UsuarioController {
             return;
         }
         //Validacion de longitud de contraseña
-        if (strlen($password) < 6) {
+        if (strlen($contrasena) < 6) {
             echo json_encode(['success' => false, 'message' => 'La contraseña debe tener al menos 6 caracteres.']);
             return;
         }
-        if (strlen($password) > 128) {
+        if (strlen($contrasena) > 128) {
             echo json_encode(['success' => false, 'message' => 'La contraseña no puede exceder los 128 caracteres.']);
             return;
         }
         //Validacion de complejidad: al menos 1 mayúscula y 1 número
-        if (!preg_match('/[A-Z]/', $password) || !preg_match('/[0-9]/', $password)) {
+        if (!preg_match('/[A-Z]/', $contrasena) || !preg_match('/[0-9]/', $contrasena)) {
             echo json_encode(['success' => false, 'message' => 'La contraseña debe contener al menos una mayúscula y un número.']);
             return;
         }
         //Validacion de usuario existente
-        if ($this->model->usuarioExists($usuario)) {
+        if ($this->modelo->existeUsuario($usuario)) {
             echo json_encode(['success' => false, 'message' => "El usuario '{$usuario}' ya está registrado."]);
             return;
         }
         //Validacion de cedula existente
-        if ($this->model->cedulaExists($cedula)) {
+        if ($this->modelo->existeCedula($cedula)) {
             echo json_encode(['success' => false, 'message' => "La cédula 'V-{$cedula}' ya está registrada por otro usuario."]);
             return;
         }
         //Validacion de codigo de operador existente
-        if ($codigoOperador && $this->model->codigoExists($codigoOperador)) {
+        if ($codigoOperador && $this->modelo->existeCodigo($codigoOperador)) {
             echo json_encode(['success' => false, 'message' => 'El código de operador ya está en uso.']);
             return;
         }
@@ -188,9 +187,9 @@ class UsuarioController {
         }
 
         //Creacion de usuario
-        $data = [
+        $datos = [
             'usuario'         => $usuario,
-            'password'        => password_hash($password, PASSWORD_DEFAULT),
+            'password'        => password_hash($contrasena, PASSWORD_DEFAULT),
             'nombre_completo' => $nombreCompleto,
             'cedula'          => $cedula ?: null,
             'rol_id'          => $rolId,
@@ -202,7 +201,7 @@ class UsuarioController {
             'respuesta_2'     => ($rolId === 1) ? password_hash(strtolower($r2), PASSWORD_DEFAULT) : null,
         ];
         
-        if ($this->model->create($data)) {
+        if ($this->modelo->crear($datos)) {
             $adminId = (int)$_SESSION['user_id'];
             $this->log->registrar($adminId, 'INSERT', 'usuarios', null, null, [
                 'usuario' => $usuario, 
@@ -219,7 +218,7 @@ class UsuarioController {
     //--------------------------------------------------------------------
     // POST Actualiza la información básica del usuario
     //--------------------------------------------------------------------
-    public function update(): void {
+    public function actualizar(): void {
         header('Content-Type: application/json');
         //validacion de metodo  
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -262,21 +261,21 @@ class UsuarioController {
             return;
         }
         //Validacion de usuario existente
-        if ($this->model->usuarioExists($usuario, $id)) {
+        if ($this->modelo->existeUsuario($usuario, $id)) {
             echo json_encode(['success' => false, 'message' => "El usuario '{$usuario}' ya está registrado por otro usuario."]);
             return;
         }
         //Validacion de cedula existente
-        if ($this->model->cedulaExists($cedula, $id)) {
+        if ($this->modelo->existeCedula($cedula, $id)) {
             echo json_encode(['success' => false, 'message' => "La cédula 'V-{$cedula}' ya está registrada por otro usuario."]);
             return;
         }
         //Validacion de codigo de operador existente
-        if ($codigoOperador && $this->model->codigoExists($codigoOperador, $id)) {
+        if ($codigoOperador && $this->modelo->existeCodigo($codigoOperador, $id)) {
             echo json_encode(['success' => false, 'message' => 'El código de operador ya está en uso.']);
             return;
         }
-        $usuarioAnterior = $this->model->getById($id);
+        $usuarioAnterior = $this->modelo->obtenerPorId($id);
 
         // RESTRICCIÓN: SuperAdmin Único
         if ($usuarioAnterior) {
@@ -296,7 +295,7 @@ class UsuarioController {
         }
 
         //Actualizacion de usuario
-        $data = [
+        $datos = [
             'nombre_completo' => $nombreCompleto,
             'cedula'          => $cedula ?: null,
             'usuario'         => $usuario,
@@ -304,7 +303,7 @@ class UsuarioController {
             'codigo_operador' => $codigoOperador,
         ];
 
-        if ($this->model->updateInfo($id, $data)) {
+        if ($this->modelo->actualizarInformacion($id, $datos)) {
             $adminId = (int)$_SESSION['user_id'];
             $this->log->registrar($adminId, 'UPDATE', 'usuarios', $id, 
                 $usuarioAnterior ? [
@@ -330,7 +329,7 @@ class UsuarioController {
     //--------------------------------------------------------------------
     // POST Cambia la contraseña de un usuario
     //--------------------------------------------------------------------
-    public function updatePassword(): void {
+    public function actualizarContrasena(): void {
         header('Content-Type: application/json');
         //validacion de metodo
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -339,35 +338,35 @@ class UsuarioController {
         }
 
         $id          = (int)($_POST['id'] ?? 0);
-        $newPassword = $_POST['password'] ?? '';
-        $confirmPass = $_POST['password_confirm'] ?? '';
+        $nuevaContrasena = $_POST['password'] ?? '';
+        $confirmarContrasena = $_POST['password_confirm'] ?? '';
         //validacion de campos vacios
-        if (!$id || empty($newPassword)) {
+        if (!$id || empty($nuevaContrasena)) {
             echo json_encode(['success' => false, 'message' => 'Datos incompletos.']);
             return;
         }
         //validacion de longitud de contraseña
-        if (strlen($newPassword) < 6) {
+        if (strlen($nuevaContrasena) < 6) {
             echo json_encode(['success' => false, 'message' => 'La contraseña debe tener al menos 6 caracteres.']);
             return;
         }
-        if (strlen($newPassword) > 128) {
+        if (strlen($nuevaContrasena) > 128) {
             echo json_encode(['success' => false, 'message' => 'La contraseña no puede exceder los 128 caracteres.']);
             return;
         }
         //Validacion de complejidad: al menos 1 mayúscula y 1 número
-        if (!preg_match('/[A-Z]/', $newPassword) || !preg_match('/[0-9]/', $newPassword)) {
+        if (!preg_match('/[A-Z]/', $nuevaContrasena) || !preg_match('/[0-9]/', $nuevaContrasena)) {
             echo json_encode(['success' => false, 'message' => 'La contraseña debe contener al menos una mayúscula y un número.']);
             return;
         }
         //validacion de que las contraseñas coincidan
-        if ($newPassword !== $confirmPass) {
+        if ($nuevaContrasena !== $confirmarContrasena) {
             echo json_encode(['success' => false, 'message' => 'Las contraseñas no coinciden.']);
             return;
         }
 
         // Obtener datos antes de cambiar la contraseña
-        $usuarioAnterior = $this->model->getById($id);
+        $usuarioAnterior = $this->modelo->obtenerPorId($id);
 
         // EXTRA: Verificación de Seguridad para SuperAdmin
         if ($usuarioAnterior && (int)$usuarioAnterior['rol_id'] === 1) {
@@ -379,17 +378,17 @@ class UsuarioController {
                 return;
             }
 
-            if (!$this->model->verifySecurityAnswers($id, $ans1, $ans2)) {
+            if (!$this->modelo->verificarRespuestasSeguridad($id, $ans1, $ans2)) {
                 echo json_encode(['success' => false, 'message' => 'Respuestas de seguridad incorrectas. Acceso denegado.']);
                 return;
             }
         }
 
         // Encriptar la nueva contraseña
-        $hashed = password_hash($newPassword, PASSWORD_DEFAULT);
+        $hasheada = password_hash($nuevaContrasena, PASSWORD_DEFAULT);
 
         //actualizacion de contraseña
-        if ($this->model->updatePassword($id, $hashed)) {
+        if ($this->modelo->actualizarContrasena($id, $hasheada)) {
             $adminId = (int)$_SESSION['user_id'];
             $this->log->registrar($adminId, 'UPDATE', 'usuarios', $id, 
                 $usuarioAnterior ? [
@@ -408,7 +407,7 @@ class UsuarioController {
     //--------------------------------------------------------------------
     // POST Alterna el estado activo/inactivo de un usuario
     //--------------------------------------------------------------------
-    public function toggleEstado(): void {
+    public function alternarEstado(): void {
         header('Content-Type: application/json');
         //validacion de metodo
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -431,17 +430,17 @@ class UsuarioController {
         }
 
         // RESTRICCIÓN: No se puede desactivar al SuperAdmin
-        $usuarioAfectado = $this->model->getById($id);
+        $usuarioAfectado = $this->modelo->obtenerPorId($id);
         if ($usuarioAfectado && (int)$usuarioAfectado['rol_id'] === 1) {
             echo json_encode(['success' => false, 'message' => 'El SuperAdministrador no puede ser desactivado.']);
             return;
         }
 
         // Obtener estado previo antes de cambiarlo
-        $usuarioAnterior = $this->model->getById($id);
+        $usuarioAnterior = $this->modelo->obtenerPorId($id);
         $estadoAnterior = $usuarioAnterior ? $usuarioAnterior['estado'] : null;
 
-        $resultado = $this->model->toggleEstado($id);
+        $resultado = $this->modelo->alternarEstado($id);
         //validacion de que el estado se haya actualizado correctamente
         if ($resultado !== false) {
             $adminId     = (int)$_SESSION['user_id'];
@@ -464,7 +463,7 @@ class UsuarioController {
     //--------------------------------------------------------------------
     // GET Obtiene las preguntas de seguridad de un usuario (AJAX)
     //--------------------------------------------------------------------
-    public function getSecurityQuestions(): void {
+    public function obtenerPreguntasSeguridad(): void {
         header('Content-Type: application/json');
         $id = (int)($_GET['id'] ?? 0);
         if (!$id) {
@@ -472,9 +471,9 @@ class UsuarioController {
             return;
         }
 
-        $questions = $this->model->getUserQuestions($id);
-        if ($questions) {
-            echo json_encode(['success' => true, 'questions' => $questions]);
+        $preguntas = $this->modelo->obtenerPreguntasUsuario($id);
+        if ($preguntas) {
+            echo json_encode(['success' => true, 'questions' => $preguntas]);
         } else {
             echo json_encode(['success' => false, 'message' => 'El usuario no tiene preguntas configuradas.']);
         }
@@ -483,16 +482,16 @@ class UsuarioController {
     //--------------------------------------------------------------------
     // POST Actualiza las preguntas de seguridad (Requiere Código de Fábrica)
     //--------------------------------------------------------------------
-    public function updateSecurityQuestions(): void {
+    public function actualizarPreguntasSeguridad(): void {
         header('Content-Type: application/json');
         $id          = (int)($_POST['id'] ?? 0);
-        $factoryCode = trim($_POST['factory_code'] ?? '');
+        $codigoFabrica = trim($_POST['factory_code'] ?? '');
         $p1          = (int)($_POST['pregunta_1'] ?? 0);
         $p2          = (int)($_POST['pregunta_2'] ?? 0);
         $r1          = trim($_POST['respuesta_1'] ?? '');
         $r2          = trim($_POST['respuesta_2'] ?? '');
 
-        if (!$id || empty($factoryCode) || !$p1 || !$p2 || empty($r1) || empty($r2)) {
+        if (!$id || empty($codigoFabrica) || !$p1 || !$p2 || empty($r1) || empty($r2)) {
             echo json_encode(['success' => false, 'message' => 'Todos los campos son obligatorios.']);
             return;
         }
@@ -504,13 +503,13 @@ class UsuarioController {
         }
 
         // Validar Código de Fábrica
-        $setupModel = new SetupModel();
-        if (!$setupModel->validateActivationKey($factoryCode)) {
+        $registroModelo = new RegistroModelo();
+        if (!$registroModelo->validarLlaveActivacion($codigoFabrica)) {
             echo json_encode(['success' => false, 'message' => 'Código de Fábrica inválido. No tienes permiso para esta acción.']);
             return;
         }
 
-        $data = [
+        $datos = [
             'pregunta_1_id' => $p1,
             'pregunta_2_id' => $p2,
             'respuesta_1'   => password_hash(strtolower($r1), PASSWORD_DEFAULT),
@@ -518,7 +517,7 @@ class UsuarioController {
         ];
 
         // Ahora usamos el método unificado en el modelo
-        if ($this->model->updateSecurityFields($id, $data)) {
+        if ($this->modelo->actualizarCamposSeguridad($id, $datos)) {
             $adminId = (int)$_SESSION['user_id'];
             $this->log->registrar($adminId, 'UPDATE', 'usuarios', $id, null, null, "Preguntas de seguridad del usuario ID {$id} actualizadas.");
             echo json_encode(['success' => true, 'message' => 'Preguntas de seguridad actualizadas correctamente.']);

@@ -19,6 +19,9 @@
   <link href="public/libs/bootstrap/bootstrap.min.css" rel="stylesheet">
   <link href="public/libs/inter/index.css" rel="stylesheet">
   <link rel="stylesheet" href="public/css/login.css">
+  <?php if ($pageName === 'setup'): ?>
+    <link rel="stylesheet" href="public/css/setup.css">
+  <?php endif; ?>
 <?php else: ?>
   <!-- Estilos Exclusivos para el Dashboard / Sistema -->
   <meta name="color-scheme" content="light dark" />

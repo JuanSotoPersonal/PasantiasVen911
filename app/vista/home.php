@@ -107,6 +107,21 @@
         </div>
       </div>
       <!--fin::Fila-->
+
+      <div class="row">
+        <div class="col-md-6 mt-4">
+          <div class="card h-100 shadow-sm border-0">
+            <div class="card-header bg-white border-bottom">
+              <h3 class="card-title text-success fw-bold">
+                <i class="bi bi-pie-chart-fill me-2"></i>Distribución de Usuarios
+              </h3>
+            </div>
+            <div class="card-body">
+              <div id="usuariosChart"></div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     <!--fin::Contenedor-->
   </div>
@@ -134,35 +149,66 @@
     <!--fin::Plugin Requerido(AdminLTE)-->
 
     <!--inicio::Configuración de OverlayScrollbars-->
+    <script src="public/js/home_dashboard.js"></script>
+    <!--fin::Configuración de OverlayScrollbars-->
+
+    <!-- ApexCharts -->
+    <script src="public/libs/apexcharts/apexcharts.min.js"></script>
+    
+    <!-- Script de la Gráfica de Usuarios -->
     <script>
-      const SELECTOR_SIDEBAR_WRAPPER = '.sidebar-wrapper';
-      const Default = {
-        scrollbarTheme: 'os-theme-light',
-        scrollbarAutoHide: 'leave',
-        scrollbarClickScroll: true,
-      };
-      document.addEventListener('DOMContentLoaded', function () {
-        const sidebarWrapper = document.querySelector(SELECTOR_SIDEBAR_WRAPPER);
+      document.addEventListener('DOMContentLoaded', function() {
+        const stats = <?php echo json_encode($datos); ?>;
+        
+        const options = {
+          series: [stats.activo, stats.inactivo],
+          chart: {
+            type: 'donut',
+            height: 350,
+            fontFamily: 'inherit'
+          },
+          labels: ['Activos', 'Inactivos'],
+          colors: ['#16a34a', '#dc2626'], // Verde corporativo y Rojo alerta
+          legend: {
+            position: 'bottom'
+          },
+          stroke: {
+            show: false
+          },
+          plotOptions: {
+            pie: {
+              donut: {
+                labels: {
+                  show: true,
+                  total: {
+                    show: true,
+                    label: 'Total Usuarios',
+                    color: '#064e3b',
+                    formatter: function (w) {
+                      return w.globals.seriesTotals.reduce((a, b) => a + b, 0)
+                    }
+                  }
+                }
+              }
+            }
+          },
+          responsive: [{
+            breakpoint: 480,
+            options: {
+              chart: {
+                width: 200
+              },
+              legend: {
+                position: 'bottom'
+              }
+            }
+          }]
+        };
 
-        // Disable OverlayScrollbars on mobile devices to prevent touch interference
-        const isMobile = window.innerWidth <= 992;
-
-        if (
-          sidebarWrapper &&
-          OverlayScrollbarsGlobal?.OverlayScrollbars !== undefined &&
-          !isMobile
-        ) {
-          OverlayScrollbarsGlobal.OverlayScrollbars(sidebarWrapper, {
-            scrollbars: {
-              theme: Default.scrollbarTheme,
-              autoHide: Default.scrollbarAutoHide,
-              clickScroll: Default.scrollbarClickScroll,
-            },
-          });
-        }
+        const chart = new ApexCharts(document.querySelector("#usuariosChart"), options);
+        chart.render();
       });
     </script>
-    <!--fin::Configuración de OverlayScrollbars-->
 
     <!-- Agrega aquí los scripts específicos de tu página -->
     <!--fin::Script-->

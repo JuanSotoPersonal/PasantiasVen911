@@ -1,7 +1,7 @@
 $(document).ready(function () {
     const tablaLogs = $('#tablaLogs').DataTable({
         "ajax": {
-            "url": "index.php?url=log/getData",
+            "url": "index.php?url=log/obtenerDatos",
             "dataSrc": "data"
         },
         "columns": [

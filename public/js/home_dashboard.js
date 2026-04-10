@@ -1,0 +1,31 @@
+/* 
+ * Lógica compartida para el Dashboard Principal
+ * Configuración de scrollbars y utilidades de UI
+ */
+const SELECTOR_SIDEBAR_WRAPPER = '.sidebar-wrapper';
+const DefaultLayout = {
+  scrollbarTheme: 'os-theme-light',
+  scrollbarAutoHide: 'leave',
+  scrollbarClickScroll: true,
+};
+
+document.addEventListener('DOMContentLoaded', function () {
+  const sidebarWrapper = document.querySelector(SELECTOR_SIDEBAR_WRAPPER);
+
+  // Deshabilitar scrollbars personalizados en móviles para evitar interferencias
+  const isMobile = window.innerWidth <= 992;
+
+  if (
+    sidebarWrapper &&
+    OverlayScrollbarsGlobal?.OverlayScrollbars !== undefined &&
+    !isMobile
+  ) {
+    OverlayScrollbarsGlobal.OverlayScrollbars(sidebarWrapper, {
+      scrollbars: {
+        theme: DefaultLayout.scrollbarTheme,
+        autoHide: DefaultLayout.scrollbarAutoHide,
+        clickScroll: DefaultLayout.scrollbarClickScroll,
+      },
+    });
+  }
+});

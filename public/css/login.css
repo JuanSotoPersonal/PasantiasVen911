@@ -232,6 +232,50 @@ div:where(.swal2-container) div:where(.swal2-popup) {
   color: #14532d !important;
 }
 
+.swal2-confirm {
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 4px 6px rgba(22, 163, 74, 0.2) !important;
+}
+
+.swal2-confirm:hover {
+  background: linear-gradient(135deg, #15803d 0%, #14532d 100%) !important;
+}
+
+.swal2-cancel {
+  background-color: #f0fdf4 !important;
+  color: #064e3b !important;
+  border: 1px solid #bbf7d0 !important;
+}
+
+.swal2-cancel:hover {
+  background-color: #dcfce7 !important;
+}
+
+.btn-setup-activation {
+    color: #16a34a;
+    border-color: #16a34a;
+    transition: all 0.3s ease;
+}
+
+.btn-setup-activation:hover {
+    background-color: #16a34a;
+    color: #ffffff !important;
+    border-color: #16a34a;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2);
+}
+
+.form-text-ven {
+    color: rgba(6, 78, 59, 0.6) !important;
+    font-size: 0.75rem !important;
+}
+
+.login-hr {
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
 /* Ajustes para pantallas pequeñas (Móviles) */
 @media (max-width: 480px) {
   .login-wrapper {

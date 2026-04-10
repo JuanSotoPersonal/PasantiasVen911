@@ -139,7 +139,7 @@ $(function () {
   const tabla = $('#tablaUsuarios').DataTable({
     autoWidth: false,
     ajax: {
-      url: 'index.php?url=usuario/getData&estado=activo',
+      url: 'index.php?url=usuario/obtenerDatos&estado=activo',
       dataSrc: 'data',
       error: function () {
         Swal.fire('Error', 'No se pudieron cargar los datos de usuarios.', 'error');
@@ -155,7 +155,7 @@ $(function () {
   const tablaInactivos = $('#tablaInactivos').DataTable({
     autoWidth: false,
     ajax: {
-      url: 'index.php?url=usuario/getData&estado=inactivo',
+      url: 'index.php?url=usuario/obtenerDatos&estado=inactivo',
       dataSrc: 'data',
       error: function () {
         Swal.fire('Error', 'No se pudieron cargar los datos inactivos.', 'error');
@@ -234,7 +234,7 @@ $(function () {
     bloquearBtn($btn, 'Guardando...');
 
     $.ajax({
-      url:      'index.php?url=usuario/store',
+      url:      'index.php?url=usuario/guardar',
       method:   'POST',
       data:     $form.serialize(),
       dataType: 'json',
@@ -283,7 +283,7 @@ $(function () {
     bloquearBtn($btn, 'Guardando...');
 
     $.ajax({
-      url:      'index.php?url=usuario/update',
+      url:      'index.php?url=usuario/actualizar',
       method:   'POST',
       data:     $form.serialize(),
       dataType: 'json',
@@ -323,7 +323,7 @@ $(function () {
     // Si es SuperAdmin (detectamos por el icono de escudo en la fila o simplemente intentamos cargar)
     // En este caso, mejor preguntamos al servidor si tiene preguntas
     try {
-        const res = await $.getJSON(`index.php?url=usuario/getSecurityQuestions&id=${id}`);
+        const res = await $.getJSON(`index.php?url=usuario/obtenerPreguntasSeguridad&id=${id}`);
         if (res.success) {
             $('#label-pregunta-1').text(res.questions.p1_texto);
             $('#label-pregunta-2').text(res.questions.p2_texto);
@@ -344,7 +344,7 @@ $(function () {
     bloquearBtn($btn, 'Actualizando...');
 
     $.ajax({
-      url:      'index.php?url=usuario/updatePassword',
+      url:      'index.php?url=usuario/actualizarContrasena',
       method:   'POST',
       data:     $form.serialize(),
       dataType: 'json',
@@ -385,7 +385,7 @@ $(function () {
       if (!result.isConfirmed) return;
 
       $.ajax({
-        url:      'index.php?url=usuario/toggleEstado',
+        url:      'index.php?url=usuario/alternarEstado',
         method:   'POST',
         data:     { id: id },
         dataType: 'json',
@@ -426,7 +426,7 @@ $(function () {
       bloquearBtn($btn, 'Actualizando...');
 
       $.ajax({
-          url: 'index.php?url=usuario/updateSecurityQuestions',
+          url: 'index.php?url=usuario/actualizarPreguntasSeguridad',
           method: 'POST',
           data: $form.serialize(),
           dataType: 'json'

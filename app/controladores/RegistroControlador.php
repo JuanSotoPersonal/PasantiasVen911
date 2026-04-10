@@ -1,21 +1,21 @@
 <?php
 
-require_once 'app/Models/UsuarioModel.php';
-require_once 'app/Models/SetupModel.php';
-require_once 'app/Models/LogModel.php';
+require_once 'app/modelos/UsuarioModelo.php';
+require_once 'app/modelos/RegistroModelo.php';
+require_once 'app/modelos/LogModelo.php';
 
-use App\Models\UsuarioModel;
-use App\Models\SetupModel;
-use App\Models\LogModel;
+use App\modelos\UsuarioModelo;
+use App\modelos\RegistroModelo;
+use App\modelos\LogModelo;
 
-class SetupController {
+class RegistroControlador {
 
-    private $userModel;
-    private $setupModel;
+    private $usuarioModelo;
+    private $registroModelo;
 
     public function __construct() {
-        $this->userModel = new UsuarioModel(); // Ahora usa el modelo consolidado
-        $this->setupModel = new SetupModel();
+        $this->usuarioModelo = new UsuarioModelo(); // Ahora usa el modelo consolidado
+        $this->registroModelo = new RegistroModelo();
     }
 
     //--------------------------------------------------------------------
@@ -23,36 +23,36 @@ class SetupController {
     //--------------------------------------------------------------------
     public function index(): void {
         // Si ya hay usuarios, no permitir entrar al setup
-        if ($this->userModel->countUsers() > 0) {
+        if ($this->usuarioModelo->contarUsuarios() > 0) {
             header('Location: index.php?url=auth');
             exit;
         }
 
-        $preguntas = $this->setupModel->getSecurityQuestions();
-        require_once 'app/Views/setup.php';
+        $preguntas = $this->registroModelo->obtenerPreguntasSeguridad();
+        require_once 'app/vista/setup.php';
     }
 
     //--------------------------------------------------------------------
     // Procesa el registro del primer SuperAdmin
     //--------------------------------------------------------------------
-    public function register(): void {
+    public function registrar(): void {
         header('Content-Type: application/json');
 
-        if ($this->userModel->countUsers() > 0) {
+        if ($this->usuarioModelo->contarUsuarios() > 0) {
             echo json_encode(['success' => false, 'message' => 'El sistema ya ha sido inicializado.']);
             return;
         }
 
         // Validación de Código de Fábrica
-        $factoryCode = trim($_POST['factory_code'] ?? '');
-        if (!$this->setupModel->validateActivationKey($factoryCode)) {
+        $codigoFabrica = trim($_POST['factory_code'] ?? '');
+        if (!$this->registroModelo->validarLlaveActivacion($codigoFabrica)) {
             echo json_encode(['success' => false, 'message' => 'Código de activación de sistema inválido.']);
             return;
         }
 
         // Datos del SuperAdmin
         $usuario        = trim($_POST['usuario'] ?? '');
-        $password       = $_POST['password'] ?? '';
+        $contrasena     = $_POST['password'] ?? '';
         $nombreCompleto = trim($_POST['nombre_completo'] ?? '');
         $cedula         = trim($_POST['cedula'] ?? '');
         
@@ -63,7 +63,7 @@ class SetupController {
         $r2 = trim($_POST['respuesta_2'] ?? '');
 
         // Validaciones básicas
-        if (empty($usuario) || empty($password) || empty($nombreCompleto) || empty($r1) || empty($r2) || $p1 === 0 || $p2 === 0) {
+        if (empty($usuario) || empty($contrasena) || empty($nombreCompleto) || empty($r1) || empty($r2) || $p1 === 0 || $p2 === 0) {
             echo json_encode(['success' => false, 'message' => 'Todos los campos son obligatorios.']);
             return;
         }
@@ -113,24 +113,24 @@ class SetupController {
             return;
         }
 
-        // Validación de longitud de contraseña (Ya añadida previamente)
-        if (strlen($password) < 6) {
+        // Validación de longitud de contrasena (Ya añadida previamente)
+        if (strlen($contrasena) < 6) {
             echo json_encode(['success' => false, 'message' => 'La contraseña debe tener al menos 6 caracteres.']);
             return;
         }
-        if (strlen($password) > 128) {
+        if (strlen($contrasena) > 128) {
             echo json_encode(['success' => false, 'message' => 'La contraseña no puede exceder los 128 caracteres.']);
             return;
         }
-        if (!preg_match('/[A-Z]/', $password) || !preg_match('/[0-9]/', $password)) {
+        if (!preg_match('/[A-Z]/', $contrasena) || !preg_match('/[0-9]/', $contrasena)) {
             echo json_encode(['success' => false, 'message' => 'La contraseña debe contener al menos una mayúscula y un número.']);
             return;
         }
 
         // Crear el usuario con el modelo consolidado
-        $data = [
+        $datos = [
             'usuario'         => $usuario,
-            'password'        => password_hash($password, PASSWORD_DEFAULT),
+            'password'        => password_hash($contrasena, PASSWORD_DEFAULT),
             'nombre_completo' => $nombreCompleto,
             'cedula'          => $cedula ?: null,
             'rol_id'          => 1, // SuperAdmin forzado
@@ -142,9 +142,9 @@ class SetupController {
             'respuesta_2'     => password_hash(strtolower($r2), PASSWORD_DEFAULT)
         ];
 
-        if ($this->userModel->create($data)) {
+        if ($this->usuarioModelo->crear($datos)) {
             // El primer login es manual tras el setup
-            $log = new LogModel();
+            $log = new LogModelo();
             $log->registrar(0, 'INSERT', 'usuarios', null, null, ['usuario' => $usuario], "Sistema inicializado con SuperAdmin: {$usuario}.");
             
             echo json_encode(['success' => true, 'message' => 'Sistema activado con éxito. Redirigiendo al login...']);
