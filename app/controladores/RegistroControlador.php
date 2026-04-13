@@ -114,8 +114,8 @@ class RegistroControlador {
         }
 
         // Validación de longitud de contrasena (Ya añadida previamente)
-        if (strlen($contrasena) < 6) {
-            echo json_encode(['success' => false, 'message' => 'La contraseña debe tener al menos 6 caracteres.']);
+        if (strlen($contrasena) < 8) {
+            echo json_encode(['success' => false, 'message' => 'La contraseña debe tener al menos 8 caracteres.']);
             return;
         }
         if (strlen($contrasena) > 128) {
@@ -134,7 +134,6 @@ class RegistroControlador {
             'nombre_completo' => $nombreCompleto,
             'cedula'          => $cedula ?: null,
             'rol_id'          => 1, // SuperAdmin forzado
-            'codigo_operador' => 'ROOT-01',
             'estado'          => 'activo',
             'pregunta_1_id'   => $p1,
             'pregunta_2_id'   => $p2,

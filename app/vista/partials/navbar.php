@@ -18,13 +18,24 @@
       <li class="nav-item d-none d-md-block">
         <a href="index.php?url=home" class="nav-link"><i class="bi bi-house-door-fill me-1"></i>Inicio</a>
       </li>
-      
-      <?php if (isset($_SESSION['user_rol_id']) && $_SESSION['user_rol_id'] == 1): ?>
+
+      <?php if (tienePerm('fichas', 'ver')): ?>
+        <li class="nav-item d-none d-md-block">
+          <a href="index.php?url=ficha" class="nav-link">
+            <i class="bi bi-file-earmark-text-fill me-1"></i>Fichas
+          </a>
+        </li>
+      <?php endif; ?>
+
+      <?php if (tienePerm('usuarios', 'ver')): ?>
         <li class="nav-item d-none d-md-block">
           <a href="index.php?url=usuario" class="nav-link">
             <i class="bi bi-people-fill me-1"></i>Usuarios
           </a>
         </li>
+      <?php endif; ?>
+
+      <?php if (tienePerm('historial', 'ver')): ?>
         <li class="nav-item d-none d-md-block">
           <a href="index.php?url=log" class="nav-link">
             <i class="bi bi-clock-history me-1"></i>Historial
@@ -36,6 +47,7 @@
 
     <!--inicio::Enlaces de Navegación de Fin-->
     <ul class="navbar-nav ms-auto">
+      <?php require __DIR__ . '/notificaciones_panel.php'; ?>
       <?php require __DIR__ . '/profile_bubble.php'; ?>
     </ul>
     <!--fin::Enlaces de Navegación de Fin-->

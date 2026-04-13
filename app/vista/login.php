@@ -51,7 +51,7 @@
       </button>
     </form>
 
-    <?php if (isset($canRegister) && $canRegister): ?>
+    <?php if (isset($puedeRegistrarse) && $puedeRegistrarse): ?>
     <div class="mt-4 text-center">
       <hr class="login-hr">
       <p class="text-muted small mb-2 fw-bold">Primer inicio detectado</p>

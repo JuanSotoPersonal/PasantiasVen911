@@ -1,7 +1,21 @@
 // usuarios/datatable.js
 // Módulo Usuarios: DataTable, CRUD (crear, editar, contraseña, toggle estado)
+const escapeHTML = (str) => {
+  if (typeof str !== 'string' && str != null) str = str.toString();
+  if (!str) return str;
+  return str.replace(/[&<>'"]/g,
+    tag => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      "'": '&#39;',
+      '"': '&quot;'
+    }[tag] || tag)
+  );
+};
+
 $(function () {
-  
+
   // Configuración global de SweetAlert para evitar que modifique el padding y altura del body y achique la vista
   window.Swal = Swal.mixin({
     heightAuto: false,
@@ -13,24 +27,20 @@ $(function () {
   // ========================
   const configuracionColumnas = [
     { data: null, width: '50px', orderable: false, searchable: false, render: (d, type, row, meta) => meta.row + 1 },
-    { data: 'nombre_completo' },
-    { data: 'usuario' },
+    { data: 'nombre_completo', render: (d) => escapeHTML(d) },
+    { data: 'usuario', render: (d) => escapeHTML(d) },
     {
       data: 'cedula',
-      render: (d) => d ? `V-${d}` : '<span class="text-muted fst-italic small">Sin cédula</span>',
+      render: (d) => d ? `V-${escapeHTML(d)}` : '<span class="text-muted fst-italic small">Sin cédula</span>',
     },
-    { data: 'nombre_rol' },
-    {
-      data: 'codigo_operador',
-      render: (d) => d ? `<code>${d}</code>` : '<span class="text-muted fst-italic small">—</span>',
-    },
+    { data: 'nombre_rol', render: (d) => escapeHTML(d) },
     {
       data: 'estado',
       render: (d, type, row) => {
-        const isActivo   = d === 'activo';
+        const isActivo = d === 'activo';
         const badgeClass = isActivo ? 'badge-activo' : 'badge-inactivo';
-        const icon       = isActivo ? 'bi-toggle-on' : 'bi-toggle-off';
-        if (row.rol_id === 1) {
+        const icon = isActivo ? 'bi-toggle-on' : 'bi-toggle-off';
+        if (row.rol_id == 1) {
           return `
           <h3>
             <span class="badge badge-estado ${badgeClass}">
@@ -58,7 +68,7 @@ $(function () {
       searchable: false,
       className: 'text-center',
       render: (d, type, row) => {
-        if (row.rol_id === 1) {
+        if (row.rol_id == 1) {
           return `
             <span class="btn-ven-edit btn-accion me-1 d-inline-flex align-items-center justify-content-center"
                   style="cursor: help; opacity: 0.9;" title="Administrador Protegido">
@@ -68,7 +78,7 @@ $(function () {
               type="button"
               class="btn btn-ven-password btn-accion btn-password"
               data-id="${row.id}"
-              data-nombre="${row.nombre_completo}"
+              data-nombre="${escapeHTML(row.nombre_completo)}"
               title="Cambiar contraseña"
             >
               <i class="bi bi-key-fill"></i>
@@ -77,7 +87,7 @@ $(function () {
               type="button"
               class="btn btn-ven-primary btn-accion btn-config-seguridad"
               data-id="${row.id}"
-              data-nombre="${row.nombre_completo}"
+              data-nombre="${escapeHTML(row.nombre_completo)}"
               title="Configurar Preguntas de Seguridad"
             >
               <i class="bi bi-shield-check"></i>
@@ -89,12 +99,11 @@ $(function () {
             type="button"
             class="btn btn-ven-edit btn-accion btn-editar me-1"
             data-id="${row.id}"
-            data-nombre="${row.nombre_completo}"
-            data-cedula="${row.cedula || ''}"
-            data-usuario="${row.usuario}"
+            data-nombre="${escapeHTML(row.nombre_completo)}"
+            data-cedula="${escapeHTML(row.cedula || '')}"
+            data-usuario="${escapeHTML(row.usuario)}"
             data-rol="${row.rol_id}"
             data-id-rol="${row.rol_id}"
-            data-codigo="${row.codigo_operador || ''}"
             title="Editar usuario"
           >
             <i class="bi bi-pencil-fill"></i>
@@ -103,7 +112,7 @@ $(function () {
             type="button"
             class="btn btn-ven-password btn-accion btn-password"
             data-id="${row.id}"
-            data-nombre="${row.nombre_completo}"
+            data-nombre="${escapeHTML(row.nombre_completo)}"
             title="Cambiar contraseña"
           >
             <i class="bi bi-key-fill"></i>
@@ -115,20 +124,20 @@ $(function () {
 
   const configuracionLenguaje = {
     url: '',
-    decimal:        ',',
-    emptyTable:     'No hay usuarios registrados.',
-    info:           'Mostrando _START_ a _END_ de _TOTAL_ usuarios',
-    infoEmpty:      'Sin registros disponibles',
-    infoFiltered:   '(filtrado de _MAX_ registros totales)',
-    lengthMenu:     'Mostrar _MENU_ registros',
+    decimal: ',',
+    emptyTable: 'No hay usuarios registrados.',
+    info: 'Mostrando _START_ a _END_ de _TOTAL_ usuarios',
+    infoEmpty: 'Sin registros disponibles',
+    infoFiltered: '(filtrado de _MAX_ registros totales)',
+    lengthMenu: 'Mostrar _MENU_ registros',
     loadingRecords: 'Cargando...',
-    processing:     'Procesando...',
-    search:         'Buscar:',
-    zeroRecords:    'No se encontraron coincidencias.',
+    processing: 'Procesando...',
+    search: 'Buscar:',
+    zeroRecords: 'No se encontraron coincidencias.',
     paginate: {
-      first:    '«',
-      last:     '»',
-      next:     '›',
+      first: '«',
+      last: '»',
+      next: '›',
       previous: '‹',
     },
   };
@@ -189,7 +198,7 @@ $(function () {
   // ========================
   // 3. HELPERS
   // ========================
-  function recargarTabla() { 
+  function recargarTabla() {
     $(document).trigger('usuarios:reload');
   }
 
@@ -201,8 +210,8 @@ $(function () {
   // Toggle visibilidad de contraseña
   $(document).on('click', '.btn-eye', function () {
     const targetId = $(this).data('target');
-    const $input   = $('#' + targetId);
-    const $icon    = $(this).find('i');
+    const $input = $('#' + targetId);
+    const $icon = $(this).find('i');
     if ($input.attr('type') === 'password') {
       $input.attr('type', 'text');
       $icon.removeClass('bi-eye').addClass('bi-eye-slash');
@@ -215,44 +224,44 @@ $(function () {
   // ========================
   // 4. CREAR USUARIO
   // ========================
-  
+
   // Mostrar/ocultar campos de seguridad según el rol
-  $('#crear-rol').on('change', function() {
-      const rolId = parseInt($(this).val());
-      if (rolId === 1) {
-          $('#seccion-seguridad-crear').slideDown();
-      } else {
-          $('#seccion-seguridad-crear').slideUp();
-      }
+  $('#crear-rol').on('change', function () {
+    const rolId = parseInt($(this).val());
+    if (rolId === 1) {
+      $('#seccion-seguridad-crear').slideDown();
+    } else {
+      $('#seccion-seguridad-crear').slideUp();
+    }
   });
   $('#formCrearUsuario').on('submit', function (e) {
     e.preventDefault();
-    const $btn         = $('#btn-guardar-crear');
-    const $form        = $(this);
+    const $btn = $('#btn-guardar-crear');
+    const $form = $(this);
     const originalHtml = $btn.html();
 
     bloquearBtn($btn, 'Guardando...');
 
     $.ajax({
-      url:      'index.php?url=usuario/guardar',
-      method:   'POST',
-      data:     $form.serialize(),
+      url: 'index.php?url=usuario/guardar',
+      method: 'POST',
+      data: $form.serialize(),
       dataType: 'json',
     })
-    .done(function (res) {
-      if (res.success) {
-        Swal.fire({ icon: 'success', title: '¡Hecho!', text: res.message, timer: 2000, showConfirmButton: false });
-        $('#modalCrearUsuario').modal('hide');
-        $form[0].reset();
-        recargarTabla();
-      } else {
-        Swal.fire({ icon: 'warning', title: 'Atención', text: res.message });
-      }
-    })
-    .fail(function () {
-      Swal.fire({ icon: 'error', title: 'Error', text: 'Error de comunicación con el servidor.' });
-    })
-    .always(function () { desbloquearBtn($btn, originalHtml); });
+      .done(function (res) {
+        if (res.success) {
+          Swal.fire({ icon: 'success', title: '¡Hecho!', text: res.message, timer: 2000, showConfirmButton: false });
+          $('#modalCrearUsuario').modal('hide');
+          $form[0].reset();
+          recargarTabla();
+        } else {
+          Swal.fire({ icon: 'warning', title: 'Atención', text: res.message });
+        }
+      })
+      .fail(function () {
+        Swal.fire({ icon: 'error', title: 'Error', text: 'Error de comunicación con el servidor.' });
+      })
+      .always(function () { desbloquearBtn($btn, originalHtml); });
   });
 
   // Limpiar form al cerrar modal
@@ -270,37 +279,36 @@ $(function () {
     $('#editar-cedula').val($btn.data('cedula'));
     $('#editar-usuario').val($btn.data('usuario'));
     $('#editar-rol').val($btn.data('rol'));
-    $('#editar-codigo').val($btn.data('codigo'));
     $('#modalEditarUsuario').modal('show');
   });
 
   $('#formEditarUsuario').on('submit', function (e) {
     e.preventDefault();
-    const $btn         = $('#btn-guardar-editar');
-    const $form        = $(this);
+    const $btn = $('#btn-guardar-editar');
+    const $form = $(this);
     const originalHtml = $btn.html();
 
     bloquearBtn($btn, 'Guardando...');
 
     $.ajax({
-      url:      'index.php?url=usuario/actualizar',
-      method:   'POST',
-      data:     $form.serialize(),
+      url: 'index.php?url=usuario/actualizar',
+      method: 'POST',
+      data: $form.serialize(),
       dataType: 'json',
     })
-    .done(function (res) {
-      if (res.success) {
-        Swal.fire({ icon: 'success', title: '¡Actualizado!', text: res.message, timer: 2000, showConfirmButton: false });
-        $('#modalEditarUsuario').modal('hide');
-        recargarTabla();
-      } else {
-        Swal.fire({ icon: 'warning', title: 'Atención', text: res.message });
-      }
-    })
-    .fail(function () {
-      Swal.fire({ icon: 'error', title: 'Error', text: 'Error de comunicación con el servidor.' });
-    })
-    .always(function () { desbloquearBtn($btn, originalHtml); });
+      .done(function (res) {
+        if (res.success) {
+          Swal.fire({ icon: 'success', title: '¡Actualizado!', text: res.message, timer: 2000, showConfirmButton: false });
+          $('#modalEditarUsuario').modal('hide');
+          recargarTabla();
+        } else {
+          Swal.fire({ icon: 'warning', title: 'Atención', text: res.message });
+        }
+      })
+      .fail(function () {
+        Swal.fire({ icon: 'error', title: 'Error', text: 'Error de comunicación con el servidor.' });
+      })
+      .always(function () { desbloquearBtn($btn, originalHtml); });
   });
 
   // ========================
@@ -309,13 +317,13 @@ $(function () {
   $(document).on('click', '.btn-password', async function () {
     const $btn = $(this);
     const id = $btn.data('id');
-    
+
     $('#pwd-id').val(id);
     $('#pwd-nombre-usuario').text($btn.data('nombre'));
     $('#pwd-nueva').val('').attr('type', 'password');
     $('#pwd-confirmar').val('').attr('type', 'password');
     $('#formCambiarPassword').find('.btn-eye i').removeClass('bi-eye-slash').addClass('bi-eye');
-    
+
     // Resetear sección de seguridad
     $('#seccion-validacion-seguridad').hide();
     $('#ans-1, #ans-2').val('').prop('required', false);
@@ -323,13 +331,13 @@ $(function () {
     // Si es SuperAdmin (detectamos por el icono de escudo en la fila o simplemente intentamos cargar)
     // En este caso, mejor preguntamos al servidor si tiene preguntas
     try {
-        const res = await $.getJSON(`index.php?url=usuario/obtenerPreguntasSeguridad&id=${id}`);
-        if (res.success) {
-            $('#label-pregunta-1').text(res.questions.p1_texto);
-            $('#label-pregunta-2').text(res.questions.p2_texto);
-            $('#ans-1, #ans-2').prop('required', true);
-            $('#seccion-validacion-seguridad').slideDown();
-        }
+      const res = await $.getJSON(`index.php?url=usuario/obtenerPreguntasSeguridad&id=${id}`);
+      if (res.success) {
+        $('#label-pregunta-1').text(res.questions.p1_texto);
+        $('#label-pregunta-2').text(res.questions.p2_texto);
+        $('#ans-1, #ans-2').prop('required', true);
+        $('#seccion-validacion-seguridad').slideDown();
+      }
     } catch (e) { console.log("Usuario sin preguntas de seguridad o error."); }
 
     $('#modalCambiarPassword').modal('show');
@@ -337,113 +345,113 @@ $(function () {
 
   $('#formCambiarPassword').on('submit', function (e) {
     e.preventDefault();
-    const $btn         = $(this).find('[type="submit"]');
-    const $form        = $(this);
+    const $btn = $(this).find('[type="submit"]');
+    const $form = $(this);
     const originalHtml = $btn.html();
 
     bloquearBtn($btn, 'Actualizando...');
 
     $.ajax({
-      url:      'index.php?url=usuario/actualizarContrasena',
-      method:   'POST',
-      data:     $form.serialize(),
+      url: 'index.php?url=usuario/actualizarContrasena',
+      method: 'POST',
+      data: $form.serialize(),
       dataType: 'json',
     })
-    .done(function (res) {
-      if (res.success) {
-        Swal.fire({ icon: 'success', title: '¡Listo!', text: res.message, timer: 2000, showConfirmButton: false });
-        $('#modalCambiarPassword').modal('hide');
-        $form[0].reset();
-      } else {
-        Swal.fire({ icon: 'warning', title: 'Atención', text: res.message });
-      }
-    })
-    .fail(function () {
-      Swal.fire({ icon: 'error', title: 'Error', text: 'Error de comunicación con el servidor.' });
-    })
-    .always(function () { desbloquearBtn($btn, originalHtml); });
-  });
-
-  // ========================
-  // 7. TOGGLE ESTADO
-  // ========================
-  $(document).on('click', '.btn-toggle-estado', function () {
-    const id     = $(this).data('id');
-    const estado = $(this).data('estado');
-    const accion = estado === 'activo' ? 'desactivar' : 'activar';
-
-    Swal.fire({
-      title: `¿${accion.charAt(0).toUpperCase() + accion.slice(1)} usuario?`,
-      text:  `El usuario pasará a estado ${accion === 'activar' ? 'activo' : 'inactivo'}.`,
-      icon:  'question',
-      showCancelButton:   true,
-      confirmButtonText:  `Sí, ${accion}`,
-      cancelButtonText:   'Cancelar',
-      confirmButtonColor: '#16a34a',
-      cancelButtonColor:  '#f0fdf4',
-    }).then(function (result) {
-      if (!result.isConfirmed) return;
-
-      $.ajax({
-        url:      'index.php?url=usuario/alternarEstado',
-        method:   'POST',
-        data:     { id: id },
-        dataType: 'json',
-      })
       .done(function (res) {
         if (res.success) {
-          Swal.fire({ icon: 'success', title: '¡Estado cambiado!', text: res.message, timer: 1800, showConfirmButton: false });
-          recargarTabla();
+          Swal.fire({ icon: 'success', title: '¡Listo!', text: res.message, timer: 2000, showConfirmButton: false });
+          $('#modalCambiarPassword').modal('hide');
+          $form[0].reset();
         } else {
           Swal.fire({ icon: 'warning', title: 'Atención', text: res.message });
         }
       })
       .fail(function () {
         Swal.fire({ icon: 'error', title: 'Error', text: 'Error de comunicación con el servidor.' });
-      });
+      })
+      .always(function () { desbloquearBtn($btn, originalHtml); });
+  });
+
+  // ========================
+  // 7. TOGGLE ESTADO
+  // ========================
+  $(document).on('click', '.btn-toggle-estado', function () {
+    const id = $(this).data('id');
+    const estado = $(this).data('estado');
+    const accion = estado === 'activo' ? 'desactivar' : 'activar';
+
+    Swal.fire({
+      title: `¿${accion.charAt(0).toUpperCase() + accion.slice(1)} usuario?`,
+      text: `El usuario pasará a estado ${accion === 'activar' ? 'activo' : 'inactivo'}.`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: `Sí, ${accion}`,
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#16a34a',
+      cancelButtonColor: '#f0fdf4',
+    }).then(function (result) {
+      if (!result.isConfirmed) return;
+
+      $.ajax({
+        url: 'index.php?url=usuario/alternarEstado',
+        method: 'POST',
+        data: { id: id },
+        dataType: 'json',
+      })
+        .done(function (res) {
+          if (res.success) {
+            Swal.fire({ icon: 'success', title: '¡Estado cambiado!', text: res.message, timer: 1800, showConfirmButton: false });
+            recargarTabla();
+          } else {
+            Swal.fire({ icon: 'warning', title: 'Atención', text: res.message });
+          }
+        })
+        .fail(function () {
+          Swal.fire({ icon: 'error', title: 'Error', text: 'Error de comunicación con el servidor.' });
+        });
     });
   });
 
   // ========================
   // 8. CONFIGURAR SEGURIDAD (SUPERADMIN)
   // ========================
-  $(document).on('click', '.btn-config-seguridad', function() {
-      const $btn = $(this);
-      $('#seg-id').val($btn.data('id'));
-      $('#seg-factory-code').val('');
-      $('#formConfigSeguridad')[0].reset();
-      // Re-establecer el ID oculto porque reset lo borra
-      $('#seg-id').val($btn.data('id'));
-      $('#modalConfigSeguridad').modal('show');
+  $(document).on('click', '.btn-config-seguridad', function () {
+    const $btn = $(this);
+    $('#seg-id').val($btn.data('id'));
+    $('#seg-factory-code').val('');
+    $('#formConfigSeguridad')[0].reset();
+    // Re-establecer el ID oculto porque reset lo borra
+    $('#seg-id').val($btn.data('id'));
+    $('#modalConfigSeguridad').modal('show');
   });
 
-  $('#formConfigSeguridad').on('submit', function(e) {
-      e.preventDefault();
-      const $btn = $(this).find('[type="submit"]');
-      const $form = $(this);
-      const originalHtml = $btn.html();
+  $('#formConfigSeguridad').on('submit', function (e) {
+    e.preventDefault();
+    const $btn = $(this).find('[type="submit"]');
+    const $form = $(this);
+    const originalHtml = $btn.html();
 
-      bloquearBtn($btn, 'Actualizando...');
+    bloquearBtn($btn, 'Actualizando...');
 
-      $.ajax({
-          url: 'index.php?url=usuario/actualizarPreguntasSeguridad',
-          method: 'POST',
-          data: $form.serialize(),
-          dataType: 'json'
+    $.ajax({
+      url: 'index.php?url=usuario/actualizarPreguntasSeguridad',
+      method: 'POST',
+      data: $form.serialize(),
+      dataType: 'json'
+    })
+      .done(function (res) {
+        if (res.success) {
+          Swal.fire({ icon: 'success', title: '¡Actualizado!', text: res.message, timer: 2000, showConfirmButton: false });
+          $('#modalConfigSeguridad').modal('hide');
+        } else {
+          Swal.fire({ icon: 'warning', title: 'Atención', text: res.message });
+        }
       })
-      .done(function(res) {
-          if (res.success) {
-              Swal.fire({ icon: 'success', title: '¡Actualizado!', text: res.message, timer: 2000, showConfirmButton: false });
-              $('#modalConfigSeguridad').modal('hide');
-          } else {
-              Swal.fire({ icon: 'warning', title: 'Atención', text: res.message });
-          }
+      .fail(function () {
+        Swal.fire({ icon: 'error', title: 'Error', text: 'Error de comunicación.' });
       })
-      .fail(function() {
-          Swal.fire({ icon: 'error', title: 'Error', text: 'Error de comunicación.' });
-      })
-      .always(function() {
-          desbloquearBtn($btn, originalHtml);
+      .always(function () {
+        desbloquearBtn($btn, originalHtml);
       });
   });
 

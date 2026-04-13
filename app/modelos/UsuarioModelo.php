@@ -28,7 +28,7 @@ class UsuarioModelo {
     public function obtenerTodos(string $estado = 'activo'): array {
         try {
             $query = "SELECT u.id, u.usuario, u.nombre_completo, u.cedula,
-                             u.codigo_operador, u.estado, u.rol_id, r.nombre AS nombre_rol
+                             u.estado, u.rol_id, r.nombre AS nombre_rol
                       FROM {$this->table_name} u
                       INNER JOIN roles r ON u.rol_id = r.id
                       WHERE u.estado = :estado
@@ -50,7 +50,7 @@ class UsuarioModelo {
     public function obtenerPorRol(int $rolId, string $estado = 'activo'): array {
         try {
             $query = "SELECT u.id, u.usuario, u.nombre_completo, u.cedula,
-                             u.codigo_operador, u.estado, u.rol_id, r.nombre AS nombre_rol
+                             u.estado, u.rol_id, r.nombre AS nombre_rol
                       FROM {$this->table_name} u
                       INNER JOIN roles r ON u.rol_id = r.id
                       WHERE u.rol_id = :rol_id AND u.estado = :estado
@@ -107,24 +107,6 @@ class UsuarioModelo {
         }
     }
 
-    //--------------------------------------------------------------------
-    // Verifica si un código de operador ya existe (excluyendo un ID específico).
-    //--------------------------------------------------------------------
-    public function existeCodigo(string $codigo, int $excludeId = 0): bool {
-        try {
-            $query = "SELECT COUNT(*) FROM {$this->table_name}
-                      WHERE codigo_operador = :codigo AND id != :exclude_id";
-
-            $stmt = $this->conn->prepare($query);
-            $stmt->bindParam(':codigo', $codigo, PDO::PARAM_STR);
-            $stmt->bindParam(':exclude_id', $excludeId, PDO::PARAM_INT);
-            $stmt->execute();
-            return (int)$stmt->fetchColumn() > 0;
-        } catch (Exception $e) {
-            error_log("[UsuarioModelo] Error en existeCodigo: " . $e->getMessage());
-            return false;
-        }
-    }
 
     //--------------------------------------------------------------------
     // Verifica si una cédula ya existe (excluyendo un ID específico).
@@ -151,20 +133,19 @@ class UsuarioModelo {
     public function crear(array $datos): bool {
         try {
             $query = "INSERT INTO {$this->table_name}
-                        (usuario, password, nombre_completo, cedula, rol_id, codigo_operador, estado, 
+                        (usuario, password, nombre_completo, cedula, rol_id, estado,
                          pregunta_1_id, pregunta_2_id, respuesta_1, respuesta_2)
                       VALUES
-                        (:usuario, :password, :nombre_completo, :cedula, :rol_id, :codigo_operador, :estado,
+                        (:usuario, :password, :nombre_completo, :cedula, :rol_id, :estado,
                          :p1, :p2, :r1, :r2)";
 
             $stmt = $this->conn->prepare($query);
-            $stmt->bindValue(':usuario',         $datos['usuario'],PDO::PARAM_STR);
-            $stmt->bindValue(':password',        $datos['password'],PDO::PARAM_STR);
-            $stmt->bindValue(':nombre_completo', $datos['nombre_completo'],PDO::PARAM_STR);
-            $stmt->bindValue(':cedula',          $datos['cedula'],$datos['cedula'] ? PDO::PARAM_STR : PDO::PARAM_NULL);
-            $stmt->bindValue(':rol_id',          $datos['rol_id'],PDO::PARAM_INT);
-            $stmt->bindValue(':codigo_operador', $datos['codigo_operador'], $datos['codigo_operador'] ? PDO::PARAM_STR : PDO::PARAM_NULL);
-            $stmt->bindValue(':estado',          $datos['estado'],PDO::PARAM_STR);
+            $stmt->bindValue(':usuario',         $datos['usuario'],         PDO::PARAM_STR);
+            $stmt->bindValue(':password',        $datos['password'],        PDO::PARAM_STR);
+            $stmt->bindValue(':nombre_completo', $datos['nombre_completo'], PDO::PARAM_STR);
+            $stmt->bindValue(':cedula',          $datos['cedula'],          $datos['cedula'] ? PDO::PARAM_STR : PDO::PARAM_NULL);
+            $stmt->bindValue(':rol_id',          $datos['rol_id'],          PDO::PARAM_INT);
+            $stmt->bindValue(':estado',          $datos['estado'],          PDO::PARAM_STR);
             
             // Nuevos campos de seguridad (pueden ser nulos para otros roles)
             $stmt->bindValue(':p1', $datos['pregunta_1_id'] ?? null, $datos['pregunta_1_id'] ?? null ? PDO::PARAM_INT : PDO::PARAM_NULL);
@@ -180,7 +161,7 @@ class UsuarioModelo {
     }
 
     //--------------------------------------------------------------------
-    // Actualiza nombre_completo, cedula, usuario, rol y codigo_operador.
+    // Actualiza nombre_completo, cedula, usuario y rol.
     //--------------------------------------------------------------------
     public function actualizarInformacion(int $id, array $datos): bool {
         try {
@@ -188,17 +169,15 @@ class UsuarioModelo {
                       SET nombre_completo = :nombre_completo,
                           cedula          = :cedula,
                           usuario         = :usuario,
-                          rol_id          = :rol_id,
-                          codigo_operador = :codigo_operador
+                          rol_id          = :rol_id
                       WHERE id = :id";
 
             $stmt = $this->conn->prepare($query);
-            $stmt->bindValue(':nombre_completo', $datos['nombre_completo'],PDO::PARAM_STR);
-            $stmt->bindValue(':cedula',          $datos['cedula'],$datos['cedula'] ? PDO::PARAM_STR : PDO::PARAM_NULL);
-            $stmt->bindValue(':usuario',         $datos['usuario'],PDO::PARAM_STR);
-            $stmt->bindValue(':rol_id',          $datos['rol_id'],PDO::PARAM_INT);
-            $stmt->bindValue(':codigo_operador', $datos['codigo_operador'], $datos['codigo_operador'] ? PDO::PARAM_STR : PDO::PARAM_NULL);
-            $stmt->bindValue(':id',              $id,PDO::PARAM_INT);
+            $stmt->bindValue(':nombre_completo', $datos['nombre_completo'], PDO::PARAM_STR);
+            $stmt->bindValue(':cedula',          $datos['cedula'],          $datos['cedula'] ? PDO::PARAM_STR : PDO::PARAM_NULL);
+            $stmt->bindValue(':usuario',         $datos['usuario'],         PDO::PARAM_STR);
+            $stmt->bindValue(':rol_id',          $datos['rol_id'],          PDO::PARAM_INT);
+            $stmt->bindValue(':id',              $id,                       PDO::PARAM_INT);
             return $stmt->execute();
         } catch (Exception $e) {
             error_log("[UsuarioModelo] Error en actualizarInformacion: " . $e->getMessage());
@@ -309,7 +288,7 @@ class UsuarioModelo {
     }
 
     //--------------------------------------------------------------------
-    // [UNIFICADO] Busca un usuario por su nombre de usuario (login).
+    // Busca un usuario por su nombre de usuario (login).
     //--------------------------------------------------------------------
     public function obtenerUsuarioPorNombre($nombreUsuario): array|false {
         try {
@@ -330,7 +309,7 @@ class UsuarioModelo {
     }
 
     //--------------------------------------------------------------------
-    // [UNIFICADO] Retorna la cantidad total de usuarios registrados en el sistema.
+    // Retorna la cantidad total de usuarios registrados en el sistema.
     //--------------------------------------------------------------------
     public function contarUsuarios(): int {
         try {
@@ -345,7 +324,7 @@ class UsuarioModelo {
     }
 
     //--------------------------------------------------------------------
-    // [REFAC] Actualiza las preguntas de seguridad (trasladado del controlador).
+    // Actualiza las preguntas de seguridad 
     //--------------------------------------------------------------------
     public function actualizarCamposSeguridad(int $id, array $datos): bool {
         try {
@@ -367,7 +346,7 @@ class UsuarioModelo {
     }
 
     //--------------------------------------------------------------------
-    // [TRANSVERSAL] Retorna la cantidad de usuarios agrupados por su estado.
+    // Retorna la cantidad de usuarios agrupados por su estado.
     //--------------------------------------------------------------------
     public function contarPorEstado(): array {
         try {
@@ -379,6 +358,36 @@ class UsuarioModelo {
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (Exception $e) {
             error_log("[UsuarioModelo] Error en contarPorEstado: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    //--------------------------------------------------------------------
+    // Retorna los permisos de un rol como mapa [modulo => [permiso, ...]]
+    // Se carga una única vez en sesión al hacer login para evitar queries
+    // en cada petición (patrón de carga temprana).
+    //--------------------------------------------------------------------
+    public function obtenerPermisosDeRol(int $rolId): array {
+        try {
+            $query = "SELECT m.clave AS modulo, p.clave AS permiso
+                      FROM rol_permiso rp
+                      JOIN permisos p  ON rp.permiso_id = p.id
+                      JOIN modulos  m  ON p.modulo_id   = m.id
+                      WHERE rp.rol_id = :rol_id";
+
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(':rol_id', $rolId, PDO::PARAM_INT);
+            $stmt->execute();
+            $filas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // Construir mapa: ['fichas' => ['ver', 'crear'], 'usuarios' => ['ver', ...]]
+            $permisos = [];
+            foreach ($filas as $fila) {
+                $permisos[$fila['modulo']][] = $fila['permiso'];
+            }
+            return $permisos;
+        } catch (Exception $e) {
+            error_log("[UsuarioModelo] Error en obtenerPermisosDeRol: " . $e->getMessage());
             return [];
         }
     }

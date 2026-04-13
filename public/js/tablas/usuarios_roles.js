@@ -25,7 +25,7 @@ $(function () {
     const rolNombre = $tabla.data('rol-nombre');
     const tablaId   = $tabla.attr('id');
 
-    // Definición base de columnas
+    // Definición base de columnas (Cód. Operador eliminado)
     let columnas = [
       {
         data: null,
@@ -39,10 +39,6 @@ $(function () {
       {
         data: 'cedula',
         render: (d) => d ? `V-${d}` : '<span class="text-muted fst-italic small">Sin cédula</span>',
-      },
-      {
-        data: 'codigo_operador',
-        render: (d) => d ? `<code>${d}</code>` : '<span class="text-muted fst-italic small">—</span>',
       },
       {
         data: 'estado',
@@ -81,7 +77,6 @@ $(function () {
               data-usuario="${row.usuario}"
               data-rol="${row.rol_id}"
               data-id-rol="${row.rol_id}"
-              data-codigo="${row.codigo_operador || ''}"
               title="Editar usuario"
             >
               <i class="bi bi-pencil-fill"></i>
@@ -99,11 +94,6 @@ $(function () {
         },
       },
     ];
-
-    // Si es Despachador o Jefe/Jefatura, removemos la columna de Código Operador
-    if (rolNombre === 'Despachador' || rolNombre === 'Jefe' || rolNombre === 'Jefatura') {
-      columnas.splice(4, 1);
-    }
 
     const dt = $tabla.DataTable({
       autoWidth: false,

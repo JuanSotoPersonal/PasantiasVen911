@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 06-04-2026 a las 19:49:15
+-- Tiempo de generación: 13-04-2026 a las 20:50:03
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Base de datos: `ven911_fichas`
+-- Base de datos: `ficha_ven_911`
 --
 
 -- --------------------------------------------------------
@@ -33,6 +33,24 @@ CREATE TABLE `casos` (
   `nombre_caso` varchar(150) NOT NULL,
   `descripcion` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `configuracion_sistema`
+--
+
+CREATE TABLE `configuracion_sistema` (
+  `id` int(11) NOT NULL,
+  `llave_activacion` varchar(12) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `configuracion_sistema`
+--
+
+INSERT INTO `configuracion_sistema` (`id`, `llave_activacion`) VALUES
+(1, 'V9K2L4M7N1P5');
 
 -- --------------------------------------------------------
 
@@ -64,8 +82,8 @@ CREATE TABLE `fichas_emergencia` (
   `caso_id` int(10) UNSIGNED NOT NULL,
   `descripcion_caso` text NOT NULL,
   `solicitante_id` int(10) UNSIGNED NOT NULL,
-  `operador_id` int(10) UNSIGNED NOT NULL,
-  `despachador_id` int(10) UNSIGNED DEFAULT NULL,
+  `id_user` int(10) UNSIGNED DEFAULT NULL COMMENT 'Usuario que CREÓ la ficha (no cambia)',
+  `id_owner` int(10) UNSIGNED DEFAULT NULL COMMENT 'Último usuario que MODIFICÓ la ficha',
   `fecha_creacion` timestamp NOT NULL DEFAULT current_timestamp(),
   `hora_cierre` datetime DEFAULT NULL,
   `estado_ficha` enum('Pendiente','En Proceso','Atendido','Cerrado','Finalizado') DEFAULT 'Pendiente',
@@ -94,12 +112,52 @@ CREATE TABLE `logs_sistema` (
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `modulos`
+--
+
+CREATE TABLE `modulos` (
+  `id` int(10) UNSIGNED NOT NULL,
+  `clave` varchar(50) NOT NULL COMMENT 'Ej: usuarios, fichas, despachos',
+  `descripcion` varchar(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `modulos`
+--
+
+INSERT INTO `modulos` (`id`, `clave`, `descripcion`) VALUES
+(1, 'usuarios', 'Gestión de usuarios del sistema'),
+(2, 'fichas', 'Creación y gestión de fichas de emergencia'),
+(3, 'despachos', 'Despacho a organismos de respuesta'),
+(4, 'historial', 'Visualización del historial de auditoría'),
+(5, 'reportes', 'Generación de informes y estadísticas'),
+(6, 'configuracion', 'Ajustes y configuración del sistema');
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `municipios`
 --
 
 CREATE TABLE `municipios` (
   `id` int(10) UNSIGNED NOT NULL,
   `nombre_municipio` varchar(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `notificaciones`
+--
+
+CREATE TABLE `notificaciones` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `usuario_recibe_id` int(10) UNSIGNED NOT NULL COMMENT 'Destinatario de la notificación',
+  `ficha_id` int(10) UNSIGNED DEFAULT NULL COMMENT 'Ficha que originó la notificación',
+  `tipo` varchar(50) NOT NULL DEFAULT 'info' COMMENT 'info | alerta | cambio_estado',
+  `mensaje` varchar(255) NOT NULL,
+  `leido` tinyint(1) NOT NULL DEFAULT 0,
+  `fecha_creacion` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -128,6 +186,62 @@ CREATE TABLE `parroquias` (
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `permisos`
+--
+
+CREATE TABLE `permisos` (
+  `id` int(10) UNSIGNED NOT NULL,
+  `modulo_id` int(10) UNSIGNED NOT NULL,
+  `clave` varchar(50) NOT NULL COMMENT 'ver, crear, editar, cambiar_estado, gestionar',
+  `descripcion` varchar(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `permisos`
+--
+
+INSERT INTO `permisos` (`id`, `modulo_id`, `clave`, `descripcion`) VALUES
+(1, 1, 'ver', 'Ver lista de usuarios'),
+(2, 1, 'crear', 'Crear nuevos usuarios'),
+(3, 1, 'editar', 'Editar información de usuarios'),
+(4, 1, 'cambiar_estado', 'Activar o desactivar usuarios'),
+(5, 1, 'gestionar', 'Gestión completa del módulo de usuarios'),
+(6, 2, 'ver', 'Ver fichas de emergencia'),
+(7, 2, 'crear', 'Crear nuevas fichas'),
+(8, 2, 'editar', 'Editar fichas existentes'),
+(9, 2, 'cambiar_estado', 'Cambiar estado de una ficha'),
+(10, 2, 'gestionar', 'Gestión completa de fichas'),
+(11, 3, 'ver', 'Ver despachos activos'),
+(12, 3, 'crear', 'Crear un despacho a organismo'),
+(13, 3, 'editar', 'Editar información de despacho'),
+(14, 3, 'cambiar_estado', 'Cambiar estado de despacho'),
+(15, 3, 'gestionar', 'Gestión completa de despachos'),
+(16, 4, 'ver', 'Ver el historial de auditoría del sistema'),
+(17, 5, 'ver', 'Acceder a reportes y estadísticas'),
+(18, 6, 'gestionar', 'Acceso completo a la configuración del sistema');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `preguntas_seguridad`
+--
+
+CREATE TABLE `preguntas_seguridad` (
+  `id` int(11) NOT NULL,
+  `pregunta` varchar(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `preguntas_seguridad`
+--
+
+INSERT INTO `preguntas_seguridad` (`id`, `pregunta`) VALUES
+(1, 'ejemplo 2?\r\n'),
+(2, 'ejemplo 1?\r\n');
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `roles`
 --
 
@@ -141,10 +255,58 @@ CREATE TABLE `roles` (
 --
 
 INSERT INTO `roles` (`id`, `nombre`) VALUES
+(1, 'Administrador'),
 (3, 'Despachador'),
 (4, 'Jefatura'),
-(2, 'Operador'),
-(1, 'Super Admin');
+(2, 'Operador');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `rol_permiso`
+--
+
+CREATE TABLE `rol_permiso` (
+  `rol_id` int(10) UNSIGNED NOT NULL,
+  `permiso_id` int(10) UNSIGNED NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `rol_permiso`
+--
+
+INSERT INTO `rol_permiso` (`rol_id`, `permiso_id`) VALUES
+(1, 1),
+(1, 2),
+(1, 3),
+(1, 4),
+(1, 5),
+(1, 6),
+(1, 7),
+(1, 8),
+(1, 9),
+(1, 10),
+(1, 11),
+(1, 12),
+(1, 13),
+(1, 14),
+(1, 15),
+(1, 16),
+(1, 17),
+(1, 18),
+(2, 6),
+(2, 7),
+(2, 11),
+(3, 6),
+(3, 8),
+(3, 11),
+(3, 12),
+(3, 13),
+(3, 14),
+(4, 6),
+(4, 11),
+(4, 16),
+(4, 17);
 
 -- --------------------------------------------------------
 
@@ -184,16 +346,12 @@ CREATE TABLE `usuarios` (
   `nombre_completo` varchar(150) NOT NULL,
   `cedula` varchar(12) DEFAULT NULL,
   `rol_id` int(10) UNSIGNED NOT NULL,
-  `codigo_operador` varchar(20) DEFAULT NULL,
-  `estado` enum('activo','inactivo') NOT NULL DEFAULT 'activo'
+  `estado` enum('activo','inactivo') NOT NULL DEFAULT 'activo',
+  `pregunta_1_id` int(11) DEFAULT NULL,
+  `pregunta_2_id` int(11) DEFAULT NULL,
+  `respuesta_1` varchar(255) DEFAULT NULL,
+  `respuesta_2` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Volcado de datos para la tabla `usuarios`
---
-
-INSERT INTO `usuarios` (`id`, `usuario`, `password`, `nombre_completo`, `cedula`, `rol_id`, `codigo_operador`, `estado`) VALUES
-(7, '31034138', '$2y$10$MM96aCGRM17pGNvvR5CjpO6NHFHIS/NjEew6aDv9u4kIhMpmo/Dqy', 'Administrador del Sistema', '10200300', 1, 'SA-001', 'activo');
 
 --
 -- Índices para tablas volcadas
@@ -205,6 +363,12 @@ INSERT INTO `usuarios` (`id`, `usuario`, `password`, `nombre_completo`, `cedula`
 ALTER TABLE `casos`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_caso_tipo` (`tipo_emergencia_id`);
+
+--
+-- Indices de la tabla `configuracion_sistema`
+--
+ALTER TABLE `configuracion_sistema`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indices de la tabla `despachos_organismos`
@@ -222,8 +386,8 @@ ALTER TABLE `fichas_emergencia`
   ADD KEY `fk_ficha_parroquia` (`parroquia_id`),
   ADD KEY `fk_ficha_caso` (`caso_id`),
   ADD KEY `fk_ficha_solicitante` (`solicitante_id`),
-  ADD KEY `fk_ficha_operador` (`operador_id`),
-  ADD KEY `fk_ficha_despachador` (`despachador_id`);
+  ADD KEY `fk_ficha_id_user` (`id_user`),
+  ADD KEY `fk_ficha_id_owner` (`id_owner`);
 
 --
 -- Indices de la tabla `logs_sistema`
@@ -234,11 +398,26 @@ ALTER TABLE `logs_sistema`
   ADD KEY `fk_log_ficha` (`ficha_id`);
 
 --
+-- Indices de la tabla `modulos`
+--
+ALTER TABLE `modulos`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `clave` (`clave`);
+
+--
 -- Indices de la tabla `municipios`
 --
 ALTER TABLE `municipios`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `nombre_municipio` (`nombre_municipio`);
+
+--
+-- Indices de la tabla `notificaciones`
+--
+ALTER TABLE `notificaciones`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_usuario_leido` (`usuario_recibe_id`,`leido`),
+  ADD KEY `fk_notif_ficha` (`ficha_id`);
 
 --
 -- Indices de la tabla `organismos`
@@ -255,11 +434,31 @@ ALTER TABLE `parroquias`
   ADD KEY `fk_parroquia_municipio` (`municipio_id`);
 
 --
+-- Indices de la tabla `permisos`
+--
+ALTER TABLE `permisos`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uk_modulo_clave` (`modulo_id`,`clave`);
+
+--
+-- Indices de la tabla `preguntas_seguridad`
+--
+ALTER TABLE `preguntas_seguridad`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indices de la tabla `roles`
 --
 ALTER TABLE `roles`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `nombre` (`nombre`);
+
+--
+-- Indices de la tabla `rol_permiso`
+--
+ALTER TABLE `rol_permiso`
+  ADD PRIMARY KEY (`rol_id`,`permiso_id`),
+  ADD KEY `fk_rp_permiso` (`permiso_id`);
 
 --
 -- Indices de la tabla `solicitantes`
@@ -281,8 +480,9 @@ ALTER TABLE `tipos_emergencia`
 ALTER TABLE `usuarios`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `usuario` (`usuario`),
-  ADD UNIQUE KEY `codigo_operador` (`codigo_operador`),
-  ADD KEY `fk_usuario_rol` (`rol_id`);
+  ADD KEY `fk_usuario_rol` (`rol_id`),
+  ADD KEY `fk_usuario_p1` (`pregunta_1_id`),
+  ADD KEY `fk_usuario_p2` (`pregunta_2_id`);
 
 --
 -- AUTO_INCREMENT de las tablas volcadas
@@ -293,6 +493,12 @@ ALTER TABLE `usuarios`
 --
 ALTER TABLE `casos`
   MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de la tabla `configuracion_sistema`
+--
+ALTER TABLE `configuracion_sistema`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `despachos_organismos`
@@ -313,10 +519,22 @@ ALTER TABLE `logs_sistema`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT de la tabla `modulos`
+--
+ALTER TABLE `modulos`
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
 -- AUTO_INCREMENT de la tabla `municipios`
 --
 ALTER TABLE `municipios`
   MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de la tabla `notificaciones`
+--
+ALTER TABLE `notificaciones`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `organismos`
@@ -329,6 +547,18 @@ ALTER TABLE `organismos`
 --
 ALTER TABLE `parroquias`
   MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de la tabla `permisos`
+--
+ALTER TABLE `permisos`
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+
+--
+-- AUTO_INCREMENT de la tabla `preguntas_seguridad`
+--
+ALTER TABLE `preguntas_seguridad`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de la tabla `roles`
@@ -352,7 +582,7 @@ ALTER TABLE `tipos_emergencia`
 -- AUTO_INCREMENT de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- Restricciones para tablas volcadas
@@ -376,8 +606,8 @@ ALTER TABLE `despachos_organismos`
 --
 ALTER TABLE `fichas_emergencia`
   ADD CONSTRAINT `fk_ficha_caso` FOREIGN KEY (`caso_id`) REFERENCES `casos` (`id`),
-  ADD CONSTRAINT `fk_ficha_despachador` FOREIGN KEY (`despachador_id`) REFERENCES `usuarios` (`id`),
-  ADD CONSTRAINT `fk_ficha_operador` FOREIGN KEY (`operador_id`) REFERENCES `usuarios` (`id`),
+  ADD CONSTRAINT `fk_ficha_id_owner` FOREIGN KEY (`id_owner`) REFERENCES `usuarios` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_ficha_id_user` FOREIGN KEY (`id_user`) REFERENCES `usuarios` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `fk_ficha_parroquia` FOREIGN KEY (`parroquia_id`) REFERENCES `parroquias` (`id`),
   ADD CONSTRAINT `fk_ficha_solicitante` FOREIGN KEY (`solicitante_id`) REFERENCES `solicitantes` (`id`);
 
@@ -389,15 +619,37 @@ ALTER TABLE `logs_sistema`
   ADD CONSTRAINT `fk_log_usuario` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`);
 
 --
+-- Filtros para la tabla `notificaciones`
+--
+ALTER TABLE `notificaciones`
+  ADD CONSTRAINT `fk_notif_ficha` FOREIGN KEY (`ficha_id`) REFERENCES `fichas_emergencia` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_notif_usuario` FOREIGN KEY (`usuario_recibe_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
+
+--
 -- Filtros para la tabla `parroquias`
 --
 ALTER TABLE `parroquias`
   ADD CONSTRAINT `fk_parroquia_municipio` FOREIGN KEY (`municipio_id`) REFERENCES `municipios` (`id`) ON DELETE CASCADE;
 
 --
+-- Filtros para la tabla `permisos`
+--
+ALTER TABLE `permisos`
+  ADD CONSTRAINT `fk_permiso_modulo` FOREIGN KEY (`modulo_id`) REFERENCES `modulos` (`id`) ON DELETE CASCADE;
+
+--
+-- Filtros para la tabla `rol_permiso`
+--
+ALTER TABLE `rol_permiso`
+  ADD CONSTRAINT `fk_rp_permiso` FOREIGN KEY (`permiso_id`) REFERENCES `permisos` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_rp_rol` FOREIGN KEY (`rol_id`) REFERENCES `roles` (`id`) ON DELETE CASCADE;
+
+--
 -- Filtros para la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
+  ADD CONSTRAINT `fk_usuario_pregunta1` FOREIGN KEY (`pregunta_1_id`) REFERENCES `preguntas_seguridad` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_usuario_pregunta2` FOREIGN KEY (`pregunta_2_id`) REFERENCES `preguntas_seguridad` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `fk_usuario_rol` FOREIGN KEY (`rol_id`) REFERENCES `roles` (`id`);
 COMMIT;
 

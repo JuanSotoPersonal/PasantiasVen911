@@ -1,8 +1,24 @@
+const escapeHTML = (str) => {
+  if (typeof str !== 'string' && str != null) str = str.toString();
+  if (!str) return str;
+  return str.replace(/[&<>'"]/g, 
+    tag => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        "'": '&#39;',
+        '"': '&quot;'
+    }[tag] || tag)
+  );
+};
+
 $(document).ready(function () {
     const tablaLogs = $('#tablaLogs').DataTable({
+        "serverSide": true,
+        "processing": true,
         "ajax": {
-            "url": "index.php?url=log/obtenerDatos",
-            "dataSrc": "data"
+            "url":    "index.php?url=log/obtenerDatos",
+            "type":   "POST"
         },
         "columns": [
             { 
@@ -19,19 +35,24 @@ $(document).ready(function () {
                     return `<span class="badge ${badgeClass}">${data}</span>`;
                 }
             },
-            { "data": "tabla_afectada" },
+            { "data": "tabla_afectada", "render": function(data) { return escapeHTML(data); } },
             { "data": "registro_id" },
-            { "data": "nombre_admin", "defaultContent": "<i>Desconocido</i>" },
+            { "data": "nombre_admin", "defaultContent": "<i>Desconocido</i>", "render": function(data, type, row) { 
+                if (!data) return "<i>Desconocido</i>";
+                return escapeHTML(data); 
+            }},
             { "data": "fecha" },
             {
                 "data": null,
+                "orderable": false,
+                "searchable": false,
                 "className": "text-center",
                 "render": function (data, type, row) {
                     return `
                         <button class="btn btn-ven-primary btn-sm btn-ver-detalles" 
-                                data-anterior='${row.valor_anterior || ""}' 
-                                data-nuevo='${row.valor_nuevo || ""}' 
-                                data-detalles="${row.detalles || 'Sin descripción'}">
+                                data-anterior='${escapeHTML(row.valor_anterior || "")}' 
+                                data-nuevo='${escapeHTML(row.valor_nuevo || "")}' 
+                                data-detalles="${escapeHTML(row.detalles || 'Sin descripción')}">
                             <i class="bi bi-eye"></i> Ver Cambios
                         </button>
                     `;
@@ -74,9 +95,6 @@ $(document).ready(function () {
         modal.show();
     });
 
-    /**
-     * Formatea y muestra un string JSON en un contenedor específico
-     */
     function mostrarJSON(selector, data) {
         const container = $(selector);
         container.empty();
@@ -89,9 +107,12 @@ $(document).ready(function () {
         try {
             const obj = JSON.parse(data);
             const formatted = JSON.stringify(obj, null, 2);
-            container.html(`<pre class="mb-0 text-dark" style="font-size: 0.85rem;"><code>${formatted}</code></pre>`);
+            const pre = $('<pre class="mb-0 text-dark" style="font-size: 0.85rem;"><code></code></pre>');
+            pre.find('code').text(formatted);
+            container.append(pre);
         } catch (e) {
-            container.html(`<span class="text-dark">${data}</span>`); // Si no es JSON, mostrar como texto plano
+            const span = $('<span class="text-dark"></span>').text(data);
+            container.append(span); // Si no es JSON, mostrar como texto plano de forma segura
         }
     }
 });

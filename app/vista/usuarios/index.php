@@ -91,10 +91,9 @@
                           <tr>
                             <th>#</th>
                             <th>Nombre Completo</th>
-                            <th>Usuario (Cédula)</th>
+                            <th>Usuario</th>
                             <th>Cédula</th>
                             <th>Rol</th>
-                            <th>Cód. Operador</th>
                             <th>Estado</th>
                             <th class="text-center">Acciones</th>
                           </tr>
@@ -146,11 +145,8 @@
                              <tr>
                                <th>#</th>
                                <th>Nombre Completo</th>
-                               <th>Usuario (Cédula)</th>
+                               <th>Usuario</th>
                                <th>Cédula</th>
-                               <?php if ($rolNombre !== 'Despachador' && $rolNombre !== 'Jefe' && $rolNombre !== 'Jefatura'): ?>
-                               <th>Cód. Operador</th>
-                               <?php endif; ?>
                                <th>Estado</th>
                                <th class="text-center">Acciones</th>
                              </tr>
@@ -185,10 +181,9 @@
                              <tr>
                                <th>#</th>
                                <th>Nombre Completo</th>
-                               <th>Usuario (Cédula)</th>
+                               <th>Usuario</th>
                                <th>Cédula</th>
                                <th>Rol</th>
-                               <th>Cód. Operador</th>
                                <th>Estado</th>
                                <th class="text-center">Acciones</th>
                              </tr>
@@ -249,11 +244,7 @@
                   <input type="text" class="form-control" id="crear-usuario" name="usuario" placeholder="Mín. 7 caracteres, sin espacios" required />
                   <div class="form-text mt-1">Nombre de usuario único para acceder al sistema.</div>
                 </div>
-                <div class="col-md-6">
-                  <label for="crear-codigo" class="form-label fw-semibold">Código Operador</label>
-                  <input type="text" class="form-control" id="crear-codigo" name="codigo_operador" placeholder="Ej: OP-001" />
-                  <div class="form-text mt-1">Código de radio operador (opcional).</div>
-                </div>
+
                 <div class="col-md-6">
                   <label for="crear-rol" class="form-label fw-semibold">Rol <span class="text-danger">*</span></label>
                   <select class="form-select" id="crear-rol" name="rol_id" required>
@@ -268,7 +259,7 @@
                   <div class="form-text mt-1">Define los permisos de acceso al sistema.</div>
                 </div>
                 <!-- Sección de Seguridad Oculta (SuperAdmin Único vía Setup) -->
-                <div id="seccion-seguridad-crear" class="d-none"></div>
+                <div id="seccion-seguridad-crear" style="display: none;"></div>
                 <div class="col-md-6">
                   <label for="crear-password" class="form-label fw-semibold">Contraseña <span class="text-danger">*</span></label>
                   <div class="password-wrapper">
@@ -328,11 +319,7 @@
                   <input type="text" class="form-control" id="editar-usuario" name="usuario" required />
                   <div class="form-text mt-1">Nombre de usuario (login).</div>
                 </div>
-                <div class="col-md-6">
-                  <label for="editar-codigo" class="form-label fw-semibold">Código Operador</label>
-                  <input type="text" class="form-control" id="editar-codigo" name="codigo_operador" />
-                  <div class="form-text mt-1">Código del Operador (opcional).</div>
-                </div>
+
                 <div class="col-md-6">
                   <label for="editar-rol" class="form-label fw-semibold">Rol <span class="text-danger">*</span></label>
                   <select class="form-select" id="editar-rol" name="rol_id" required>
@@ -399,7 +386,7 @@
                 <div class="form-text mt-1">Repita la nueva contraseña exactamente.</div>
               </div>
               <!-- Sección de Validación de Seguridad (Autocargado vía JS si es SuperAdmin) -->
-              <div id="seccion-validacion-seguridad" class="mt-3 p-3 bg-warning bg-opacity-10 border border-warning border-opacity-25 rounded d-none">
+              <div id="seccion-validacion-seguridad" class="mt-3 p-3 bg-warning bg-opacity-10 border border-warning border-opacity-25 rounded" style="display: none;">
                  <h6 class="text-dark fw-bold mb-2 small"><i class="bi bi-shield-fill-exclamation me-2"></i>Verificación de Identidad</h6>
                  <div class="mb-2">
                     <label id="label-pregunta-1" class="form-label small fw-bold mb-1"></label>

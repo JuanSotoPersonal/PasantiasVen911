@@ -29,6 +29,20 @@ if ($controllerBaseName === 'Setup') {
 $controllerName = $controllerBaseName . 'Controlador';
 
 // ==========================================
+// HELPER GLOBAL DE PERMISOS
+// Uso: tienePerm('fichas', 'crear')  → true/false
+// ==========================================
+function tienePerm(string $modulo, string $permiso = 'ver'): bool {
+    // SuperAdmin (Rol 1) tiene acceso total automático
+    if (isset($_SESSION['user_rol_id']) && $_SESSION['user_rol_id'] == 1) {
+        return true;
+    }
+    
+    return isset($_SESSION['permisos'][$modulo])
+        && in_array($permiso, $_SESSION['permisos'][$modulo], true);
+}
+
+// ==========================================
 // MIDDLEWARE GLOBAL DE AUTENTICACIÓN
 // ==========================================
 $isLoggedIn = isset($_SESSION['user_id']);
@@ -46,7 +60,38 @@ if ($isLoggedIn && $controllerBaseName === 'Auth' && $methodRequested !== 'logou
     header('Location: index.php?url=home');
     exit;
 }
+
 // ==========================================
+// RBAC MIDDLEWARE: protección de módulos por permiso
+// Mapeo: [clave_url] => [modulo_rbac, permiso_minimo]
+// ==========================================
+if ($isLoggedIn) {
+    // ==========================================
+    // LAZY LOADING: Carga de permisos si faltan (post-update o sesión persistente)
+    // ==========================================
+    if (!isset($_SESSION['permisos'])) {
+        require_once 'app/modelos/UsuarioModelo.php';
+        $modeloPerm = new \App\modelos\UsuarioModelo();
+        $_SESSION['permisos'] = $modeloPerm->obtenerPermisosDeRol((int)$_SESSION['user_rol_id']);
+    }
+
+    $rutasProtegidas = [
+        'usuario'         => ['usuarios',      'ver'],
+        'log'             => ['historial',      'ver'],
+        'notificacion'    => ['fichas',         'ver'], // requiere acceso a fichas mínimo
+    ];
+
+    $claveRuta = strtolower($controllerBaseName);
+    if (isset($rutasProtegidas[$claveRuta])) {
+        [$moduloReq, $permisoReq] = $rutasProtegidas[$claveRuta];
+        if (!tienePerm($moduloReq, $permisoReq)) {
+            header('Location: index.php?url=home');
+            exit;
+        }
+    }
+}
+// ==========================================
+
 
 if (file_exists('app/controladores/' . $controllerName . '.php')) {
     $controller = new $controllerName();

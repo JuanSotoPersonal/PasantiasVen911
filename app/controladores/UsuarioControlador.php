@@ -18,8 +18,7 @@ class UsuarioControlador {
     private LogModelo $log;
 
     public function __construct() {
-        // Validacion que solo el Super Admin Pueda Acceder
-        if (!isset($_SESSION['user_id']) || $_SESSION['user_rol_id'] != 1) {
+        if (!isset($_SESSION['user_id']) || !tienePerm('usuarios', 'ver')) {
             header('Location: index.php?url=home');
             exit;
         }
@@ -94,7 +93,6 @@ class UsuarioControlador {
         $nombreCompleto = trim($_POST['nombre_completo']);
         $cedula         = trim($_POST['cedula'] ?? '');
         $rolId          = (int)$_POST['rol_id'];
-        $codigoOperador = trim($_POST['codigo_operador'] ?? '') ?: null;
         $estado         = 'activo';
         //Validacion de longitud de cedula
         if (strlen($cedula) < 6 || strlen($cedula) > 8) {
@@ -125,14 +123,11 @@ class UsuarioControlador {
             echo json_encode(['success' => false, 'message' => 'El nombre completo no puede exceder los 128 caracteres.']);
             return;
         }
-        //Validacion de codigo de operador
-        if ($codigoOperador && strlen($codigoOperador) > 128) {
-            echo json_encode(['success' => false, 'message' => 'El código de operador no puede exceder los 128 caracteres.']);
-            return;
-        }
+        //Validacion de codigo de operador (ELIMINADO POR REDUNDANCIA)
+
         //Validacion de longitud de contraseña
-        if (strlen($contrasena) < 6) {
-            echo json_encode(['success' => false, 'message' => 'La contraseña debe tener al menos 6 caracteres.']);
+        if (strlen($contrasena) < 8) {
+            echo json_encode(['success' => false, 'message' => 'La contraseña debe tener al menos 8 caracteres.']);
             return;
         }
         if (strlen($contrasena) > 128) {
@@ -144,6 +139,7 @@ class UsuarioControlador {
             echo json_encode(['success' => false, 'message' => 'La contraseña debe contener al menos una mayúscula y un número.']);
             return;
         }
+
         //Validacion de usuario existente
         if ($this->modelo->existeUsuario($usuario)) {
             echo json_encode(['success' => false, 'message' => "El usuario '{$usuario}' ya está registrado."]);
@@ -152,11 +148,6 @@ class UsuarioControlador {
         //Validacion de cedula existente
         if ($this->modelo->existeCedula($cedula)) {
             echo json_encode(['success' => false, 'message' => "La cédula 'V-{$cedula}' ya está registrada por otro usuario."]);
-            return;
-        }
-        //Validacion de codigo de operador existente
-        if ($codigoOperador && $this->modelo->existeCodigo($codigoOperador)) {
-            echo json_encode(['success' => false, 'message' => 'El código de operador ya está en uso.']);
             return;
         }
 
@@ -193,7 +184,6 @@ class UsuarioControlador {
             'nombre_completo' => $nombreCompleto,
             'cedula'          => $cedula ?: null,
             'rol_id'          => $rolId,
-            'codigo_operador' => $codigoOperador,
             'estado'          => $estado,
             'pregunta_1_id'   => ($rolId === 1) ? $p1 : null,
             'pregunta_2_id'   => ($rolId === 1) ? $p2 : null,
@@ -231,35 +221,16 @@ class UsuarioControlador {
         $nombreCompleto = trim($_POST['nombre_completo'] ?? '');
         $cedula         = trim($_POST['cedula'] ?? '');
         $rolId          = (int)($_POST['rol_id'] ?? 0);
-        $codigoOperador = trim($_POST['codigo_operador'] ?? '') ?: null;
         //Validacion de campos obligatorios
         if (!$id || empty($usuario) || empty($nombreCompleto) || empty($cedula) || !$rolId) {
             echo json_encode(['success' => false, 'message' => 'Todos los campos obligatorios deben estar completos.']);
             return;
         }
-        //Validacion de longitud de cedula
-        if (strlen($cedula) < 6 || strlen($cedula) > 8) {
-            echo json_encode(['success' => false, 'message' => 'La cédula debe tener entre 6 y 8 caracteres.']);
-            return;
-        }
-        //Validacion de formato de cedula (solo numeros)
-        if (strlen($usuario) > 32) {
-            echo json_encode(['success' => false, 'message' => 'El usuario no puede exceder los 32 caracteres.']);
-            return;
-        }
-        if (strlen($nombreCompleto) > 128) {
-            echo json_encode(['success' => false, 'message' => 'El nombre completo no puede exceder los 128 caracteres.']);
-            return;
-        }
-        if ($codigoOperador && strlen($codigoOperador) > 128) {
-            echo json_encode(['success' => false, 'message' => 'El código de operador no puede exceder los 128 caracteres.']);
-            return;
-        }
-
         if (!ctype_digit($cedula)) {
             echo json_encode(['success' => false, 'message' => 'La cédula debe contener solo números.']);
             return;
         }
+        
         //Validacion de usuario existente
         if ($this->modelo->existeUsuario($usuario, $id)) {
             echo json_encode(['success' => false, 'message' => "El usuario '{$usuario}' ya está registrado por otro usuario."]);
@@ -267,12 +238,7 @@ class UsuarioControlador {
         }
         //Validacion de cedula existente
         if ($this->modelo->existeCedula($cedula, $id)) {
-            echo json_encode(['success' => false, 'message' => "La cédula 'V-{$cedula}' ya está registrada por otro usuario."]);
-            return;
-        }
-        //Validacion de codigo de operador existente
-        if ($codigoOperador && $this->modelo->existeCodigo($codigoOperador, $id)) {
-            echo json_encode(['success' => false, 'message' => 'El código de operador ya está en uso.']);
+            echo json_encode(['success' => false, 'message' => "la cedula '{$cedula}' ya esta registrada por otro usuario."]);
             return;
         }
         $usuarioAnterior = $this->modelo->obtenerPorId($id);
@@ -300,7 +266,6 @@ class UsuarioControlador {
             'cedula'          => $cedula ?: null,
             'usuario'         => $usuario,
             'rol_id'          => $rolId,
-            'codigo_operador' => $codigoOperador,
         ];
 
         if ($this->modelo->actualizarInformacion($id, $datos)) {
@@ -346,8 +311,8 @@ class UsuarioControlador {
             return;
         }
         //validacion de longitud de contraseña
-        if (strlen($nuevaContrasena) < 6) {
-            echo json_encode(['success' => false, 'message' => 'La contraseña debe tener al menos 6 caracteres.']);
+        if (strlen($nuevaContrasena) < 8) {
+            echo json_encode(['success' => false, 'message' => 'La contraseña debe tener al menos 8 caracteres.']);
             return;
         }
         if (strlen($nuevaContrasena) > 128) {
@@ -480,7 +445,7 @@ class UsuarioControlador {
     }
 
     //--------------------------------------------------------------------
-    // POST Actualiza las preguntas de seguridad (Requiere Código de Fábrica)
+    // POST Actualiza las preguntas de seguridad 
     //--------------------------------------------------------------------
     public function actualizarPreguntasSeguridad(): void {
         header('Content-Type: application/json');

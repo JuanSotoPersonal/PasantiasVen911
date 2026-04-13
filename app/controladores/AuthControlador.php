@@ -62,8 +62,8 @@ class AuthControlador {
         }
 
         //validacion de longitud de contraseña
-        if (strlen($password) < 6) {
-            echo json_encode(['success' => false, 'message' => 'La contraseña debe tener al menos 6 caracteres.']);
+        if (strlen($password) < 8) {
+            echo json_encode(['success' => false, 'message' => 'La contraseña debe tener al menos 8 caracteres.']);
             return;
         }
         if (strlen($password) > 128) {
@@ -83,6 +83,10 @@ class AuthControlador {
                 $_SESSION['user_name']   = $usuario_datos['nombre_completo'];
                 $_SESSION['user_rol']    = $usuario_datos['nombre_rol'];
                 $_SESSION['user_rol_id'] = $usuario_datos['rol_id'];
+
+                // Cargar mapa de permisos en sesión (una sola query al login)
+                // Ejemplo: ['fichas' => ['ver','crear'], 'usuarios' => ['ver','gestionar']]
+                $_SESSION['permisos'] = $usuarioModelo->obtenerPermisosDeRol((int)$usuario_datos['rol_id']);
 
                 // Registrar log de sesión iniciada
                 $log = new LogModelo();

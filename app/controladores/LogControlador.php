@@ -8,7 +8,8 @@ class LogControlador {
     private LogModelo $modelo;
 
     public function __construct() {
-        if (!isset($_SESSION['user_id']) || $_SESSION['user_rol_id'] != 1) {
+        // Validacion: requiere permiso 'ver' en módulo 'historial' (via RBAC en sesión)
+        if (!isset($_SESSION['user_id']) || !tienePerm('historial', 'ver')) {
             header('Location: index.php?url=home');
             exit;
         }
@@ -23,15 +24,40 @@ class LogControlador {
     }
 
     //--------------------------------------------------------------------
-    // Retorna todos los registros en formato JSON para DataTable
+    // Retorna los registros en formato JSON compatible con DataTables
+    // en modo serverSide. Lee parámetros POST enviados por DataTables.
     //--------------------------------------------------------------------
     public function obtenerDatos(): void {
         header('Content-Type: application/json');
         try {
-            $logs = $this->modelo->obtenerTodos();
-            echo json_encode(['data' => $logs]);
+            // Parámetros estándar de DataTables server-side
+            $draw     = isset($_POST['draw'])   ? (int)$_POST['draw']   : 1;
+            $inicio   = isset($_POST['start'])  ? (int)$_POST['start']  : 0;
+            $cantidad = isset($_POST['length']) ? (int)$_POST['length'] : 10;
+            $busqueda = isset($_POST['search']['value']) ? trim($_POST['search']['value']) : '';
+
+            // Columna y dirección de ordenamiento
+            $colOrden = isset($_POST['order'][0]['column']) ? (int)$_POST['order'][0]['column'] : 4;
+            $dirOrden = isset($_POST['order'][0]['dir'])    ? $_POST['order'][0]['dir']          : 'desc';
+
+            $datos           = $this->modelo->obtenerPaginado($inicio, $cantidad, $busqueda, $colOrden, $dirOrden);
+            $totalRegistros  = $this->modelo->contarTodos();
+            $totalFiltrados  = $busqueda !== '' ? $this->modelo->contarFiltrados($busqueda) : $totalRegistros;
+
+            echo json_encode([
+                'draw'            => $draw,
+                'recordsTotal'    => $totalRegistros,
+                'recordsFiltered' => $totalFiltrados,
+                'data'            => $datos,
+            ]);
         } catch (\Exception $e) {
-            echo json_encode(['data' => [], 'error' => $e->getMessage()]);
+            echo json_encode([
+                'draw'            => 1,
+                'recordsTotal'    => 0,
+                'recordsFiltered' => 0,
+                'data'            => [],
+                'error'           => $e->getMessage(),
+            ]);
         }
     }
 }

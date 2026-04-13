@@ -7,7 +7,7 @@ use PDOException;
 
 class Database {
     private $host = "localhost";
-    private $db_name = "ven911_fichas";
+    private $db_name = "ficha_ven_911";
     private $username = "root";
     private $password = "";
     private $conn;
@@ -30,8 +30,8 @@ class Database {
             $this->conn = new PDO($dsn, $this->username, $this->password, $options);
             
         } catch(PDOException $exception) {
-
-            die("Error de conexión a la base de datos: " . $exception->getMessage());
+            error_log("Database connection error: " . $exception->getMessage());
+            die("Error de conexión a la base de datos.");
         }
 
         return $this->conn;

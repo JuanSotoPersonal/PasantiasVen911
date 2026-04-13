@@ -59,22 +59,97 @@ class LogModelo {
     }
 
     //--------------------------------------------------------------------
-    // Retorna todos los registros de logs ordenados por fecha descendente.
-    // Incluye el nombre del usuario que realizó la acción.
+    // Retorna registros de log paginados con búsqueda y ordenamiento.
+    // Usado por DataTables en modo serverSide.
+    //
+    // @param int    $inicio     Offset (primer registro de la página).
+    // @param int    $cantidad   Registros por página (length).
+    // @param string $busqueda   Texto de búsqueda global.
+    // @param int    $colOrden   Índice de columna por la que ordenar.
+    // @param string $dirOrden   'asc' o 'desc'.
     //--------------------------------------------------------------------
-    public function obtenerTodos(): array {
+    public function obtenerPaginado(int $inicio, int $cantidad, string $busqueda, int $colOrden, string $dirOrden): array {
+        // Mapa seguro: índice DataTable -> columna SQL
+        $columnas = [
+            0 => 'l.accion',
+            1 => 'l.tabla_afectada',
+            2 => 'l.registro_id',
+            3 => 'u.usuario',
+            4 => 'l.fecha',
+        ];
+        $columnaOrden = $columnas[$colOrden] ?? 'l.fecha';
+        $dirOrden     = strtolower($dirOrden) === 'asc' ? 'ASC' : 'DESC';
+
         try {
-            $query = "SELECT l.*, u.usuario as nombre_admin 
+            $busquedaLike = '%' . $busqueda . '%';
+            $query = "SELECT l.*, u.usuario AS nombre_admin
                       FROM {$this->table_name} l
                       LEFT JOIN usuarios u ON l.usuario_id = u.id
-                      ORDER BY l.fecha DESC";
-                      
+                      WHERE (:busqueda = ''
+                          OR l.accion          LIKE :b1
+                          OR l.tabla_afectada  LIKE :b2
+                          OR u.usuario         LIKE :b3
+                          OR l.detalles        LIKE :b4
+                      )
+                      ORDER BY {$columnaOrden} {$dirOrden}
+                      LIMIT :cantidad OFFSET :inicio";
+
             $stmt = $this->conn->prepare($query);
+            $stmt->bindValue(':busqueda', $busqueda,      PDO::PARAM_STR);
+            $stmt->bindValue(':b1',       $busquedaLike,  PDO::PARAM_STR);
+            $stmt->bindValue(':b2',       $busquedaLike,  PDO::PARAM_STR);
+            $stmt->bindValue(':b3',       $busquedaLike,  PDO::PARAM_STR);
+            $stmt->bindValue(':b4',       $busquedaLike,  PDO::PARAM_STR);
+            $stmt->bindValue(':cantidad', $cantidad,      PDO::PARAM_INT);
+            $stmt->bindValue(':inicio',   $inicio,        PDO::PARAM_INT);
             $stmt->execute();
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (\Exception $e) {
-            error_log("[LogModelo] Error en obtenerTodos: " . $e->getMessage());
+            error_log("[LogModelo] Error en obtenerPaginado: " . $e->getMessage());
             return [];
+        }
+    }
+
+    //--------------------------------------------------------------------
+    // Retorna el total absoluto de registros (sin filtros).
+    //--------------------------------------------------------------------
+    public function contarTodos(): int {
+        try {
+            $stmt = $this->conn->prepare("SELECT COUNT(*) FROM {$this->table_name}");
+            $stmt->execute();
+            return (int)$stmt->fetchColumn();
+        } catch (\Exception $e) {
+            error_log("[LogModelo] Error en contarTodos: " . $e->getMessage());
+            return 0;
+        }
+    }
+
+    //--------------------------------------------------------------------
+    // Retorna el total de registros que coinciden con una búsqueda.
+    //--------------------------------------------------------------------
+    public function contarFiltrados(string $busqueda): int {
+        try {
+            $busquedaLike = '%' . $busqueda . '%';
+            $query = "SELECT COUNT(*)
+                      FROM {$this->table_name} l
+                      LEFT JOIN usuarios u ON l.usuario_id = u.id
+                      WHERE (:busqueda = ''
+                          OR l.accion         LIKE :b1
+                          OR l.tabla_afectada LIKE :b2
+                          OR u.usuario        LIKE :b3
+                          OR l.detalles       LIKE :b4
+                      )";
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindValue(':busqueda', $busqueda,     PDO::PARAM_STR);
+            $stmt->bindValue(':b1',       $busquedaLike, PDO::PARAM_STR);
+            $stmt->bindValue(':b2',       $busquedaLike, PDO::PARAM_STR);
+            $stmt->bindValue(':b3',       $busquedaLike, PDO::PARAM_STR);
+            $stmt->bindValue(':b4',       $busquedaLike, PDO::PARAM_STR);
+            $stmt->execute();
+            return (int)$stmt->fetchColumn();
+        } catch (\Exception $e) {
+            error_log("[LogModelo] Error en contarFiltrados: " . $e->getMessage());
+            return 0;
         }
     }
 }

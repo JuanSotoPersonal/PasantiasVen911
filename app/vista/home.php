@@ -24,6 +24,8 @@
     <link rel="stylesheet" href="public/css/adminlte.css" />
     <!-- Personalización del Tema VEN 911 -->
     <link rel="stylesheet" href="public/css/home.css" />
+    <!-- Módulo de Notificaciones -->
+    <link rel="stylesheet" href="public/css/notificaciones.css" />
     <!--fin::Funciones de Accesibilidad-->
 
     <!--inicio::Fuentes-->
@@ -151,6 +153,10 @@
     <!--inicio::Configuración de OverlayScrollbars-->
     <script src="public/js/home_dashboard.js"></script>
     <!--fin::Configuración de OverlayScrollbars-->
+
+    <!-- Módulo de Notificaciones (SSE) -->
+    <script src="public/js/notificaciones.js"></script>
+    <!--fin::Notificaciones-->
 
     <!-- ApexCharts -->
     <script src="public/libs/apexcharts/apexcharts.min.js"></script>
