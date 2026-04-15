@@ -4,6 +4,9 @@ require_once 'app/modelos/UsuarioModelo.php';
 require_once 'app/modelos/EventoModelo.php';
 use App\modelos\UsuarioModelo;
 use App\modelos\EventoModelo;
+use App\Helpers\Validador;
+
+require_once 'app/Helpers/Validador.php';
 
 class AuthControlador {
 
@@ -46,28 +49,16 @@ class AuthControlador {
                 return; 
             }
         }
-        //validacion de formato de usuario
-        if (!preg_match('/^[a-zA-Z0-9]+$/', $usuario)) {
-            echo json_encode(['success' => false, 'message' => 'El usuario solo puede contener letras y números, sin signos especiales.']);
-            return;
-        }
-        //validacion de longitud de usuario
-        if (strlen($usuario) < 7) {
-            echo json_encode(['success' => false, 'message' => 'El usuario debe tener al menos 7 caracteres.']);
-            return;
-        }
-        if (strlen($usuario) > 32) {
-            echo json_encode(['success' => false, 'message' => 'El usuario no puede exceder los 32 caracteres.']);
+        // Validaciones encapsuladas a través del Validador común
+        $valUsuario = Validador::validarUsuario($usuario);
+        if (!$valUsuario['valido']) {
+            echo json_encode(['success' => false, 'message' => $valUsuario['mensaje']]);
             return;
         }
 
-        //validacion de longitud de contraseña
-        if (strlen($password) < 8) {
-            echo json_encode(['success' => false, 'message' => 'La contraseña debe tener al menos 8 caracteres.']);
-            return;
-        }
-        if (strlen($password) > 128) {
-            echo json_encode(['success' => false, 'message' => 'La contraseña no puede exceder los 128 caracteres.']);
+        $valPass = Validador::validarContrasena($password);
+        if (!$valPass['valido']) {
+            echo json_encode(['success' => false, 'message' => $valPass['mensaje']]);
             return;
         }
         //validacion de usuario
