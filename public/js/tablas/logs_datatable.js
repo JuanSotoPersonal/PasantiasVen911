@@ -22,17 +22,20 @@ $(document).ready(function () {
         },
         "columns": [
             { 
-                "data": "accion",
-                "render": function(data) {
-                    let badgeClass = 'bg-secondary';
-                    if (data === 'INSERT') badgeClass = 'bg-success';
-                    if (data === 'UPDATE') badgeClass = 'bg-warning text-dark';
-                    if (data === 'DELETE') badgeClass = 'bg-danger';
-                    if (data === 'LOGIN') badgeClass = 'bg-info text-dark';
-                    if (data === 'LOGOUT') badgeClass = 'bg-primary text-white';
-                    if (data === 'CAMBIO_ESTADO') badgeClass = 'bg-dark text-white';
+                "data": "tipo_accion",
+                "render": function(data, type, row) {
+                    // Fallback para nombres de campo antiguos si tipo_accion es undefined
+                    const accion = data || row.accion || "S/D";
                     
-                    return `<span class="badge ${badgeClass}">${data}</span>`;
+                    let badgeClass = 'bg-secondary';
+                    if (accion === 'INSERT') badgeClass = 'bg-success';
+                    if (accion === 'UPDATE') badgeClass = 'bg-warning text-dark';
+                    if (accion === 'DELETE') badgeClass = 'bg-danger';
+                    if (accion === 'LOGIN') badgeClass = 'bg-info text-dark';
+                    if (accion === 'LOGOUT') badgeClass = 'bg-primary text-white';
+                    if (accion === 'CAMBIO_ESTADO') badgeClass = 'bg-dark text-white';
+                    
+                    return `<span class="badge ${badgeClass}">${accion}</span>`;
                 }
             },
             { "data": "tabla_afectada", "render": function(data) { return escapeHTML(data); } },
@@ -48,11 +51,14 @@ $(document).ready(function () {
                 "searchable": false,
                 "className": "text-center",
                 "render": function (data, type, row) {
+                    // Soporte para descripcion o detalles (fallback)
+                    const desc = row.descripcion || row.detalles || 'Sin descripción';
+                    
                     return `
                         <button class="btn btn-ven-primary btn-sm btn-ver-detalles" 
                                 data-anterior='${escapeHTML(row.valor_anterior || "")}' 
                                 data-nuevo='${escapeHTML(row.valor_nuevo || "")}' 
-                                data-detalles="${escapeHTML(row.detalles || 'Sin descripción')}">
+                                data-detalles="${escapeHTML(desc)}">
                             <i class="bi bi-eye"></i> Ver Cambios
                         </button>
                     `;

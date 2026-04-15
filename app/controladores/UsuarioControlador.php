@@ -1,11 +1,11 @@
 <?php
 
 require_once 'app/modelos/UsuarioModelo.php';
-require_once 'app/modelos/LogModelo.php';
 require_once 'app/modelos/RegistroModelo.php';
+require_once 'app/modelos/EventoModelo.php';
 use App\modelos\UsuarioModelo;
-use App\modelos\LogModelo;
 use App\modelos\RegistroModelo;
+use App\modelos\EventoModelo;
 
 class UsuarioControlador {
 
@@ -15,7 +15,7 @@ class UsuarioControlador {
     // Constructor
     //--------------------------------------------------------------------
 
-    private LogModelo $log;
+    private EventoModelo $log;
 
     public function __construct() {
         if (!isset($_SESSION['user_id']) || !tienePerm('usuarios', 'ver')) {
@@ -23,7 +23,7 @@ class UsuarioControlador {
             exit;
         }
         $this->modelo = new UsuarioModelo();
-        $this->log    = new LogModelo();
+        $this->log    = new EventoModelo();
     }
 
     //--------------------------------------------------------------------
@@ -193,7 +193,7 @@ class UsuarioControlador {
         
         if ($this->modelo->crear($datos)) {
             $adminId = (int)$_SESSION['user_id'];
-            $this->log->registrar($adminId, 'INSERT', 'usuarios', null, null, [
+            $this->log->registrarEvento($adminId, 'INSERT', 'usuarios', null, null, [
                 'usuario' => $usuario, 
                 'nombre_completo' => $nombreCompleto, 
                 'cedula' => $cedula, 
@@ -270,7 +270,7 @@ class UsuarioControlador {
 
         if ($this->modelo->actualizarInformacion($id, $datos)) {
             $adminId = (int)$_SESSION['user_id'];
-            $this->log->registrar($adminId, 'UPDATE', 'usuarios', $id, 
+            $this->log->registrarEvento($adminId, 'UPDATE', 'usuarios', $id, 
                 $usuarioAnterior ? [
                     'usuario'         => $usuarioAnterior['usuario'],
                     'nombre_completo' => $usuarioAnterior['nombre_completo'],
@@ -355,7 +355,7 @@ class UsuarioControlador {
         //actualizacion de contraseña
         if ($this->modelo->actualizarContrasena($id, $hasheada)) {
             $adminId = (int)$_SESSION['user_id'];
-            $this->log->registrar($adminId, 'UPDATE', 'usuarios', $id, 
+            $this->log->registrarEvento($adminId, 'UPDATE', 'usuarios', $id, 
                 $usuarioAnterior ? [
                     'usuario'         => $usuarioAnterior['usuario'],
                     'nombre_completo' => $usuarioAnterior['nombre_completo']
@@ -410,7 +410,7 @@ class UsuarioControlador {
         if ($resultado !== false) {
             $adminId     = (int)$_SESSION['user_id'];
             $nuevoEstado = $resultado['nuevo_estado'];
-            $this->log->registrar($adminId, 'CAMBIO_ESTADO', 'usuarios', $id, 
+            $this->log->registrarEvento($adminId, 'CAMBIO_ESTADO', 'usuarios', $id, 
                 ['estado' => $estadoAnterior], 
                 ['estado' => $nuevoEstado], 
                 "Usuario ID {$id} cambiado a '{$nuevoEstado}'."
@@ -484,7 +484,7 @@ class UsuarioControlador {
         // Ahora usamos el método unificado en el modelo
         if ($this->modelo->actualizarCamposSeguridad($id, $datos)) {
             $adminId = (int)$_SESSION['user_id'];
-            $this->log->registrar($adminId, 'UPDATE', 'usuarios', $id, null, null, "Preguntas de seguridad del usuario ID {$id} actualizadas.");
+            $this->log->registrarEvento($adminId, 'UPDATE', 'usuarios', $id, null, null, "Preguntas de seguridad del usuario ID {$id} actualizadas.");
             echo json_encode(['success' => true, 'message' => 'Preguntas de seguridad actualizadas correctamente.']);
         } else {
             echo json_encode(['success' => false, 'message' => 'Error al actualizar las preguntas.']);

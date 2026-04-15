@@ -1,9 +1,9 @@
 <?php
 
 require_once 'app/modelos/UsuarioModelo.php';
-require_once 'app/modelos/LogModelo.php';
+require_once 'app/modelos/EventoModelo.php';
 use App\modelos\UsuarioModelo;
-use App\modelos\LogModelo;
+use App\modelos\EventoModelo;
 
 class AuthControlador {
 
@@ -88,9 +88,9 @@ class AuthControlador {
                 // Ejemplo: ['fichas' => ['ver','crear'], 'usuarios' => ['ver','gestionar']]
                 $_SESSION['permisos'] = $usuarioModelo->obtenerPermisosDeRol((int)$usuario_datos['rol_id']);
 
-                // Registrar log de sesión iniciada
-                $log = new LogModelo();
-                $log->registrar((int)$usuario_datos['id'], 'LOGIN', 'usuarios', (int)$usuario_datos['id'], null, null, "Usuario '{$usuario}' inició sesión.");
+                // Registrar evento de sesión iniciada
+                $evento = new EventoModelo();
+                $evento->registrarEvento((int)$usuario_datos['id'], 'LOGIN', 'usuarios', (int)$usuario_datos['id'], null, null, "Usuario '{$usuario}' inició sesión.");
 
                 echo json_encode(['success' => true, 'message' => 'Autenticación exitosa.']);
             } else {
@@ -106,10 +106,10 @@ class AuthControlador {
     //--------------------------------------------------------------------
 
     public function logout() {
-        // Registrar log antes de destruir la sesión
+        // Registrar evento antes de destruir la sesión
         if (isset($_SESSION['user_id'])) {
-            $log = new LogModelo();
-            $log->registrar((int)$_SESSION['user_id'], 'LOGOUT', 'usuarios', (int)$_SESSION['user_id'], null, null, "Usuario '{$_SESSION['user_name']}' cerró sesión.");
+            $evento = new EventoModelo();
+            $evento->registrarEvento((int)$_SESSION['user_id'], 'LOGOUT', 'usuarios', (int)$_SESSION['user_id'], null, null, "Usuario '{$_SESSION['user_name']}' cerró sesión.");
         }
         session_destroy();
         header('Location: index.php?url=auth');

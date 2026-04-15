@@ -151,7 +151,7 @@
     <script src="public/libs/datatables/dataTables.bootstrap5.min.js"></script>
 
     <!-- Lógica de la tabla de Logs -->
-    <script src="public/js/tablas/logs_datatable.js"></script>
+    <script src="public/js/tablas/logs_datatable.js?v=1.1"></script>
     <!--fin::Scripts-->
   </body>
   <!--fin::Cuerpo-->

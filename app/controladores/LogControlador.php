@@ -1,11 +1,11 @@
 <?php
 
-require_once 'app/modelos/LogModelo.php';
-use App\modelos\LogModelo;
+require_once 'app/modelos/EventoModelo.php';
+use App\modelos\EventoModelo;
 
 class LogControlador {
 
-    private LogModelo $modelo;
+    private EventoModelo $modelo;
 
     public function __construct() {
         // Validacion: requiere permiso 'ver' en módulo 'historial' (via RBAC en sesión)
@@ -13,7 +13,7 @@ class LogControlador {
             header('Location: index.php?url=home');
             exit;
         }
-        $this->modelo = new LogModelo();
+        $this->modelo = new EventoModelo();
     }
 
     //--------------------------------------------------------------------

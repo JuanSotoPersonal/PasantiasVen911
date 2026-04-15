@@ -2,11 +2,11 @@
 
 require_once 'app/modelos/UsuarioModelo.php';
 require_once 'app/modelos/RegistroModelo.php';
-require_once 'app/modelos/LogModelo.php';
+require_once 'app/modelos/EventoModelo.php';
 
 use App\modelos\UsuarioModelo;
 use App\modelos\RegistroModelo;
-use App\modelos\LogModelo;
+use App\modelos\EventoModelo;
 
 class RegistroControlador {
 
@@ -142,9 +142,9 @@ class RegistroControlador {
         ];
 
         if ($this->usuarioModelo->crear($datos)) {
-            // El primer login es manual tras el setup
-            $log = new LogModelo();
-            $log->registrar(0, 'INSERT', 'usuarios', null, null, ['usuario' => $usuario], "Sistema inicializado con SuperAdmin: {$usuario}.");
+            // El primer login es manual tras el setup (no hay sesión: usuario_id = null)
+            $evento = new EventoModelo();
+            $evento->registrarEvento(null, 'INSERT', 'usuarios', null, null, ['usuario' => $usuario], "Sistema inicializado con SuperAdmin: {$usuario}.");
             
             echo json_encode(['success' => true, 'message' => 'Sistema activado con éxito. Redirigiendo al login...']);
         } else {

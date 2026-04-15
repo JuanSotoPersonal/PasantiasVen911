@@ -239,13 +239,13 @@
   <h2>ProyectoFicha</h2>
   <div class="linea"></div>
   <h1 style="font-size:1.8rem; font-weight:700; letter-spacing:1px; margin-bottom:6px;">Documento Técnico de Arquitectura</h1>
-  <p style="color:#86efac; font-size:0.95rem;">Auditoría de Seguridad &middot; RBAC Middleware &middot; SSE Fix &middot; Paginación Server-Side Logs</p>
-  <div class="version-badge">Versión 3.2 &mdash; Abril 2026</div>
+  <p style="color:#86efac; font-size:0.95rem;">Auditoría de Seguridad &middot; RBAC Middleware &middot; SSE Fix &middot; Paginación Server-Side &middot; Reestructuración de Eventos</p>
+  <div class="version-badge">Versión 3.3 &mdash; Abril 2026</div>
   <div class="meta" style="margin-top:40px;">
-    <span>Entorno: XAMPP · PHP 8.2 · MariaDB 10.4</span>
-    <span>Stack: PHP MVC · Bootstrap 5 · AdminLTE 4 · DataTables · jQuery</span>
-    <span>Fecha generación: 13 de Abril de 2026</span>
-    <span style="color:#86efac; font-size:0.85rem;">&#x1F195; Última actualización: v3.1 — RBAC Middleware &amp; Bugfixes</span>
+    <span>Entorno: XAMPP &middot; PHP 8.2 &middot; MariaDB 10.4</span>
+    <span>Stack: PHP MVC &middot; Bootstrap 5 &middot; AdminLTE 4 &middot; DataTables &middot; jQuery</span>
+    <span>Fecha generaci&oacute;n: 15 de Abril de 2026</span>
+    <span style="color:#86efac; font-size:0.85rem;">&#x1F195; Última actualización: v3.3 &mdash; Reestructuración del Sistema de Eventos</span>
   </div>
 </div>
 
@@ -366,6 +366,20 @@
         <li><div class="dot-leader"><span class="titulo">11.4 Cambios en logs_datatable.js</span><span class="puntos"></span><span class="pagina">&sect;11</span></div></li>
       </ol>
     </li>
+    <li>
+      <div class="dot-leader">
+        <span class="titulo">12. Reestructuración del Sistema de Eventos &#x1F195;</span>
+        <span class="puntos"></span>
+        <span class="pagina">&sect;12</span>
+      </div>
+      <ol>
+        <li><div class="dot-leader"><span class="titulo">12.1 Motivación y diseño</span><span class="puntos"></span><span class="pagina">&sect;12</span></div></li>
+        <li><div class="dot-leader"><span class="titulo">12.2 Nuevas tablas: eventos_sistema y eventos_fichas</span><span class="puntos"></span><span class="pagina">&sect;12</span></div></li>
+        <li><div class="dot-leader"><span class="titulo">12.3 EventoModelo.php &mdash; Módelo centralizado</span><span class="puntos"></span><span class="pagina">&sect;12</span></div></li>
+        <li><div class="dot-leader"><span class="titulo">12.4 Actualización de controladores</span><span class="puntos"></span><span class="pagina">&sect;12</span></div></li>
+        <li><div class="dot-leader"><span class="titulo">12.5 Corrección en DataTable de historial</span><span class="puntos"></span><span class="pagina">&sect;12</span></div></li>
+      </ol>
+    </li>
   </ol>
 </div>
 
@@ -400,6 +414,7 @@
         <li>Trazabilidad en Eventos (id_user / id_owner)</li>
         <li>Migración SQL lista para ejecutar</li>
         <li>Panel de notificaciones en Navbar</li>
+        <li>Sistema de eventos especializado (eventos_sistema + eventos_fichas)</li>
       </ul>
     </div>
   </div>
@@ -432,39 +447,39 @@
 
   <h3>2.1 Estructura de Carpetas</h3>
   <pre>ProyectoFicha/
-├── index.php                        # Front Controller + Enrutador + Middleware Auth
-├── ven911_fichas.sql                # Esquema original de base de datos
-├── ven911_migracion_v2.sql          # 🆕 Migración RBAC + Notificaciones + Eventos
+├── index.php                        # Front Controller + Enrutador + Middleware Auth + RBAC Gate
+├── ficha_ven_911_versionFinal.sql   # 🔄 Esquema canonóico v3.3 (eventos_sistema, eventos_fichas)
+├── migracion_eventos.sql           # 🆕 Script para BD existentes (renombrado + nuevas tablas)
 ├── public/
 │   ├── css/
 │   │   ├── home.css                 # Tema visual VEN 911 (tokens de color, sidebar)
 │   │   ├── usuarios.css             # Estilos módulo usuarios
 │   │   ├── logs.css                 # Estilos módulo historial
-│   │   └── notificaciones.css       # 🆕 Badge, panel dropdown, ítems SSE
+│   │   └── notificaciones.css       # Badge, panel dropdown, ítems SSE
 │   └── js/
-│       ├── notificaciones.js        # 🆕 Cliente SSE, render, marcar leídas
+│       ├── notificaciones.js        # Cliente SSE, render, marcar leídas
 │       └── tablas/
 │           ├── usuarios_datatable.js  # 🔧 Corregido: escapeHTML anti-XSS
-│           └── logs_datatable.js      # 🔧 Corregido: escapeHTML + sintaxis
+│           └── logs_datatable.js      # 🔄 Actualizado: tipo_accion, descripcion, fallbacks
 └── app/
     ├── Config/
     │   └── Database.php             # 🔧 Fuga de error bloqueada
     ├── controladores/
-    │   ├── AuthControlador.php      # 🔧 Longitud password: 6→8
-    │   ├── RegistroControlador.php  # 🔧 Longitud password: 6→8
-    │   ├── UsuarioControlador.php   # 🔧 Longitud password: 6→8
-    │   ├── LogControlador.php       # 🔧 Error de sintaxis corregido
-    │   └── NotificacionControlador.php  # 🆕 Stream SSE + marcarLeida/marcarTodas
+    │   ├── AuthControlador.php      # 🔄 Usa EventoModelo para LOGIN/LOGOUT
+    │   ├── RegistroControlador.php  # 🔄 usuario_id: 0 → null en setup inicial
+    │   ├── UsuarioControlador.php   # 🔄 Usa EventoModelo (5 puntos de registro)
+    │   ├── LogControlador.php       # 🔄 Apunta a EventoModelo
+    │   └── NotificacionControlador.php  # Stream SSE + marcarLeida/marcarTodas
     ├── modelos/
     │   ├── UsuarioModelo.php
-    │   ├── LogModelo.php
+    │   ├── EventoModelo.php         # 🆕 Reemplaza LogModelo — eventos_sistema + eventos_fichas
     │   ├── RegistroModelo.php
-    │   └── NotificacionModelo.php   # 🆕 CRUD notificaciones
+    │   └── NotificacionModelo.php   # CRUD notificaciones
     └── vista/
         └── partials/
-            ├── navbar.php           # 🔧 Incluye panel de notificaciones
+            ├── navbar.php           # Incluye panel de notificaciones
             ├── profile_bubble.php
-            └── notificaciones_panel.php  # 🆕 HTML del dropdown</pre>
+            └── notificaciones_panel.php  # HTML del dropdown</pre>
 
   <h3>2.2 Flujo de Enrutamiento (Front Controller)</h3>
   <p>Toda petición HTTP llega a <code>index.php</code>, que actúa como controlador frontal aplicando autenticación y enrutamiento:</p>
@@ -1377,10 +1392,223 @@ $columnaOrden = $columnas[$colOrden] ?? 'l.fecha'; // fallback seguro</pre>
   </div>
 
   <div class="footer-doc">
-    <p>Documento T&eacute;cnico &middot; VEN 911 ProyectoFicha &middot; Versi&oacute;n 3.2 &middot; Abril 2026</p>
-    <p>Generado por Antigravity &middot; &Uacute;ltima actualizaci&oacute;n: 13 de Abril de 2026 &mdash; Paginaci&oacute;n Server-Side M&oacute;dulo Logs v3.2</p>
+    <p>Documento T&eacute;cnico &middot; VEN 911 ProyectoFicha &middot; Versi&oacute;n 3.3 &middot; Abril 2026</p>
+    <p>Generado por Antigravity &middot; &Uacute;ltima actualizaci&oacute;n: 15 de Abril de 2026 &mdash; Paginaci&oacute;n Server-Side M&oacute;dulo Logs v3.2</p>
   </div>
 </div>
+
+<!-- ================================================================ §12 REESTRUCTURACIÓN EVENTOS -->
+<div class="seccion">
+  <div class="cabecera-seccion">
+    <div class="icono-seccion">&#x1F4C5;</div>
+    <div>
+      <div class="num">Sección 12 &mdash; Nueva en v3.3</div>
+      <h2>Reestructuración del Sistema de Eventos</h2>
+    </div>
+  </div>
+
+  <p>Esta sección documenta la reestructuración completa del sistema de auditoría del sistema VEN 911, implementada el 15 de Abril de 2026. El objetivo fue separar los eventos del sistema (login, CRUD de usuarios) de los eventos del ciclo de vida de las fichas de emergencia, eliminando la mezcla de contextos que tenía la antigua tabla <code>logs_sistema</code>.</p>
+
+  <h3>12.1 Motivación y Diseño</h3>
+
+  <p>La tabla original <code>logs_sistema</code> mezclaba en un único registro tanto acciones globales del sistema (login, logout, creación de usuarios) como acciones sobre las fichas de emergencia, generando consultas complejas y dificultando la trazabilidad. El rediseño introduce el principio de <strong>separación de responsabilidades a nivel de datos</strong>.</p>
+
+  <div class="grid-2">
+    <div class="card-mini">
+      <h4>&#x1F6AB; Problema (v3.2 y anteriores)</h4>
+      <ul>
+        <li>Una sola tabla <code>logs_sistema</code> para todo</li>
+        <li>Campo <code>ficha_id</code> opcional generaba NULLs masivos</li>
+        <li>Imposible consultar "todos los eventos de esta ficha"</li>
+        <li><code>usuario_id = 0</code> rompía la FK en el setup inicial</li>
+        <li>Columnas con nombres ambiguos (<code>accion</code>, <code>detalles</code>)</li>
+      </ul>
+    </div>
+    <div class="card-mini">
+      <h4>&#x2705; Solución (v3.3)</h4>
+      <ul>
+        <li>Dos tablas especializadas con propósito único</li>
+        <li><code>eventos_sistema</code>: acciones globales del sistema</li>
+        <li><code>eventos_fichas</code>: ciclo de vida de emergencias</li>
+        <li><code>usuario_id</code> nullable para el setup sin sesión</li>
+        <li>Columnas renombradas a <code>tipo_accion</code> y <code>descripcion</code></li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>12.2 Nuevas Tablas — Esquema Relacional</h3>
+
+  <h4>Tabla <code>eventos_sistema</code> (renombrada de <code>logs_sistema</code>)</h4>
+  <table>
+    <thead><tr><th>Campo</th><th>Tipo</th><th>Descripción</th></tr></thead>
+    <tbody>
+      <tr><td><code>id</code></td><td>BIGINT UNSIGNED PK AI</td><td>Identificador único</td></tr>
+      <tr><td><code>usuario_id</code></td><td>INT UNSIGNED FK <strong>NULL</strong></td><td>Quién realizó la acción (<em>NULL para setup inicial</em>)</td></tr>
+      <tr><td><code>tipo_accion</code></td><td>ENUM</td><td><code>INSERT</code> · <code>UPDATE</code> · <code>DELETE</code> · <code>LOGIN</code> · <code>LOGOUT</code> · <code>CAMBIO_ESTADO</code></td></tr>
+      <tr><td><code>tabla_afectada</code></td><td>VARCHAR(50)</td><td>Nombre de la tabla donde se hizo la operación</td></tr>
+      <tr><td><code>registro_id</code></td><td>INT UNSIGNED NULL</td><td>ID del registro afectado (ej. ID del usuario creado)</td></tr>
+      <tr><td><code>valor_anterior</code></td><td>TEXT NULL (JSON)</td><td>Estado previo del registro</td></tr>
+      <tr><td><code>valor_nuevo</code></td><td>TEXT NULL (JSON)</td><td>Nuevo estado del registro</td></tr>
+      <tr><td><code>descripcion</code></td><td>TEXT NULL</td><td>Nota legible por humanos</td></tr>
+      <tr><td><code>fecha</code></td><td>TIMESTAMP</td><td>DEFAULT CURRENT_TIMESTAMP</td></tr>
+    </tbody>
+  </table>
+
+  <h4>Tabla <code>eventos_fichas</code> (nueva en v3.3)</h4>
+  <p>Registra exclusivamente el ciclo de vida de las fichas de emergencia con un tipo de evento semántico propio.</p>
+  <table>
+    <thead><tr><th>Campo</th><th>Tipo</th><th>Descripción</th></tr></thead>
+    <tbody>
+      <tr><td><code>id</code></td><td>BIGINT UNSIGNED PK AI</td><td>Identificador único</td></tr>
+      <tr><td><code>ficha_id</code></td><td>INT UNSIGNED FK NOT NULL</td><td>Ficha afectada (ON DELETE CASCADE)</td></tr>
+      <tr><td><code>usuario_id</code></td><td>INT UNSIGNED FK NULL</td><td>Operador que realizó la acción</td></tr>
+      <tr><td><code>tipo_evento</code></td><td>ENUM</td><td><code>CREACION</code> · <code>MODIFICACION</code> · <code>CAMBIO_ESTADO</code> · <code>PLAN_ACCION</code> · <code>DESPACHO</code> · <code>CIERRE</code></td></tr>
+      <tr><td><code>estado_anterior</code></td><td>VARCHAR(50) NULL</td><td>Estado previo de la ficha</td></tr>
+      <tr><td><code>estado_nuevo</code></td><td>VARCHAR(50) NULL</td><td>Estado nuevo de la ficha</td></tr>
+      <tr><td><code>valor_anterior</code></td><td>TEXT NULL (JSON)</td><td>Snapshot previo (campos relevantes)</td></tr>
+      <tr><td><code>valor_nuevo</code></td><td>TEXT NULL (JSON)</td><td>Snapshot nuevo (campos relevantes)</td></tr>
+      <tr><td><code>descripcion</code></td><td>TEXT NULL</td><td>Nota legible</td></tr>
+      <tr><td><code>fecha</code></td><td>TIMESTAMP</td><td>DEFAULT CURRENT_TIMESTAMP</td></tr>
+    </tbody>
+  </table>
+
+  <div class="alerta info">
+    <span class="ico">&#x1F4CC;</span>
+    <div><strong>Integridad referencial:</strong> <code>eventos_fichas.ficha_id</code> usa <code>ON DELETE CASCADE</code>, garantizando que si se elimina una ficha, su historial completo se limpia automáticamente. <code>eventos_sistema.usuario_id</code> usa <code>ON DELETE SET NULL</code> para preservar el log del sistema incluso si el usuario es eliminado.</div>
+  </div>
+
+  <h3>12.3 EventoModelo.php — Modelo Centralizado</h3>
+
+  <p>Se creó un único modelo <code>EventoModelo.php</code> que reemplaza completamente al antiguo <code>LogModelo.php</code> (eliminado). Centraliza la escritura y lectura de ambas tablas de eventos.</p>
+
+  <table>
+    <thead><tr><th>Método</th><th>Tabla destino</th><th>Descripción</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>registrarEvento(?int $usuario_id, ...)</code></td>
+        <td><code>eventos_sistema</code></td>
+        <td>Registra cualquier acción global. <code>usuario_id</code> acepta <code>NULL</code> para el setup inicial del sistema.</td>
+      </tr>
+      <tr>
+        <td><code>registrarEventoFicha(int $ficha_id, ...)</code></td>
+        <td><code>eventos_fichas</code></td>
+        <td>Registra un evento del ciclo de vida de una ficha. Se usará al implementar el módulo de fichas.</td>
+      </tr>
+      <tr>
+        <td><code>obtenerPaginado()</code></td>
+        <td><code>eventos_sistema</code></td>
+        <td>Paginación server-side compatible con DataTables. SELECT explícito de columnas para garantizar los nombres correctos en el JSON.</td>
+      </tr>
+      <tr>
+        <td><code>contarTodos()</code></td>
+        <td><code>eventos_sistema</code></td>
+        <td>Total absoluto de registros para <code>recordsTotal</code>.</td>
+      </tr>
+      <tr>
+        <td><code>contarFiltrados(string $busqueda)</code></td>
+        <td><code>eventos_sistema</code></td>
+        <td>Total filtrado para <code>recordsFiltered</code>.</td>
+      </tr>
+      <tr>
+        <td><code>obtenerEventosPorFicha(int $ficha_id)</code></td>
+        <td><code>eventos_fichas</code></td>
+        <td>Historial completo cronológico de una emergencia específica.</td>
+      </tr>
+      <tr>
+        <td><code>obtenerEventosPorUsuario(int $usuario_id)</code></td>
+        <td>UNION de ambas</td>
+        <td>Timeline completo de un usuario: acciones de sistema + acciones sobre fichas, ordenado por fecha descendente.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h4>Consulta UNION para historial por usuario</h4>
+  <pre>SELECT 'sistema' AS origen, e.tipo_accion AS tipo, e.tabla_afectada AS contexto, ...
+FROM eventos_sistema e WHERE e.usuario_id = :uid
+UNION ALL
+SELECT 'ficha' AS origen, ef.tipo_evento AS tipo, CONCAT('Ficha #', ef.ficha_id) AS contexto, ...
+FROM eventos_fichas ef WHERE ef.usuario_id = :uid
+ORDER BY fecha DESC</pre>
+
+  <div class="archivo-badge">
+    <span class="ruta">app/modelos/EventoModelo.php</span>
+    <span class="tag nuevo">NUEVO — Reemplaza LogModelo.php</span>
+  </div>
+  <div class="archivo-badge">
+    <span class="ruta">app/modelos/LogModelo.php</span>
+    <span class="tag fix">ELIMINADO</span>
+  </div>
+
+  <h3>12.4 Actualización de Controladores</h3>
+
+  <p>Todos los controladores que registraban logs fueron actualizados para usar <code>EventoModelo::registrarEvento()</code>. Se corrigió un bug de FK en el setup inicial donde se pasaba <code>usuario_id = 0</code> (inválido) en lugar de <code>NULL</code>.</p>
+
+  <table>
+    <thead><tr><th>Controlador</th><th>Cambios aplicados</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>AuthControlador.php</code></td>
+        <td>Login y Logout: <code>LogModelo::registrar()</code> → <code>EventoModelo::registrarEvento()</code></td>
+      </tr>
+      <tr>
+        <td><code>UsuarioControlador.php</code></td>
+        <td>5 puntos de registro (crear, editar, cambiar contraseña, cambiar estado, preguntas de seguridad) actualizados. Eliminadas referencias a <code>LogModelo</code>.</td>
+      </tr>
+      <tr>
+        <td><code>RegistroControlador.php</code></td>
+        <td>Setup inicial: <code>usuario_id = 0</code> → <code>null</code>. Corrige violación de FK al no existir usuario con ID 0.</td>
+      </tr>
+      <tr>
+        <td><code>LogControlador.php</code></td>
+        <td>Propiedad <code>$modelo</code> cambiada de tipo <code>LogModelo</code> a <code>EventoModelo</code>.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="alerta exito">
+    <span class="ico">&#x2705;</span>
+    <div><strong>Bug corregido:</strong> El setup inicial del sistema (creación del SuperAdmin) ya no falla con una violación de FK. Al usar <code>NULL</code> en lugar de <code>0</code> para el <code>usuario_id</code>, el campo nullable acepta el valor y el evento queda registrado correctamente con el contexto de "inicialización del sistema".</div>
+  </div>
+
+  <h3>12.5 Corrección en DataTable de Historial</h3>
+
+  <p>El renombrado de columnas en la BD (<code>accion</code> → <code>tipo_accion</code>, <code>detalles</code> → <code>descripcion</code>) requería actualizar el script de DataTables. Adicionalmente se detectó un problema de caché de navegador donde el script antiguo buscaba los campos con los nombres anteriores, mostrando "undefined".</p>
+
+  <table>
+    <thead><tr><th>Cambio</th><th>Antes</th><th>Después</th><th>Motivo</th></tr></thead>
+    <tbody>
+      <tr><td>Campo de acción</td><td><code>"data": "accion"</code></td><td><code>"data": "tipo_accion"</code></td><td>Nuevo nombre de columna en BD</td></tr>
+      <tr><td>Campo de descripción</td><td><code>row.detalles</code></td><td><code>row.descripcion</code></td><td>Nuevo nombre de columna en BD</td></tr>
+      <tr><td>Robustez de campos</td><td>Sin fallback</td><td><code>data || row.accion || "S/D"</code></td><td>Previene mostrar "undefined" si falta un campo</td></tr>
+      <tr><td>Caché buster</td><td><code>logs_datatable.js</code></td><td><code>logs_datatable.js?v=1.1</code></td><td>Fuerza recarga del script en el navegador</td></tr>
+      <tr><td>SELECT en modelo</td><td><code>SELECT e.*</code></td><td>SELECT explícito de 10 columnas</td><td>Garantiza los nombres correctos en el JSON</td></tr>
+    </tbody>
+  </table>
+
+  <div class="archivo-badge">
+    <span class="ruta">public/js/tablas/logs_datatable.js</span>
+    <span class="tag mod">ACTUALIZADO — v1.1</span>
+  </div>
+  <div class="archivo-badge">
+    <span class="ruta">app/modelos/EventoModelo.php</span>
+    <span class="tag mod">SELECT explícito de columnas</span>
+  </div>
+  <div class="archivo-badge">
+    <span class="ruta">app/vista/logs/index.php</span>
+    <span class="tag mod">Caché buster añadido</span>
+  </div>
+
+  <div class="alerta exito">
+    <span class="ico">&#x2705;</span>
+    <div><strong>Certificación de Versión 3.3:</strong> El sistema ha sido estabilizado tras la reestructuración de eventos. Se ha verificado la integridad referencial, el funcionamiento del UNION para historiales cruzados y la paginación server-side. El esquema <code>ficha_ven_911_versionFinal.sql</code> es ahora la fuente de verdad absoluta del proyecto.</div>
+  </div>
+
+  <div class="footer-doc">
+    <p>Documento T&eacute;cnico &middot; VEN 911 ProyectoFicha &middot; Versi&oacute;n 3.3 &middot; Abril 2026</p>
+    <p>Generado por Antigravity &middot; &Uacute;ltima actualizaci&oacute;n: 15 de Abril de 2026 &mdash; Reestructuraci&oacute;n del Sistema de Eventos v3.3</p>
+  </div>
+</div>
+
 
 </body>
 </html>

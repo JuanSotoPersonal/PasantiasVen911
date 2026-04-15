@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 13-04-2026 a las 20:50:03
+-- Tiempo de generación: 15-04-2026 a las 19:37:00
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -72,6 +72,80 @@ CREATE TABLE `despachos_organismos` (
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `eventos_fichas`
+--
+
+CREATE TABLE `eventos_fichas` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `ficha_id` int(10) UNSIGNED NOT NULL COMMENT 'Ficha que originó el evento',
+  `usuario_id` int(10) UNSIGNED DEFAULT NULL COMMENT 'Operador que realizó la acción (NULL = sistema automático)',
+  `tipo_evento` enum('CREACION','MODIFICACION','CAMBIO_ESTADO','PLAN_ACCION','DESPACHO','CIERRE') NOT NULL,
+  `estado_anterior` varchar(50) DEFAULT NULL COMMENT 'Estado previo de la ficha (para CAMBIO_ESTADO)',
+  `estado_nuevo` varchar(50) DEFAULT NULL COMMENT 'Estado nuevo de la ficha (para CAMBIO_ESTADO)',
+  `valor_anterior` text DEFAULT NULL COMMENT 'Snapshot JSON del estado previo',
+  `valor_nuevo` text DEFAULT NULL COMMENT 'Snapshot JSON del estado nuevo',
+  `descripcion` text DEFAULT NULL COMMENT 'Nota legible del evento',
+  `fecha` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `eventos_sistema`
+--
+
+CREATE TABLE `eventos_sistema` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `usuario_id` int(10) UNSIGNED DEFAULT NULL COMMENT 'Quién hizo la acción (NULL = setup inicial del sistema)',
+  `tipo_accion` enum('INSERT','UPDATE','DELETE','LOGIN','LOGOUT','CAMBIO_ESTADO') NOT NULL,
+  `tabla_afectada` varchar(50) NOT NULL COMMENT 'Ej: usuarios, fichas_emergencia, roles',
+  `registro_id` int(10) UNSIGNED DEFAULT NULL COMMENT 'ID del registro afectado en esa tabla',
+  `valor_anterior` text DEFAULT NULL COMMENT 'Estado previo (JSON)',
+  `valor_nuevo` text DEFAULT NULL COMMENT 'Estado nuevo (JSON)',
+  `descripcion` text DEFAULT NULL,
+  `fecha` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `eventos_sistema`
+--
+
+INSERT INTO `eventos_sistema` (`id`, `usuario_id`, `tipo_accion`, `tabla_afectada`, `registro_id`, `valor_anterior`, `valor_nuevo`, `descripcion`, `fecha`) VALUES
+(2, 2, 'LOGIN', 'usuarios', 2, NULL, NULL, 'Usuario \'Admin2024\' inició sesión.', '2026-04-13 18:52:04'),
+(3, 2, 'LOGIN', 'usuarios', 2, NULL, NULL, 'Usuario \'admin2024\' inició sesión.', '2026-04-13 18:55:55'),
+(4, 2, 'LOGOUT', 'usuarios', 2, NULL, NULL, 'Usuario \'juan\' cerró sesión.', '2026-04-13 19:02:14'),
+(5, 2, 'LOGIN', 'usuarios', 2, NULL, NULL, 'Usuario \'Admin2024\' inició sesión.', '2026-04-13 19:02:18'),
+(6, 2, 'UPDATE', 'usuarios', 2, '{\"usuario\":\"Admin2024\",\"nombre_completo\":\"juan\"}', NULL, 'Contraseña del usuario ID 2 actualizada.', '2026-04-13 19:07:33'),
+(7, 2, 'INSERT', 'usuarios', NULL, NULL, '{\"usuario\":\"Admin2025\",\"nombre_completo\":\"Soto\",\"cedula\":\"00000000\",\"rol_id\":2}', 'Usuario \'Admin2025\' creado.', '2026-04-13 19:09:16'),
+(8, 2, 'LOGOUT', 'usuarios', 2, NULL, NULL, 'Usuario \'juan\' cerró sesión.', '2026-04-13 19:31:15'),
+(9, 2, 'LOGIN', 'usuarios', 2, NULL, NULL, 'Usuario \'Admin2024\' inició sesión.', '2026-04-13 19:31:22'),
+(10, 2, 'CAMBIO_ESTADO', 'usuarios', 3, '{\"estado\":\"activo\"}', '{\"estado\":\"inactivo\"}', 'Usuario ID 3 cambiado a \'inactivo\'.', '2026-04-13 19:32:16'),
+(11, 2, 'CAMBIO_ESTADO', 'usuarios', 3, '{\"estado\":\"inactivo\"}', '{\"estado\":\"activo\"}', 'Usuario ID 3 cambiado a \'activo\'.', '2026-04-13 19:32:19'),
+(12, 2, 'CAMBIO_ESTADO', 'usuarios', 3, '{\"estado\":\"activo\"}', '{\"estado\":\"inactivo\"}', 'Usuario ID 3 cambiado a \'inactivo\'.', '2026-04-13 19:32:21'),
+(13, 2, 'CAMBIO_ESTADO', 'usuarios', 3, '{\"estado\":\"inactivo\"}', '{\"estado\":\"activo\"}', 'Usuario ID 3 cambiado a \'activo\'.', '2026-04-13 19:32:23'),
+(14, 2, 'CAMBIO_ESTADO', 'usuarios', 3, '{\"estado\":\"activo\"}', '{\"estado\":\"inactivo\"}', 'Usuario ID 3 cambiado a \'inactivo\'.', '2026-04-13 19:32:26'),
+(15, 2, 'CAMBIO_ESTADO', 'usuarios', 3, '{\"estado\":\"inactivo\"}', '{\"estado\":\"activo\"}', 'Usuario ID 3 cambiado a \'activo\'.', '2026-04-13 19:32:28'),
+(16, 2, 'CAMBIO_ESTADO', 'usuarios', 3, '{\"estado\":\"activo\"}', '{\"estado\":\"inactivo\"}', 'Usuario ID 3 cambiado a \'inactivo\'.', '2026-04-13 19:32:30'),
+(17, 2, 'CAMBIO_ESTADO', 'usuarios', 3, '{\"estado\":\"inactivo\"}', '{\"estado\":\"activo\"}', 'Usuario ID 3 cambiado a \'activo\'.', '2026-04-13 19:32:33'),
+(18, 2, 'CAMBIO_ESTADO', 'usuarios', 3, '{\"estado\":\"activo\"}', '{\"estado\":\"inactivo\"}', 'Usuario ID 3 cambiado a \'inactivo\'.', '2026-04-13 19:34:19'),
+(19, 2, 'CAMBIO_ESTADO', 'usuarios', 3, '{\"estado\":\"inactivo\"}', '{\"estado\":\"activo\"}', 'Usuario ID 3 cambiado a \'activo\'.', '2026-04-13 19:34:21'),
+(20, 2, 'CAMBIO_ESTADO', 'usuarios', 3, '{\"estado\":\"activo\"}', '{\"estado\":\"inactivo\"}', 'Usuario ID 3 cambiado a \'inactivo\'.', '2026-04-13 19:34:23'),
+(21, 2, 'CAMBIO_ESTADO', 'usuarios', 3, '{\"estado\":\"inactivo\"}', '{\"estado\":\"activo\"}', 'Usuario ID 3 cambiado a \'activo\'.', '2026-04-13 19:34:26'),
+(22, 2, 'CAMBIO_ESTADO', 'usuarios', 3, '{\"estado\":\"activo\"}', '{\"estado\":\"inactivo\"}', 'Usuario ID 3 cambiado a \'inactivo\'.', '2026-04-13 19:35:23'),
+(23, 2, 'LOGIN', 'usuarios', 2, NULL, NULL, 'Usuario \'admin2024\' inició sesión.', '2026-04-13 19:35:57'),
+(24, 2, 'LOGIN', 'usuarios', 2, NULL, NULL, 'Usuario \'Admin2024\' inició sesión.', '2026-04-13 19:37:15'),
+(25, 2, 'LOGIN', 'usuarios', 2, NULL, NULL, 'Usuario \'Admin2024\' inició sesión.', '2026-04-15 14:34:08'),
+(26, 2, 'INSERT', 'usuarios', NULL, NULL, '{\"usuario\":\"operador\",\"nombre_completo\":\"operador\",\"cedula\":\"31034121\",\"rol_id\":2}', 'Usuario \'operador\' creado.', '2026-04-15 14:46:11'),
+(27, 2, 'UPDATE', 'usuarios', 4, '{\"usuario\":\"operador\",\"nombre_completo\":\"operador\"}', NULL, 'Contraseña del usuario ID 4 actualizada.', '2026-04-15 14:47:28'),
+(28, 2, 'LOGOUT', 'usuarios', 2, NULL, NULL, 'Usuario \'juan\' cerró sesión.', '2026-04-15 14:47:34'),
+(29, 4, 'LOGIN', 'usuarios', 4, NULL, NULL, 'Usuario \'operador\' inició sesión.', '2026-04-15 14:47:39'),
+(30, 4, 'LOGOUT', 'usuarios', 4, NULL, NULL, 'Usuario \'operador\' cerró sesión.', '2026-04-15 14:47:53'),
+(31, 2, 'LOGIN', 'usuarios', 2, NULL, NULL, 'Usuario \'Admin2024\' inició sesión.', '2026-04-15 14:48:02'),
+(32, 2, 'LOGOUT', 'usuarios', 2, NULL, NULL, 'Usuario \'juan\' cerró sesión.', '2026-04-15 14:56:48');
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `fichas_emergencia`
 --
 
@@ -88,25 +162,6 @@ CREATE TABLE `fichas_emergencia` (
   `hora_cierre` datetime DEFAULT NULL,
   `estado_ficha` enum('Pendiente','En Proceso','Atendido','Cerrado','Finalizado') DEFAULT 'Pendiente',
   `fecha_actualizacion` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `logs_sistema`
---
-
-CREATE TABLE `logs_sistema` (
-  `id` bigint(20) UNSIGNED NOT NULL,
-  `usuario_id` int(10) UNSIGNED NOT NULL COMMENT 'Quién hizo la acción',
-  `accion` enum('INSERT','UPDATE','DELETE','LOGIN','LOGOUT','CAMBIO_ESTADO') NOT NULL,
-  `tabla_afectada` varchar(50) NOT NULL COMMENT 'Ej: usuarios, fichas_emergencia, roles',
-  `registro_id` int(10) UNSIGNED DEFAULT NULL COMMENT 'ID del registro afectado en esa tabla',
-  `ficha_id` int(10) UNSIGNED DEFAULT NULL COMMENT 'Solo si la acción está ligada a una emergencia',
-  `valor_anterior` text DEFAULT NULL COMMENT 'Estado previo (JSON)',
-  `valor_nuevo` text DEFAULT NULL COMMENT 'Estado nuevo (JSON)',
-  `detalles` text DEFAULT NULL,
-  `fecha` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -354,6 +409,15 @@ CREATE TABLE `usuarios` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
+-- Volcado de datos para la tabla `usuarios`
+--
+
+INSERT INTO `usuarios` (`id`, `usuario`, `password`, `nombre_completo`, `cedula`, `rol_id`, `estado`, `pregunta_1_id`, `pregunta_2_id`, `respuesta_1`, `respuesta_2`) VALUES
+(2, 'Admin2024', '$2y$10$1Xo4RSWwvDpMNi7cmwmlTeC1p8F4WcA7Y.MOY1W7PtEU6j/d7x6aC', 'juan', '12312312', 1, 'activo', 1, 2, '$2y$10$2meKzzHoJh8.GPvBsDorYuBWHawuoFNFPgIhJGSFfH0Lyv5BlFNCO', '$2y$10$6JxoBtScbyKZBhjsJ3AUtOS41wbKyj1qBAYWtd9tDr4Ggkv58D85.'),
+(3, 'Admin2025', '$2y$10$kvS09.7AOOCHd0W3/djFnOEHQW66Bo8MUo3xZzsmSdiQPtVHjwcju', 'Soto', '00000000', 2, 'inactivo', NULL, NULL, NULL, NULL),
+(4, 'operador', '$2y$10$11E5EYCc/wM2YuYef.UsD.YBOlTTbs5vhe7BMzXRh7p1BnQlasdby', 'operador', '31034121', 2, 'activo', NULL, NULL, NULL, NULL);
+
+--
 -- Índices para tablas volcadas
 --
 
@@ -379,6 +443,22 @@ ALTER TABLE `despachos_organismos`
   ADD KEY `fk_despacho_organismo` (`organismo_id`);
 
 --
+-- Indices de la tabla `eventos_fichas`
+--
+ALTER TABLE `eventos_fichas`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_efich_ficha` (`ficha_id`),
+  ADD KEY `idx_efich_usuario` (`usuario_id`),
+  ADD KEY `idx_efich_tipo` (`tipo_evento`);
+
+--
+-- Indices de la tabla `eventos_sistema`
+--
+ALTER TABLE `eventos_sistema`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_evsis_usuario` (`usuario_id`);
+
+--
 -- Indices de la tabla `fichas_emergencia`
 --
 ALTER TABLE `fichas_emergencia`
@@ -388,14 +468,6 @@ ALTER TABLE `fichas_emergencia`
   ADD KEY `fk_ficha_solicitante` (`solicitante_id`),
   ADD KEY `fk_ficha_id_user` (`id_user`),
   ADD KEY `fk_ficha_id_owner` (`id_owner`);
-
---
--- Indices de la tabla `logs_sistema`
---
-ALTER TABLE `logs_sistema`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `fk_log_usuario` (`usuario_id`),
-  ADD KEY `fk_log_ficha` (`ficha_id`);
 
 --
 -- Indices de la tabla `modulos`
@@ -507,16 +579,22 @@ ALTER TABLE `despachos_organismos`
   MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT de la tabla `eventos_fichas`
+--
+ALTER TABLE `eventos_fichas`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de la tabla `eventos_sistema`
+--
+ALTER TABLE `eventos_sistema`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
+
+--
 -- AUTO_INCREMENT de la tabla `fichas_emergencia`
 --
 ALTER TABLE `fichas_emergencia`
   MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT de la tabla `logs_sistema`
---
-ALTER TABLE `logs_sistema`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `modulos`
@@ -582,7 +660,7 @@ ALTER TABLE `tipos_emergencia`
 -- AUTO_INCREMENT de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- Restricciones para tablas volcadas
@@ -602,6 +680,19 @@ ALTER TABLE `despachos_organismos`
   ADD CONSTRAINT `fk_despacho_organismo` FOREIGN KEY (`organismo_id`) REFERENCES `organismos` (`id`);
 
 --
+-- Filtros para la tabla `eventos_fichas`
+--
+ALTER TABLE `eventos_fichas`
+  ADD CONSTRAINT `fk_efich_ficha` FOREIGN KEY (`ficha_id`) REFERENCES `fichas_emergencia` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_efich_usuario` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE SET NULL;
+
+--
+-- Filtros para la tabla `eventos_sistema`
+--
+ALTER TABLE `eventos_sistema`
+  ADD CONSTRAINT `fk_evsis_usuario` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE SET NULL;
+
+--
 -- Filtros para la tabla `fichas_emergencia`
 --
 ALTER TABLE `fichas_emergencia`
@@ -610,13 +701,6 @@ ALTER TABLE `fichas_emergencia`
   ADD CONSTRAINT `fk_ficha_id_user` FOREIGN KEY (`id_user`) REFERENCES `usuarios` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `fk_ficha_parroquia` FOREIGN KEY (`parroquia_id`) REFERENCES `parroquias` (`id`),
   ADD CONSTRAINT `fk_ficha_solicitante` FOREIGN KEY (`solicitante_id`) REFERENCES `solicitantes` (`id`);
-
---
--- Filtros para la tabla `logs_sistema`
---
-ALTER TABLE `logs_sistema`
-  ADD CONSTRAINT `fk_log_ficha` FOREIGN KEY (`ficha_id`) REFERENCES `fichas_emergencia` (`id`) ON DELETE SET NULL,
-  ADD CONSTRAINT `fk_log_usuario` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`);
 
 --
 -- Filtros para la tabla `notificaciones`
