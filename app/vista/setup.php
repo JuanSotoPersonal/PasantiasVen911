@@ -27,7 +27,7 @@
         <div class="section-title"><i class="bi bi-key-fill me-2"></i>Llave de Activación</div>
         <div class="mb-4">
           <label for="factory_code" class="form-label">Código de Fábrica (12 dígitos)</label>
-          <input type="text" class="form-control" id="factory_code" name="factory_code" placeholder="XXXX-XXXX-XXXX" maxlength="12" >
+          <input type="text" class="form-control" id="factory_code" name="factory_code" placeholder="XXXX-XXXX-XXXX" >
           <div class="form-text mt-1" style="color: rgba(22, 101, 52, 0.7); font-size: 0.75rem;">
             Código único de 12 dígitos para activar el producto.
           </div>
@@ -44,7 +44,7 @@
           </div>
           <div class="col-md-6 mb-4">
             <label for="cedula" class="form-label">Cédula</label>
-            <input type="text" class="form-control" id="cedula" name="cedula" placeholder="12345678" maxlength="8">
+            <input type="text" class="form-control" id="cedula" name="cedula" placeholder="12345678">
             <div class="form-text mt-1 form-text-ven">
               Solo números (6-8 dígitos).
             </div>

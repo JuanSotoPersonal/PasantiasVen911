@@ -147,9 +147,11 @@ $(function () {
   // ========================
   const tabla = $('#tablaUsuarios').DataTable({
     autoWidth: false,
+    serverSide: true,
+    processing: true,
     ajax: {
       url: 'index.php?url=usuario/obtenerDatos&estado=activo',
-      dataSrc: 'data',
+      type: 'POST',
       error: function () {
         Swal.fire('Error', 'No se pudieron cargar los datos de usuarios.', 'error');
       },
@@ -163,9 +165,11 @@ $(function () {
 
   const tablaInactivos = $('#tablaInactivos').DataTable({
     autoWidth: false,
+    serverSide: true,
+    processing: true,
     ajax: {
       url: 'index.php?url=usuario/obtenerDatos&estado=inactivo',
-      dataSrc: 'data',
+      type: 'POST',
       error: function () {
         Swal.fire('Error', 'No se pudieron cargar los datos inactivos.', 'error');
       },
@@ -179,13 +183,13 @@ $(function () {
 
   // Actualizar el badge del total cuando cargan los datos
   tabla.on('xhr.dt', function (e, settings, json) {
-    const total = (json && json.data) ? json.data.length : 0;
+    const total = (json && json.recordsTotal !== undefined) ? json.recordsTotal : 0;
     $('#badge-count-total').text(`${total} usuario${total !== 1 ? 's' : ''}`);
   });
 
   // Actualizar badge de inactivos
   tablaInactivos.on('xhr.dt', function (e, settings, json) {
-    const total = (json && json.data) ? json.data.length : 0;
+    const total = (json && json.recordsTotal !== undefined) ? json.recordsTotal : 0;
     $('#badge-count-inactivos').text(`${total} usuario${total !== 1 ? 's' : ''}`);
   });
 

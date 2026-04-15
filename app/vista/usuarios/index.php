@@ -228,26 +228,26 @@
               <div class="row g-3">
                 <div class="col-md-6">
                   <label for="crear-nombre" class="form-label fw-semibold">Nombre Completo <span class="text-danger">*</span></label>
-                  <input type="text" class="form-control" id="crear-nombre" name="nombre_completo" placeholder="Ej: Juan Pérez García" required />
+                  <input type="text" class="form-control" id="crear-nombre" name="nombre_completo" placeholder="Ej: Juan Pérez García" />
                   <div class="form-text mt-1">Nombre y apellido legal del usuario.</div>
                 </div>
                 <div class="col-md-6">
                   <label for="crear-cedula" class="form-label fw-semibold">Cédula <span class="text-danger">*</span></label>
                   <div class="input-group">
                     <span class="input-group-text">V-</span>
-                    <input type="text" class="form-control" id="crear-cedula" name="cedula" placeholder="Ej: 12345678" minlength="6" maxlength="8" oninput="this.value = this.value.replace(/[^0-9]/g, '');" required />
+                    <input type="text" class="form-control" id="crear-cedula" name="cedula" placeholder="Ej: 12345678" />
                   </div>
                   <div class="form-text">Solo números (entre 6 y 8).</div>
                 </div>
                 <div class="col-md-6">
                   <label for="crear-usuario" class="form-label fw-semibold">Usuario (login) <span class="text-danger">*</span></label>
-                  <input type="text" class="form-control" id="crear-usuario" name="usuario" placeholder="Mín. 7 caracteres, sin espacios" required />
+                  <input type="text" class="form-control" id="crear-usuario" name="usuario" placeholder="Mín. 7 caracteres, sin espacios" />
                   <div class="form-text mt-1">Nombre de usuario único para acceder al sistema.</div>
                 </div>
 
                 <div class="col-md-6">
                   <label for="crear-rol" class="form-label fw-semibold">Rol <span class="text-danger">*</span></label>
-                  <select class="form-select" id="crear-rol" name="rol_id" required>
+                  <select class="form-select" id="crear-rol" name="rol_id">
                     <option value="">-- Seleccionar rol --</option>
                     <?php foreach ($roles as $rol): ?>
                       <?php if ($rol['id'] == 1) continue; ?>
@@ -263,7 +263,7 @@
                 <div class="col-md-6">
                   <label for="crear-password" class="form-label fw-semibold">Contraseña <span class="text-danger">*</span></label>
                   <div class="password-wrapper">
-                    <input type="password" class="form-control pe-5" id="crear-password" name="password" placeholder="Mín. 6 caracteres" required />
+                    <input type="password" class="form-control pe-5" id="crear-password" name="password" placeholder="Mín. 6 caracteres" />
                     <button type="button" class="btn-eye" data-target="crear-password" title="Ver contraseña">
                       <i class="bi bi-eye"></i>
                     </button>
@@ -303,26 +303,26 @@
               <div class="row g-3">
                 <div class="col-md-6">
                   <label for="editar-nombre" class="form-label fw-semibold">Nombre Completo <span class="text-danger">*</span></label>
-                  <input type="text" class="form-control" id="editar-nombre" name="nombre_completo" required />
+                  <input type="text" class="form-control" id="editar-nombre" name="nombre_completo" />
                   <div class="form-text mt-1">Actualice el nombre si es necesario.</div>
                 </div>
                 <div class="col-md-6">
                   <label for="editar-cedula" class="form-label fw-semibold">Cédula <span class="text-danger">*</span></label>
                   <div class="input-group">
                     <span class="input-group-text">V-</span>
-                    <input type="text" class="form-control" id="editar-cedula" name="cedula" minlength="6" maxlength="8" oninput="this.value = this.value.replace(/[^0-9]/g, '');" required />
+                    <input type="text" class="form-control" id="editar-cedula" name="cedula" />
                   </div>
                   <div class="form-text mt-1">Modificar solo si hubo un error en el registro inicial.</div>
                 </div>
                 <div class="col-md-6">
                   <label for="editar-usuario" class="form-label fw-semibold">Usuario (login) <span class="text-danger">*</span></label>
-                  <input type="text" class="form-control" id="editar-usuario" name="usuario" required />
+                  <input type="text" class="form-control" id="editar-usuario" name="usuario" />
                   <div class="form-text mt-1">Nombre de usuario (login).</div>
                 </div>
 
                 <div class="col-md-6">
                   <label for="editar-rol" class="form-label fw-semibold">Rol <span class="text-danger">*</span></label>
-                  <select class="form-select" id="editar-rol" name="rol_id" required>
+                  <select class="form-select" id="editar-rol" name="rol_id">
                     <?php foreach ($roles as $rol): ?>
                       <?php if ($rol['id'] == 1) continue; ?>
                       <option value="<?= htmlspecialchars((string)$rol['id']) ?>">
@@ -368,7 +368,7 @@
               <div class="mb-3">
                 <label for="pwd-nueva" class="form-label fw-semibold">Nueva Contraseña <span class="text-danger">*</span></label>
                 <div class="password-wrapper">
-                  <input type="password" class="form-control pe-5" id="pwd-nueva" name="password" placeholder="Mín. 6 caracteres" required />
+                  <input type="password" class="form-control pe-5" id="pwd-nueva" name="password" placeholder="Mín. 6 caracteres" />
                   <button type="button" class="btn-eye" data-target="pwd-nueva" title="Ver contraseña">
                     <i class="bi bi-eye"></i>
                   </button>
@@ -378,7 +378,7 @@
               <div class="mb-3">
                 <label for="pwd-confirmar" class="form-label fw-semibold">Confirmar Contraseña <span class="text-danger">*</span></label>
                 <div class="password-wrapper">
-                  <input type="password" class="form-control pe-5" id="pwd-confirmar" name="password_confirm" placeholder="Repite la contraseña" required />
+                  <input type="password" class="form-control pe-5" id="pwd-confirmar" name="password_confirm" placeholder="Repite la contraseña" />
                   <button type="button" class="btn-eye" data-target="pwd-confirmar" title="Ver contraseña">
                     <i class="bi bi-eye"></i>
                   </button>
@@ -432,14 +432,14 @@
               
               <div class="mb-3">
                 <label for="seg-factory-code" class="form-label fw-bold">Código de Fábrica</label>
-                <input type="text" class="form-control border-danger border-opacity-50" id="seg-factory-code" name="factory_code" placeholder="XXXX-XXXX-XXXX" maxlength="12" required>
+                <input type="text" class="form-control border-danger border-opacity-50" id="seg-factory-code" name="factory_code" placeholder="XXXX-XXXX-XXXX">
                 <div class="form-text mt-1">Código de 12 dígitos para autorizar el cambio de preguntas.</div>
               </div>
 
               <div class="row g-3">
                 <div class="col-12">
                   <label class="form-label small fw-bold">Nueva Pregunta 1</label>
-                  <select class="form-select form-select-sm" name="pregunta_1" required>
+                  <select class="form-select form-select-sm" name="pregunta_1">
                     <option value="">-- Seleccionar --</option>
                     <?php foreach ($preguntas as $p): ?>
                       <option value="<?= $p['id'] ?>"><?= htmlspecialchars($p['pregunta']) ?></option>
@@ -448,12 +448,12 @@
                   <div class="form-text mt-1">Seleccione una pregunta válida.</div>
                 </div>
                 <div class="col-12">
-                  <input type="text" class="form-control form-control-sm" name="respuesta_1" placeholder="Nueva respuesta 1" required>
+                  <input type="text" class="form-control form-control-sm" name="respuesta_1" placeholder="Nueva respuesta 1">
                   <div class="form-text mt-1">Respuesta a la primera pregunta de seguridad.</div>
                 </div>
                 <div class="col-12">
                   <label class="form-label small fw-bold">Nueva Pregunta 2</label>
-                  <select class="form-select form-select-sm" name="pregunta_2" required>
+                  <select class="form-select form-select-sm" name="pregunta_2">
                     <option value="">-- Seleccionar --</option>
                     <?php foreach ($preguntas as $p): ?>
                       <option value="<?= $p['id'] ?>"><?= htmlspecialchars($p['pregunta']) ?></option>
@@ -462,7 +462,7 @@
                   <div class="form-text mt-1">Esta pregunta será usada como respaldo secundario.</div>
                   </div>
                 <div class="col-12">
-                  <input type="text" class="form-control form-control-sm" name="respuesta_2" placeholder="Nueva respuesta 2" required>
+                  <input type="text" class="form-control form-control-sm" name="respuesta_2" placeholder="Nueva respuesta 2">
                   <div class="form-text mt-1">Respuesta a la segunda pregunta de seguridad.</div>
                 </div>
               </div>

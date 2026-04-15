@@ -6,6 +6,9 @@ require_once 'app/modelos/EventoModelo.php';
 use App\modelos\UsuarioModelo;
 use App\modelos\RegistroModelo;
 use App\modelos\EventoModelo;
+use App\Helpers\Validador;
+
+require_once 'app/Helpers/Validador.php';
 
 class UsuarioControlador {
 
@@ -43,9 +46,36 @@ class UsuarioControlador {
 
     public function obtenerDatos(): void {
         header('Content-Type: application/json');
-        $estado = $_GET['estado'] ?? 'activo';
-        $usuarios = $this->modelo->obtenerTodos($estado);
-        echo json_encode(['data' => $usuarios]);
+        try {
+            $draw     = isset($_POST['draw'])   ? (int)$_POST['draw']   : 1;
+            $inicio   = isset($_POST['start'])  ? (int)$_POST['start']  : 0;
+            $cantidad = isset($_POST['length']) ? (int)$_POST['length'] : 10;
+            $busqueda = isset($_POST['search']['value']) ? trim($_POST['search']['value']) : '';
+            $colOrden = isset($_POST['order'][0]['column']) ? (int)$_POST['order'][0]['column'] : 0;
+            $dirOrden = isset($_POST['order'][0]['dir'])    ? $_POST['order'][0]['dir']          : 'asc';
+
+            // El estado lo manda la URL como parámetro GET (?estado=activo|inactivo)
+            $estado = isset($_GET['estado']) && $_GET['estado'] === 'inactivo' ? 'inactivo' : 'activo';
+
+            $datos          = $this->modelo->obtenerPaginadoUsuarios($inicio, $cantidad, $busqueda, $colOrden, $dirOrden, $estado);
+            $totalRegistros = $this->modelo->contarTodosUsuarios($estado);
+            $totalFiltrados = $busqueda !== '' ? $this->modelo->contarFiltradosUsuarios($busqueda, $estado) : $totalRegistros;
+
+            echo json_encode([
+                'draw'            => $draw,
+                'recordsTotal'    => $totalRegistros,
+                'recordsFiltered' => $totalFiltrados,
+                'data'            => $datos,
+            ]);
+        } catch (\Exception $e) {
+            echo json_encode([
+                'draw'            => 1,
+                'recordsTotal'    => 0,
+                'recordsFiltered' => 0,
+                'data'            => [],
+                'error'           => $e->getMessage(),
+            ]);
+        }
     }
 
     //--------------------------------------------------------------------
@@ -94,49 +124,27 @@ class UsuarioControlador {
         $cedula         = trim($_POST['cedula'] ?? '');
         $rolId          = (int)$_POST['rol_id'];
         $estado         = 'activo';
-        //Validacion de longitud de cedula
-        if (strlen($cedula) < 6 || strlen($cedula) > 8) {
-            echo json_encode(['success' => false, 'message' => 'La cédula debe tener entre 6 y 8 caracteres.']);
+        $valCedula = Validador::validarCedula($cedula, false);
+        if (!$valCedula['valido'] && !empty($cedula)) {
+            echo json_encode(['success' => false, 'message' => $valCedula['mensaje']]);
             return;
         }
-        //Validacion de formato de cedula (solo numeros)
-        if (!ctype_digit($cedula)) {
-            echo json_encode(['success' => false, 'message' => 'La cédula debe contener solo números.']);
-            return;
-        }
-        //Validacion de longitud de usuario
-        if (strlen($usuario) < 7) {
-            echo json_encode(['success' => false, 'message' => 'El usuario debe tener al menos 7 caracteres.']);
-            return;
-        }
-        if (strlen($usuario) > 32) {
-            echo json_encode(['success' => false, 'message' => 'El usuario no puede exceder los 32 caracteres.']);
-            return;
-        }
-        //Validacion de formato de usuario
-        if (!preg_match('/^[a-zA-Z0-9]+$/', $usuario)) {
-            echo json_encode(['success' => false, 'message' => 'El usuario solo puede contener letras y números.']);
-            return;
-        }
-        //Validacion de longitud de nombre completo
-        if (strlen($nombreCompleto) > 128) {
-            echo json_encode(['success' => false, 'message' => 'El nombre completo no puede exceder los 128 caracteres.']);
-            return;
-        }
-        //Validacion de codigo de operador (ELIMINADO POR REDUNDANCIA)
 
-        //Validacion de longitud de contraseña
-        if (strlen($contrasena) < 8) {
-            echo json_encode(['success' => false, 'message' => 'La contraseña debe tener al menos 8 caracteres.']);
+        $valUsuario = Validador::validarUsuario($usuario);
+        if (!$valUsuario['valido']) {
+            echo json_encode(['success' => false, 'message' => $valUsuario['mensaje']]);
             return;
         }
-        if (strlen($contrasena) > 128) {
-            echo json_encode(['success' => false, 'message' => 'La contraseña no puede exceder los 128 caracteres.']);
+
+        $valNombre = Validador::validarNombreCompleto($nombreCompleto);
+        if (!$valNombre['valido']) {
+            echo json_encode(['success' => false, 'message' => $valNombre['mensaje']]);
             return;
         }
-        //Validacion de complejidad: al menos 1 mayúscula y 1 número
-        if (!preg_match('/[A-Z]/', $contrasena) || !preg_match('/[0-9]/', $contrasena)) {
-            echo json_encode(['success' => false, 'message' => 'La contraseña debe contener al menos una mayúscula y un número.']);
+
+        $valPass = Validador::validarContrasena($contrasena);
+        if (!$valPass['valido']) {
+            echo json_encode(['success' => false, 'message' => $valPass['mensaje']]);
             return;
         }
 
@@ -221,16 +229,28 @@ class UsuarioControlador {
         $nombreCompleto = trim($_POST['nombre_completo'] ?? '');
         $cedula         = trim($_POST['cedula'] ?? '');
         $rolId          = (int)($_POST['rol_id'] ?? 0);
-        //Validacion de campos obligatorios
-        if (!$id || empty($usuario) || empty($nombreCompleto) || empty($cedula) || !$rolId) {
-            echo json_encode(['success' => false, 'message' => 'Todos los campos obligatorios deben estar completos.']);
+        if (!$id || empty($rolId)) {
+            echo json_encode(['success' => false, 'message' => 'El id y rol del usuario son obligatorios.']);
             return;
         }
-        if (!ctype_digit($cedula)) {
-            echo json_encode(['success' => false, 'message' => 'La cédula debe contener solo números.']);
+
+        $valCedula = Validador::validarCedula($cedula, true);
+        if (!$valCedula['valido']) {
+            echo json_encode(['success' => false, 'message' => $valCedula['mensaje']]);
             return;
         }
-        
+
+        $valUsuario = Validador::validarUsuario($usuario);
+        if (!$valUsuario['valido']) {
+            echo json_encode(['success' => false, 'message' => $valUsuario['mensaje']]);
+            return;
+        }
+
+        $valNombre = Validador::validarNombreCompleto($nombreCompleto);
+        if (!$valNombre['valido']) {
+            echo json_encode(['success' => false, 'message' => $valNombre['mensaje']]);
+            return;
+        }
         //Validacion de usuario existente
         if ($this->modelo->existeUsuario($usuario, $id)) {
             echo json_encode(['success' => false, 'message' => "El usuario '{$usuario}' ya está registrado por otro usuario."]);
@@ -305,23 +325,14 @@ class UsuarioControlador {
         $id          = (int)($_POST['id'] ?? 0);
         $nuevaContrasena = $_POST['password'] ?? '';
         $confirmarContrasena = $_POST['password_confirm'] ?? '';
-        //validacion de campos vacios
         if (!$id || empty($nuevaContrasena)) {
             echo json_encode(['success' => false, 'message' => 'Datos incompletos.']);
             return;
         }
-        //validacion de longitud de contraseña
-        if (strlen($nuevaContrasena) < 8) {
-            echo json_encode(['success' => false, 'message' => 'La contraseña debe tener al menos 8 caracteres.']);
-            return;
-        }
-        if (strlen($nuevaContrasena) > 128) {
-            echo json_encode(['success' => false, 'message' => 'La contraseña no puede exceder los 128 caracteres.']);
-            return;
-        }
-        //Validacion de complejidad: al menos 1 mayúscula y 1 número
-        if (!preg_match('/[A-Z]/', $nuevaContrasena) || !preg_match('/[0-9]/', $nuevaContrasena)) {
-            echo json_encode(['success' => false, 'message' => 'La contraseña debe contener al menos una mayúscula y un número.']);
+
+        $valPass = Validador::validarContrasena($nuevaContrasena);
+        if (!$valPass['valido']) {
+            echo json_encode(['success' => false, 'message' => $valPass['mensaje']]);
             return;
         }
         //validacion de que las contraseñas coincidan

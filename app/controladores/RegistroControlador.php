@@ -7,6 +7,9 @@ require_once 'app/modelos/EventoModelo.php';
 use App\modelos\UsuarioModelo;
 use App\modelos\RegistroModelo;
 use App\modelos\EventoModelo;
+use App\Helpers\Validador;
+
+require_once 'app/Helpers/Validador.php';
 
 class RegistroControlador {
 
@@ -62,9 +65,34 @@ class RegistroControlador {
         $r1 = trim($_POST['respuesta_1'] ?? '');
         $r2 = trim($_POST['respuesta_2'] ?? '');
 
-        // Validaciones básicas
-        if (empty($usuario) || empty($contrasena) || empty($nombreCompleto) || empty($r1) || empty($r2) || $p1 === 0 || $p2 === 0) {
-            echo json_encode(['success' => false, 'message' => 'Todos los campos son obligatorios.']);
+        // Validaciones delegadas al Validador
+        
+        $valCedula = Validador::validarCedula($cedula, true);
+        if (!$valCedula['valido']) {
+            echo json_encode(['success' => false, 'message' => $valCedula['mensaje']]);
+            return;
+        }
+
+        $valUsuario = Validador::validarUsuario($usuario);
+        if (!$valUsuario['valido']) {
+            echo json_encode(['success' => false, 'message' => $valUsuario['mensaje']]);
+            return;
+        }
+
+        $valNombre = Validador::validarNombreCompleto($nombreCompleto);
+        if (!$valNombre['valido']) {
+            echo json_encode(['success' => false, 'message' => $valNombre['mensaje']]);
+            return;
+        }
+        
+        $valPass = Validador::validarContrasena($contrasena);
+        if (!$valPass['valido']) {
+            echo json_encode(['success' => false, 'message' => $valPass['mensaje']]);
+            return;
+        }
+
+        if ($p1 === 0 || $p2 === 0) {
+            echo json_encode(['success' => false, 'message' => 'Debes seleccionar dos preguntas de seguridad diferentes.']);
             return;
         }
 
@@ -73,57 +101,15 @@ class RegistroControlador {
             return;
         }
 
-        // Validación de Cédula (6 a 8 dígitos numéricos)
-        if (strlen($cedula) < 6 || strlen($cedula) > 8) {
-            echo json_encode(['success' => false, 'message' => 'La cédula debe tener entre 6 y 8 caracteres.']);
-            return;
-        }
-        if (!ctype_digit($cedula)) {
-            echo json_encode(['success' => false, 'message' => 'La cédula debe contener solo números.']);
+        $valR1 = Validador::validarRespuestaSeguridad($r1);
+        if (!$valR1['valido']) {
+            echo json_encode(['success' => false, 'message' => $valR1['mensaje']]);
             return;
         }
 
-        // Validación de Usuario (Mínimo 7 caracteres, alfanumérico)
-        if (strlen($usuario) < 7) {
-            echo json_encode(['success' => false, 'message' => 'El usuario debe tener al menos 7 caracteres.']);
-            return;
-        }
-        if (strlen($usuario) > 32) {
-            echo json_encode(['success' => false, 'message' => 'El usuario no puede exceder los 32 caracteres.']);
-            return;
-        }
-        if (!preg_match('/^[a-zA-Z0-9]+$/', $usuario)) {
-            echo json_encode(['success' => false, 'message' => 'El usuario solo puede contener letras y números.']);
-            return;
-        }
-
-        // Validación de Nombre Completo
-        if (strlen($nombreCompleto) > 128) {
-            echo json_encode(['success' => false, 'message' => 'el nombre completo no puede exceder los 128 caracteres.']);
-            return;
-        }
-
-        // Validación de respuestas de seguridad (Alfanumérico)
-        if (strlen($r1) > 128 || strlen($r2) > 128) {
-            echo json_encode(['success' => false, 'message' => 'Las respuestas de seguridad no pueden exceder los 128 caracteres.']);
-            return;
-        }
-        if (!preg_match('/^[a-zA-Z0-9 ]+$/', $r1) || !preg_match('/^[a-zA-Z0-9 ]+$/', $r2)) {
-            echo json_encode(['success' => false, 'message' => 'Las respuestas de seguridad solo pueden contener letras, números y espacios.']);
-            return;
-        }
-
-        // Validación de longitud de contrasena (Ya añadida previamente)
-        if (strlen($contrasena) < 8) {
-            echo json_encode(['success' => false, 'message' => 'La contraseña debe tener al menos 8 caracteres.']);
-            return;
-        }
-        if (strlen($contrasena) > 128) {
-            echo json_encode(['success' => false, 'message' => 'La contraseña no puede exceder los 128 caracteres.']);
-            return;
-        }
-        if (!preg_match('/[A-Z]/', $contrasena) || !preg_match('/[0-9]/', $contrasena)) {
-            echo json_encode(['success' => false, 'message' => 'La contraseña debe contener al menos una mayúscula y un número.']);
+        $valR2 = Validador::validarRespuestaSeguridad($r2);
+        if (!$valR2['valido']) {
+            echo json_encode(['success' => false, 'message' => $valR2['mensaje']]);
             return;
         }
 

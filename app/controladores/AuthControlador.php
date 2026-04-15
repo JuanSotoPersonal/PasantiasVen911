@@ -78,6 +78,9 @@ class AuthControlador {
             // Verificar contraseña cifrada
             if (password_verify($password, $usuario_datos['password'])) {
                 
+                // Prevención Session Fixation: generar nuevo ID tras autenticar
+                session_regenerate_id(true);
+
                 // Guardar datos en sesión
                 $_SESSION['user_id']     = $usuario_datos['id'];
                 $_SESSION['user_name']   = $usuario_datos['nombre_completo'];

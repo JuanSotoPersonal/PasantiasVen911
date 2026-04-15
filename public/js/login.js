@@ -21,66 +21,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const usuario = document.getElementById("usuario").value;
     const password = document.getElementById("password").value;
 
-    // 1. Validar campos obligatorios
-    if (usuario.trim() === '') {
+    // 1. Validar campos obligatorios básicos en UI (opcional pero ahorra red)
+    if (usuario.trim() === '' || password.trim() === '') {
       Swal.fire({
         icon: 'warning',
-        title: 'Campo Requerido',
-        text: 'El campo usuario es obligatorio.',
+        title: 'Campos Requeridos',
+        text: 'Por favor, ingrese usuario y contraseña.',
         buttonsStyling: false,
         customClass: { confirmButton: 'btn btn-login' }
-      });
-      return;
-    }
-
-    if (password.trim() === '') {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Campo Requerido',
-        text: 'El campo contraseña es obligatorio.',
-        buttonsStyling: false,
-        customClass: { confirmButton: 'btn btn-login' }
-      });
-      return;
-    }
-
-    // 2. Validar formato y longitud
-    if (usuario.trim().length < 7) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Usuario Inválido',
-        text: 'El Usuario debe contener al menos 7 caracteres.',
-        buttonsStyling: false,
-        customClass: {
-          confirmButton: 'btn btn-login'
-        }
-      });
-      return;
-    }
-
-    const alnumRegex = /^[a-zA-Z0-9]+$/;
-    if (!alnumRegex.test(usuario)) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Formato Inválido',
-        text: 'El usuario solo puede contener letras y números.',
-        buttonsStyling: false,
-        customClass: {
-          confirmButton: 'btn btn-login'
-        }
-      });
-      return;
-    }
-
-    if (password.length < 6) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Contraseña Corta',
-        text: 'La contraseña debe tener al menos 6 caracteres.',
-        buttonsStyling: false,
-        customClass: {
-          confirmButton: 'btn btn-login'
-        }
       });
       return;
     }

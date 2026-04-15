@@ -391,4 +391,124 @@ class UsuarioModelo {
             return [];
         }
     }
+
+    //--------------------------------------------------------------------
+    // Retorna registros paginados compatible con DataTables server-side.
+    //
+    // @param int    $inicio      Offset (primer registro de la página)
+    // @param int    $cantidad    Registros por página
+    // @param string $busqueda    Texto de búsqueda global
+    // @param int    $colOrden    Índice de columna (0-5)
+    // @param string $dirOrden    'asc' o 'desc'
+    // @param string $estado      'activo' | 'inactivo'
+    //--------------------------------------------------------------------
+    public function obtenerPaginadoUsuarios(
+        int    $inicio,
+        int    $cantidad,
+        string $busqueda,
+        int    $colOrden,
+        string $dirOrden,
+        string $estado = 'activo'
+    ): array {
+        $columnasOrdenables = [
+            0 => 'u.id',
+            1 => 'u.nombre_completo',
+            2 => 'u.usuario',
+            3 => 'u.cedula',
+            4 => 'r.nombre',
+            5 => 'u.estado',
+        ];
+        $columnaOrden = $columnasOrdenables[$colOrden] ?? 'u.id';
+        $dirOrden     = strtolower($dirOrden) === 'asc' ? 'ASC' : 'DESC';
+
+        try {
+            $busquedaLike = '%' . $busqueda . '%';
+            $condicionEstado = ($estado === 'todos') ? '1=1' : 'u.estado = :estado';
+
+            $query = "SELECT u.id, u.usuario, u.nombre_completo, u.cedula,
+                             u.estado, u.rol_id, r.nombre AS nombre_rol
+                      FROM {$this->table_name} u
+                      INNER JOIN roles r ON u.rol_id = r.id
+                      WHERE {$condicionEstado}
+                        AND (:busqueda = ''
+                          OR u.nombre_completo LIKE :b1
+                          OR u.usuario         LIKE :b2
+                          OR u.cedula          LIKE :b3
+                          OR r.nombre          LIKE :b4
+                        )
+                      ORDER BY {$columnaOrden} {$dirOrden}
+                      LIMIT :cantidad OFFSET :inicio";
+
+            $stmt = $this->conn->prepare($query);
+            if ($estado !== 'todos') {
+                $stmt->bindValue(':estado', $estado, PDO::PARAM_STR);
+            }
+            $stmt->bindValue(':busqueda', $busqueda,     PDO::PARAM_STR);
+            $stmt->bindValue(':b1',       $busquedaLike, PDO::PARAM_STR);
+            $stmt->bindValue(':b2',       $busquedaLike, PDO::PARAM_STR);
+            $stmt->bindValue(':b3',       $busquedaLike, PDO::PARAM_STR);
+            $stmt->bindValue(':b4',       $busquedaLike, PDO::PARAM_STR);
+            $stmt->bindValue(':cantidad', $cantidad,     PDO::PARAM_INT);
+            $stmt->bindValue(':inicio',   $inicio,       PDO::PARAM_INT);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            error_log("[UsuarioModelo] Error en obtenerPaginadoUsuarios: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    //--------------------------------------------------------------------
+    // Retorna el total absoluto de usuarios (sin filtro).
+    //--------------------------------------------------------------------
+    public function contarTodosUsuarios(string $estado = 'activo'): int {
+        try {
+            $condicionEstado = ($estado === 'todos') ? '' : 'WHERE estado = :estado';
+            $stmt = $this->conn->prepare(
+                "SELECT COUNT(*) FROM {$this->table_name} {$condicionEstado}"
+            );
+            if ($estado !== 'todos') {
+                $stmt->bindValue(':estado', $estado, PDO::PARAM_STR);
+            }
+            $stmt->execute();
+            return (int)$stmt->fetchColumn();
+        } catch (Exception $e) {
+            error_log("[UsuarioModelo] Error en contarTodosUsuarios: " . $e->getMessage());
+            return 0;
+        }
+    }
+
+    //--------------------------------------------------------------------
+    // Retorna el total de usuarios que coinciden con una búsqueda.
+    //--------------------------------------------------------------------
+    public function contarFiltradosUsuarios(string $busqueda, string $estado = 'activo'): int {
+        try {
+            $busquedaLike    = '%' . $busqueda . '%';
+            $condicionEstado = ($estado === 'todos') ? '1=1' : 'u.estado = :estado';
+            $query = "SELECT COUNT(*)
+                      FROM {$this->table_name} u
+                      INNER JOIN roles r ON u.rol_id = r.id
+                      WHERE {$condicionEstado}
+                        AND (:busqueda = ''
+                          OR u.nombre_completo LIKE :b1
+                          OR u.usuario         LIKE :b2
+                          OR u.cedula          LIKE :b3
+                          OR r.nombre          LIKE :b4
+                        )";
+            $stmt = $this->conn->prepare($query);
+            if ($estado !== 'todos') {
+                $stmt->bindValue(':estado', $estado, PDO::PARAM_STR);
+            }
+            $stmt->bindValue(':busqueda', $busqueda,     PDO::PARAM_STR);
+            $stmt->bindValue(':b1',       $busquedaLike, PDO::PARAM_STR);
+            $stmt->bindValue(':b2',       $busquedaLike, PDO::PARAM_STR);
+            $stmt->bindValue(':b3',       $busquedaLike, PDO::PARAM_STR);
+            $stmt->bindValue(':b4',       $busquedaLike, PDO::PARAM_STR);
+            $stmt->execute();
+            return (int)$stmt->fetchColumn();
+        } catch (Exception $e) {
+            error_log("[UsuarioModelo] Error en contarFiltradosUsuarios: " . $e->getMessage());
+            return 0;
+        }
+    }
 }
