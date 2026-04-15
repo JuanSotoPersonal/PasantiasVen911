@@ -13,11 +13,11 @@ const escapeHTML = (str) => {
 };
 
 $(document).ready(function () {
-    const tablaLogs = $('#tablaLogs').DataTable({
+    const tablaEventos = $('#tablaEventos').DataTable({
         "serverSide": true,
         "processing": true,
         "ajax": {
-            "url":    "index.php?url=log/obtenerDatos",
+            "url":    "index.php?url=evento/obtenerDatos",
             "type":   "POST"
         },
         "columns": [
@@ -88,7 +88,7 @@ $(document).ready(function () {
     });
 
     // Delegación de eventos para el botón "Ver Detalles"
-    $('#tablaLogs').on('click', '.btn-ver-detalles', function () {
+    $('#tablaEventos').on('click', '.btn-ver-detalles', function () {
         const anterior = $(this).attr('data-anterior');
         const nuevo = $(this).attr('data-nuevo');
         const detalles = $(this).attr('data-detalles');
@@ -97,7 +97,7 @@ $(document).ready(function () {
         mostrarJSON('#contentValorNuevo', nuevo);
         $('#contentDetalles').text(detalles);
 
-        const modal = new bootstrap.Modal(document.getElementById('modalDetallesLog'));
+        const modal = new bootstrap.Modal(document.getElementById('modalDetallesEvento'));
         modal.show();
     });
 

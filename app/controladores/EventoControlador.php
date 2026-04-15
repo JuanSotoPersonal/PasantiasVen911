@@ -3,7 +3,7 @@
 require_once 'app/modelos/EventoModelo.php';
 use App\modelos\EventoModelo;
 
-class LogControlador {
+class EventoControlador {
 
     private EventoModelo $modelo;
 
@@ -20,7 +20,7 @@ class LogControlador {
     // Muestra la vista principal del historial
     //--------------------------------------------------------------------
     public function index(): void {
-        require_once 'app/vista/logs/index.php';
+        require_once 'app/vista/eventos/index.php';
     }
 
     //--------------------------------------------------------------------

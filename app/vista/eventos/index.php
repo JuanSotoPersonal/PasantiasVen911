@@ -19,7 +19,7 @@
     <link rel="stylesheet" href="public/css/adminlte.css" />
     <link rel="stylesheet" href="public/css/home.css" />
     <link rel="stylesheet" href="public/css/usuarios.css" />
-    <link rel="stylesheet" href="public/css/logs.css" />
+    <link rel="stylesheet" href="public/css/eventos.css" />
     <link rel="stylesheet" href="public/libs/source-sans-3/index.css" />
     <link rel="stylesheet" href="public/libs/overlayscrollbars/overlayscrollbars.min.css" />
     <link rel="stylesheet" href="public/libs/bootstrap-icons/bootstrap-icons.min.css" />
@@ -69,7 +69,7 @@
               </div>
               <div class="card-body">
                 <div class="table-responsive">
-                  <table id="tablaLogs" class="table table-bordered table-striped table-hover align-middle w-100">
+                  <table id="tablaEventos" class="table table-bordered table-striped table-hover align-middle w-100">
                     <thead class="table-dark">
                       <tr>
                         <th>Acción</th>
@@ -94,7 +94,7 @@
       <!--fin::Principal de la Aplicación-->
 
       <!-- MODAL PARA VER DETALLES (ESTILO VEN911) -->
-      <div class="modal fade" id="modalDetallesLog" tabindex="-1" aria-hidden="true">
+      <div class="modal fade" id="modalDetallesEvento" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
           <div class="modal-content border-0 shadow-lg">
             <div class="modal-header modal-header-ven">
@@ -151,7 +151,7 @@
     <script src="public/libs/datatables/dataTables.bootstrap5.min.js"></script>
 
     <!-- Lógica de la tabla de Logs -->
-    <script src="public/js/tablas/logs_datatable.js?v=1.1"></script>
+    <script src="public/js/tablas/eventos_datatable.js?v=1.1"></script>
     <!--fin::Scripts-->
   </body>
   <!--fin::Cuerpo-->

@@ -74,7 +74,7 @@
         <?php if (tienePerm('historial', 'ver')): ?>
         <!--Módulo Historial de Logs-->
         <li class="nav-item">
-          <a href="index.php?url=log" class="nav-link <?= $seccion === 'log' ? 'active' : '' ?>">
+          <a href="index.php?url=evento" class="nav-link <?= $seccion === 'evento' ? 'active' : '' ?>">
             <i class="nav-icon bi bi-clock-history"></i>
             <p>Historial</p>
           </a>

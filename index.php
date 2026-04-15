@@ -77,7 +77,7 @@ if ($isLoggedIn) {
 
     $rutasProtegidas = [
         'usuario'         => ['usuarios',      'ver'],
-        'log'             => ['historial',      'ver'],
+        'evento'          => ['historial',      'ver'],
         'notificacion'    => ['fichas',         'ver'], // requiere acceso a fichas mínimo
     ];
 

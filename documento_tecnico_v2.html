@@ -362,8 +362,8 @@
       <ol>
         <li><div class="dot-leader"><span class="titulo">11.1 Motivación y arquitectura</span><span class="puntos"></span><span class="pagina">&sect;11</span></div></li>
         <li><div class="dot-leader"><span class="titulo">11.2 Cambios en LogModelo.php</span><span class="puntos"></span><span class="pagina">&sect;11</span></div></li>
-        <li><div class="dot-leader"><span class="titulo">11.3 Cambios en LogControlador.php</span><span class="puntos"></span><span class="pagina">&sect;11</span></div></li>
-        <li><div class="dot-leader"><span class="titulo">11.4 Cambios en logs_datatable.js</span><span class="puntos"></span><span class="pagina">&sect;11</span></div></li>
+        <li><div class="dot-leader"><span class="titulo">11.3 Cambios en EventoControlador.php</span><span class="puntos"></span><span class="pagina">&sect;11</span></div></li>
+        <li><div class="dot-leader"><span class="titulo">11.4 Cambios en eventos_datatable.js</span><span class="puntos"></span><span class="pagina">&sect;11</span></div></li>
       </ol>
     </li>
     <li>
@@ -403,7 +403,7 @@
         <li>Parches XSS en DataTables</li>
         <li>Longitud mínima de contraseña aumentada a 8</li>
         <li>Fuga de errores DB bloqueada</li>
-        <li>Error de sintaxis en LogControlador corregido</li>
+        <li>Error de sintaxis en EventoControlador corregido</li>
       </ul>
     </div>
     <div class="card-mini">
@@ -460,7 +460,7 @@
 │       ├── notificaciones.js        # Cliente SSE, render, marcar leídas
 │       └── tablas/
 │           ├── usuarios_datatable.js  # 🔧 Corregido: escapeHTML anti-XSS
-│           └── logs_datatable.js      # 🔄 Actualizado: tipo_accion, descripcion, fallbacks
+│           └── eventos_datatable.js      # 🔄 Actualizado: tipo_accion, descripcion, fallbacks
 └── app/
     ├── Config/
     │   └── Database.php             # 🔧 Fuga de error bloqueada
@@ -468,7 +468,7 @@
     │   ├── AuthControlador.php      # 🔄 Usa EventoModelo para LOGIN/LOGOUT
     │   ├── RegistroControlador.php  # 🔄 usuario_id: 0 → null en setup inicial
     │   ├── UsuarioControlador.php   # 🔄 Usa EventoModelo (5 puntos de registro)
-    │   ├── LogControlador.php       # 🔄 Apunta a EventoModelo
+    │   ├── EventoControlador.php       # 🔄 Apunta a EventoModelo
     │   └── NotificacionControlador.php  # Stream SSE + marcarLeida/marcarTodas
     ├── modelos/
     │   ├── UsuarioModelo.php
@@ -521,7 +521,7 @@
       <tr>
         <td>A03:2021</td>
         <td>XSS — Datos sin escapar en DataTables (innerHTML directo)</td>
-        <td><code>usuarios_datatable.js</code>, <code>logs_datatable.js</code></td>
+        <td><code>usuarios_datatable.js</code>, <code>eventos_datatable.js</code></td>
         <td><span class="tag alta">Alta</span></td>
         <td>✅ Corregido</td>
       </tr>
@@ -535,7 +535,7 @@
       <tr>
         <td>A05:2021</td>
         <td>Error de sintaxis que colapsaba el módulo de historial</td>
-        <td><code>LogControlador.php</code></td>
+        <td><code>EventoControlador.php</code></td>
         <td><span class="tag media">Media</span></td>
         <td>✅ Corregido</td>
       </tr>
@@ -582,7 +582,7 @@
     "'": '&amp;#39;',     '"': '&amp;quot;'
   }[tag] || tag));
 };</pre>
-  <p>Adicionalmente, en <code>logs_datatable.js</code> se reemplazó el uso inseguro de <code>.html(formatted)</code> por la creación dinámica con <code>$('&lt;pre&gt;').find('code').text(formatted)</code>, que escapa todo contenido JSON automáticamente.</p>
+  <p>Adicionalmente, en <code>eventos_datatable.js</code> se reemplazó el uso inseguro de <code>.html(formatted)</code> por la creación dinámica con <code>$('&lt;pre&gt;').find('code').text(formatted)</code>, que escapa todo contenido JSON automáticamente.</p>
 
   <h4>🔧 Fuga de Error en Base de Datos — <code>Database.php</code></h4>
   <pre>// ANTES (exponía detalles internos del servidor al navegador)
@@ -1137,7 +1137,7 @@ if (isset($rutasProtegidas[$claveRuta])) {
       <span class="tag mod">MODIFICADO</span>
     </div>
     <div class="archivo-badge">
-      <span class="ruta">app/controladores/LogControlador.php</span>
+      <span class="ruta">app/controladores/EventoControlador.php</span>
       <span class="tag mod">MODIFICADO</span>
     </div>
   </div>
@@ -1282,10 +1282,10 @@ if (isset($rutasProtegidas[$claveRuta])) {
   <p>Los logs de auditoría crecen indefinidamente con el uso normal del sistema. Una sola sesión activa de un año puede generar decenas de miles de entradas. La migración a server-side es una medida preventiva de escalabilidad.</p>
 
   <h4>Flujo de datos (server-side)</h4>
-  <pre>[Navegador] → POST index.php?url=log/obtenerDatos
+  <pre>[Navegador] → POST index.php?url=evento/obtenerDatos
              → { draw:1, start:0, length:10, search:{value:''}, order:[{column:4,dir:'desc'}] }
                   ↓
-[LogControlador::obtenerDatos()]
+[EventoControlador::obtenerDatos()]
   → Lee parámetros POST
   → Mapea índice de columna a nombre SQL
   → Llama LogModelo::obtenerPaginado()
@@ -1349,7 +1349,7 @@ $columnaOrden = $columnas[$colOrden] ?? 'l.fecha'; // fallback seguro</pre>
     <span class="tag mod">REFACTORIZADO</span>
   </div>
 
-  <h3>11.3 Cambios en <code>LogControlador.php</code></h3>
+  <h3>11.3 Cambios en <code>EventoControlador.php</code></h3>
 
   <p>El método <code>obtenerDatos()</code> fue completamente reescrito para implementar el protocolo de DataTables server-side. Lee los parámetros del POST y construye la respuesta JSON de 4 campos obligatorios:</p>
 
@@ -1364,11 +1364,11 @@ $columnaOrden = $columnas[$colOrden] ?? 'l.fecha'; // fallback seguro</pre>
   </table>
 
   <div class="archivo-badge">
-    <span class="ruta">app/controladores/LogControlador.php</span>
+    <span class="ruta">app/controladores/EventoControlador.php</span>
     <span class="tag mod">REFACTORIZADO</span>
   </div>
 
-  <h3>11.4 Cambios en <code>logs_datatable.js</code></h3>
+  <h3>11.4 Cambios en <code>eventos_datatable.js</code></h3>
 
   <table>
     <thead><tr><th>Opción</th><th>Antes</th><th>Después</th><th>Motivo</th></tr></thead>
@@ -1387,7 +1387,7 @@ $columnaOrden = $columnas[$colOrden] ?? 'l.fecha'; // fallback seguro</pre>
   </div>
 
   <div class="archivo-badge">
-    <span class="ruta">public/js/tablas/logs_datatable.js</span>
+    <span class="ruta">public/js/tablas/eventos_datatable.js</span>
     <span class="tag mod">REFACTORIZADO</span>
   </div>
 
@@ -1559,7 +1559,7 @@ ORDER BY fecha DESC</pre>
         <td>Setup inicial: <code>usuario_id = 0</code> → <code>null</code>. Corrige violación de FK al no existir usuario con ID 0.</td>
       </tr>
       <tr>
-        <td><code>LogControlador.php</code></td>
+        <td><code>EventoControlador.php</code></td>
         <td>Propiedad <code>$modelo</code> cambiada de tipo <code>LogModelo</code> a <code>EventoModelo</code>.</td>
       </tr>
     </tbody>
@@ -1580,13 +1580,13 @@ ORDER BY fecha DESC</pre>
       <tr><td>Campo de acción</td><td><code>"data": "accion"</code></td><td><code>"data": "tipo_accion"</code></td><td>Nuevo nombre de columna en BD</td></tr>
       <tr><td>Campo de descripción</td><td><code>row.detalles</code></td><td><code>row.descripcion</code></td><td>Nuevo nombre de columna en BD</td></tr>
       <tr><td>Robustez de campos</td><td>Sin fallback</td><td><code>data || row.accion || "S/D"</code></td><td>Previene mostrar "undefined" si falta un campo</td></tr>
-      <tr><td>Caché buster</td><td><code>logs_datatable.js</code></td><td><code>logs_datatable.js?v=1.1</code></td><td>Fuerza recarga del script en el navegador</td></tr>
+      <tr><td>Caché buster</td><td><code>eventos_datatable.js</code></td><td><code>eventos_datatable.js?v=1.1</code></td><td>Fuerza recarga del script en el navegador</td></tr>
       <tr><td>SELECT en modelo</td><td><code>SELECT e.*</code></td><td>SELECT explícito de 10 columnas</td><td>Garantiza los nombres correctos en el JSON</td></tr>
     </tbody>
   </table>
 
   <div class="archivo-badge">
-    <span class="ruta">public/js/tablas/logs_datatable.js</span>
+    <span class="ruta">public/js/tablas/eventos_datatable.js</span>
     <span class="tag mod">ACTUALIZADO — v1.1</span>
   </div>
   <div class="archivo-badge">
@@ -1594,7 +1594,7 @@ ORDER BY fecha DESC</pre>
     <span class="tag mod">SELECT explícito de columnas</span>
   </div>
   <div class="archivo-badge">
-    <span class="ruta">app/vista/logs/index.php</span>
+    <span class="ruta">app/vista/eventos/index.php</span>
     <span class="tag mod">Caché buster añadido</span>
   </div>
 
