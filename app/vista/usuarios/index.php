@@ -500,6 +500,7 @@
     <!--fin::Configuración de OverlayScrollbars-->
 
     <!--inicio::Módulo Usuarios JS-->
+    <script src="public/js/tablas/datatables_config.js"></script>
     <script src="public/js/tablas/usuarios_datatable.js"></script>
     <script src="public/js/tablas/usuarios_roles.js"></script>
     <!--fin::Módulo Usuarios JS-->

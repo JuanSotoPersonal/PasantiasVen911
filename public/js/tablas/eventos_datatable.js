@@ -1,16 +1,3 @@
-const escapeHTML = (str) => {
-  if (typeof str !== 'string' && str != null) str = str.toString();
-  if (!str) return str;
-  return str.replace(/[&<>'"]/g, 
-    tag => ({
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        "'": '&#39;',
-        '"': '&quot;'
-    }[tag] || tag)
-  );
-};
 
 $(document).ready(function () {
     const tablaEventos = $('#tablaEventos').DataTable({
@@ -65,24 +52,7 @@ $(document).ready(function () {
                 }
             }
         ],
-        "language": {
-            "decimal":        ",",
-            "emptyTable":     "No hay registros de historial.",
-            "info":           "Mostrando _START_ a _END_ de _TOTAL_ registros",
-            "infoEmpty":      "Sin registros disponibles",
-            "infoFiltered":   "(filtrado de _MAX_ registros totales)",
-            "lengthMenu":     "Mostrar _MENU_ registros",
-            "loadingRecords": "Cargando...",
-            "processing":     "Procesando...",
-            "search":         "Buscar:",
-            "zeroRecords":    "No se encontraron coincidencias.",
-            "paginate": {
-                "first":    "«",
-                "last":     "»",
-                "next":     "›",
-                "previous": "‹",
-            }
-        },
+        "language": window.Ven911DataTablesLang,
         "order": [[4, "desc"]],
         "responsive": true
     });

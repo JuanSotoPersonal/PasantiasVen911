@@ -1,18 +1,5 @@
 // usuarios/datatable.js
 // Módulo Usuarios: DataTable, CRUD (crear, editar, contraseña, toggle estado)
-const escapeHTML = (str) => {
-  if (typeof str !== 'string' && str != null) str = str.toString();
-  if (!str) return str;
-  return str.replace(/[&<>'"]/g,
-    tag => ({
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      "'": '&#39;',
-      '"': '&quot;'
-    }[tag] || tag)
-  );
-};
 
 $(function () {
 
@@ -122,25 +109,7 @@ $(function () {
     },
   ];
 
-  const configuracionLenguaje = {
-    url: '',
-    decimal: ',',
-    emptyTable: 'No hay usuarios registrados.',
-    info: 'Mostrando _START_ a _END_ de _TOTAL_ usuarios',
-    infoEmpty: 'Sin registros disponibles',
-    infoFiltered: '(filtrado de _MAX_ registros totales)',
-    lengthMenu: 'Mostrar _MENU_ registros',
-    loadingRecords: 'Cargando...',
-    processing: 'Procesando...',
-    search: 'Buscar:',
-    zeroRecords: 'No se encontraron coincidencias.',
-    paginate: {
-      first: '«',
-      last: '»',
-      next: '›',
-      previous: '‹',
-    },
-  };
+  const configuracionLenguaje = window.Ven911DataTablesLang;
 
   // ========================
   // 2. INICIALIZAR DATATABLES

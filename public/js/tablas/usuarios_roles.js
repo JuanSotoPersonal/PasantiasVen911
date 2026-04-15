@@ -3,20 +3,7 @@
 
 $(function () {
 
-  // Idioma compartido con el DataTable principal
-  const lang = {
-    decimal:        ',',
-    emptyTable:     'Sin usuarios registrados para este rol.',
-    info:           'Mostrando _START_ a _END_ de _TOTAL_ usuarios',
-    infoEmpty:      'Sin registros disponibles',
-    infoFiltered:   '(filtrado de _MAX_ registros totales)',
-    lengthMenu:     'Mostrar _MENU_ registros',
-    loadingRecords: 'Cargando...',
-    processing:     'Procesando...',
-    search:         'Buscar:',
-    zeroRecords:    'Sin coincidencias.',
-    paginate: { first: '«', last: '»', next: '›', previous: '‹' },
-  };
+  const lang = window.Ven911DataTablesLang;
 
   // Inicializar un DataTable por cada tabla con data-rol-id
   $('table[data-rol-id]').each(function () {
