@@ -23,6 +23,8 @@ Bien: $sistema_emergencia_id = 911;
 
 Eliminación de Residuos (Refactorización): Por cada 100 líneas de código nuevas, intenta refactorizar o eliminar 10 líneas de código antiguo u obsoleto. Centraliza código repetitivo (Ej. configuraciones visuales o de DataTables).
 
+Rendimiento en Tablas (Paginación Obligatoria): NUNCA se debe cargar una tabla de base de datos completa de un solo golpe (ej. `SELECT * FROM tabla`). TODAS las consultas destinadas a renderizar listas o DataTables deben estar rigurosamente paginadas en el servidor (Server-Side Processing) usando LIMIT, OFFSET y parámetros de búsqueda/ordenamiento, enviando solo lo necesario al cliente.
+
 Consistencia de Flujo: Usa siempre el mismo estándar de nomenclatura (ej. snake_case para bases de datos y camelCase para lógica de aplicación) para que el cerebro no pierda energía cambiando de contexto.
 
 4. Reglas de Blindaje (Validaciones y Errores)

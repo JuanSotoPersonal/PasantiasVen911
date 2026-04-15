@@ -26,7 +26,7 @@ class RegistroModelo {
     //--------------------------------------------------------------------
     public function obtenerPreguntasSeguridad(): array {
         try {
-            $query = "SELECT * FROM preguntas_seguridad ORDER BY id ASC";
+            $query = "SELECT id, pregunta FROM preguntas_seguridad ORDER BY id ASC";
             $stmt = $this->conn->prepare($query);
             $stmt->execute();
             return $stmt->fetchAll(PDO::FETCH_ASSOC);

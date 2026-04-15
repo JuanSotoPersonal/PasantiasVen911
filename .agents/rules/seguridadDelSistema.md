@@ -3,6 +3,8 @@ trigger: glob
 ---
 
 1. Control de Acceso y Autenticación
+Uso Correcto de Roles (RBAC): Cada controlador en su constructor o método inicial debe verificar explícitamente el rol del usuario contra una matriz de permisos (`$_SESSION['permisos']` o función auxiliar `tienePerm()`). NINGÚN módulo o endpoint debe procesar lógica sin antes confirmar que el rol logueado tiene la potestad de ver o modificar ese recurso.
+
 Principio de Menor Privilegio: Todo usuario o proceso debe tener únicamente los permisos mínimos necesarios para realizar su función (Validar siempre sesión y rol mediante RBAC).
 
 Denegación por Defecto: Configura el sistema para que bloquee todo acceso a menos que exista una regla específica que lo permita.

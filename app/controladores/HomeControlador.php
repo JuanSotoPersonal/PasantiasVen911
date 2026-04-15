@@ -5,6 +5,16 @@ use App\modelos\UsuarioModelo;
 class HomeControlador {
 
     //--------------------------------------------------------------------
+    // Constructor de Blindaje RBAC
+    //--------------------------------------------------------------------
+    public function __construct() {
+        if (!isset($_SESSION['user_id'])) {
+            header('Location: index.php?url=auth');
+            exit;
+        }
+    }
+
+    //--------------------------------------------------------------------
     // Muestra la pantalla de inicio con estadísticas básicas
     //--------------------------------------------------------------------
 
