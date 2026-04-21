@@ -25,6 +25,7 @@ class RegistroControlador {
     // Muestra la pantalla de registro inicial
     //--------------------------------------------------------------------
     public function index(): void {
+        try {
         // Si ya hay usuarios, no permitir entrar al setup
         if ($this->usuarioModelo->contarUsuarios() > 0) {
             header('Location: index.php?url=auth');
@@ -33,6 +34,10 @@ class RegistroControlador {
 
         $preguntas = $this->registroModelo->obtenerPreguntasSeguridad();
         require_once 'app/vista/setup.php';
+        } catch (\Exception $e) {
+            error_log("[RegistroControlador] Error en index: " . $e->getMessage());
+            die("Ocurrió un error inesperado en el servidor.");
+        }
     }
 
     //--------------------------------------------------------------------
@@ -40,6 +45,7 @@ class RegistroControlador {
     //--------------------------------------------------------------------
     public function registrar(): void {
         header('Content-Type: application/json');
+        try {
 
         if ($this->usuarioModelo->contarUsuarios() > 0) {
             echo json_encode(['success' => false, 'message' => 'El sistema ya ha sido inicializado.']);
@@ -135,6 +141,10 @@ class RegistroControlador {
             echo json_encode(['success' => true, 'message' => 'Sistema activado con éxito. Redirigiendo al login...']);
         } else {
             echo json_encode(['success' => false, 'message' => 'Error al crear el administrador inicial.']);
+        }
+        } catch (\Exception $e) {
+            error_log("[RegistroControlador] Error en registrar: " . $e->getMessage());
+            echo json_encode(['success' => false, 'message' => 'Ocurrió un error inesperado en el servidor.']);
         }
     }
 }

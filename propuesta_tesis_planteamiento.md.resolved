@@ -1,0 +1,41 @@
+# Capítulo I: El Problema
+
+*Nota Metodológica: Este es el texto inicial de tu tesis. Se redacta bajo la técnica del "embudo": empieza hablando del concepto global de las emergencias (Nivel Macro), luego de Venezuela (Nivel Meso) y finaliza con el problema exacto en tu jefatura del 911 Carabobo (Nivel Micro).*
+
+---
+
+## 1.1 Planteamiento del Problema
+
+En la actualidad corporativa e institucional, la rápida evolución de las Tecnologías de la Información y Comunicación (TIC) ha transformado radicalmente la forma en que el mundo administra y asimila los datos operativos. A nivel mundial, los centros de atención ciudadana y control de emergencias dependen inexorablemente de arquitecturas de software robustas, diseñadas específicamente para procesar información a un ritmo frenético, con el menor porcentaje de fallos u omisiones. En estos escenarios críticos escalables, una latencia de segundos provocada por un sistema intermitente puede suponer directamente el fracaso en la salvaguarda de vidas y bienes civiles.
+
+A nivel nacional, en Venezuela, estos estándares recaen principalmente sobre los Centros de Comando, Control y Telecomunicaciones denominados "VEN 911". Estas sedes operativas son canalizadoras directas de las incidencias del país, unificando los esfuerzos de patrullaje táctico, equipos prehospitalarios y bomberiles. Sin embargo, pese al indiscutible peso de esta carga humanitaria, la digitalización y actualización de las arquitecturas informáticas en algunas dependencias se ha sostenido sobre sistemas heredados (*Legacy Systems*) carentes de planes de modernización estandarizados a nivel informático experto.
+
+A nivel micro, al enfocar la lupa analítica en la **sede del VEN 911 del Estado Carabobo**, se ha detectado una fisura tecnológica significativa en el núcleo del manejo de despachos viales. Históricamente, el ciclo de recolección de llamadas y su posterior expedición en "fichas de despachos" operativas se encontraba regido por un software de desarrollo empírico. Dicho sistema fue elaborado, implementado y parcheado a lo largo del tiempo por personal administrativo (cuyos conocimientos base correspondían al área de la contaduría) y no por un analista formal en ciencias computacionales de software, lo que se tradujo en una paulatina degradación de los procesos.
+
+Al carecer de patrones arquitectónicos como el Modelo-Vista-Controlador (MVC) y abstraerse por completo de normativas en materia de ciberseguridad, dicho entorno obsoleto incurrió en las siguientes disfunciones estructurales graves, conocidas operativamente como "Cuellos de Botella":
+
+1.  **Falta de "Inercia Cero" (Vulnerabilidad):** El sistema legaba toda la responsabilidad de validación a los atributos estáticos del explorador (Frontend HTML), prescindiendo por completo de la purificación y filtrado en el Servidor (Backend). Cualquier alteración en las etiquetas del navegador permitía sortear la seguridad.
+2.  **Saturación en Memoria Absoluta (Ausencia de Paginación):** Al incrementarse el volumen diario de emergencias (pasando de decenas a decenas de miles en la bitácora), el software no utilizaba extracción técnica por variables `LIMIT` y `OFFSET`. Sometía periódicamente al motor SQL a enviar la tabla masiva bloqueando momentáneamente la máquina por recargas excesivas en el Document Object Model de los sub-operadores (ralentizaciones severas).
+3.  **Auditoría Fantasma (Inseguridad Lógica):** Al tratarse de un cuerpo estadal de seguridad, las actas de una emergencia mutan (Ingreso de llamada, Despacho, Culminación). El sistema previo apilaba la data sobrescribiéndola en su totalidad, siendo lógicamente imposible trazar cuál de todos los operadores o despachadores fue quien autorizó, cerró o en su defecto, borró u omitió datos críticos de una ficha previa, lo cual compromete de pleno el rol de responsabilidad del Estado.
+
+Frente a esta sintomatología, de persistir la utilización pragmática de este esquema obsoleto dentro de la sala de despachos en Carabobo, acarrearía no solo retrasos en la conectividad del flujo del personal interno, sino riesgos de seguridad altísimos y fuga de confidencialidad al no poseer el equipo metodológico para respaldar auditorías ni rastrear alteraciones.
+
+Ante tal escenario, surge como imperativo institucional ejecutar una total reingeniería y la **implementación de un sistema web de gestión operativa y control de fichas** que blinde el control de los administradores y agilice asíncronamente el manejo de tablas informáticas, solventando la crisis en los cimientos del código del VEN 911 en el Estado Carabobo.
+
+---
+
+## 1.2 Formulación del Problema
+
+Partiendo del planteamiento y las carencias operativas expuestas, la investigación se rige a partir de la siguiente interrogante principal:
+
+> **¿De qué manera la implementación de un nuevo sistema web bajo estrictos controles de validación en los servidores, mejorará la gestión operativa, la capacidad de respuesta y la auditoría de fichas de emergencias en la sede del VEN 911 Carabobo?**
+
+### Interrogantes Sistematizadas (Sub-Preguntas)
+A raíz de la problemática principal, derivan las siguientes incógnitas técnicas de la investigación:
+*   ¿Cuál es la situación actual en materia de hardware, software y manejo algorítmico frente al registro histórico de petitorios que emplean los operadores y despachadores al realizar la recepción de incidencias?
+*   ¿Qué requerimientos operacionales y de seguridad *(Control Basado en Roles)* son mandatarios y necesarios para sustituir el mecanismo obsoleto existente en el departamento?
+*   ¿Cómo se adaptará la tecnología asincrona de retención de bases de datos masiva (*Paginación del Lado del Servidor*) dentro del patrón de software nuevo para erradicar el atasco en la red?
+
+---
+
+*(Nota para ti: Inmediatamente después de este apartado 1.2 "Formulación del Problema", en la página siguiente de tu tesis en Word, es donde debes pegar los "Objetivos Generales y Específicos" y la "Justificación" que redactamos en el archivo anterior, y con ello tendrás el **Capítulo I completo**).*

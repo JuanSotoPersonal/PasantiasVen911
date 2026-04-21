@@ -125,4 +125,64 @@ class Validador {
         return ['valido' => true, 'mensaje' => ''];
     }
 
+    /**
+     * Valida un número de teléfono (Formatos venezolanos).
+     */
+    public static function validarTelefono(?string $telefono, bool $obligatorio = true): array {
+        $telefono = trim($telefono ?? '');
+        if (empty($telefono)) {
+            return $obligatorio ? ['valido' => false, 'mensaje' => 'El teléfono es obligatorio.'] : ['valido' => true, 'mensaje' => ''];
+        }
+        // Expresión regular flexible para 04121234567, 0412-1234567, +58...
+        $limpio = str_replace([' ', '-', '(', ')', '+'], '', $telefono);
+        if (!preg_match('/^(58|0)?(412|414|424|416|426|212|241|243|244|245|246)[0-9]{7}$/', $limpio)) {
+            return ['valido' => false, 'mensaje' => 'El formato de teléfono es inválido (Ej: 04121234567).'];
+        }
+        return ['valido' => true, 'mensaje' => ''];
+    }
+
+    /**
+     * Valida texto libre (direcciones, descripciones).
+     */
+    public static function validarTextoLibre(?string $texto, string $nombreCampo, int $min = 5, int $max = 500): array {
+        $texto = trim($texto ?? '');
+        if (empty($texto)) {
+            return ['valido' => false, 'mensaje' => "El campo '{$nombreCampo}' es obligatorio."];
+        }
+        if (mb_strlen($texto) < $min) {
+            return ['valido' => false, 'mensaje' => "El campo '{$nombreCampo}' es demasiado corto (mínimo {$min} caracteres)."];
+        }
+        if (mb_strlen($texto) > $max) {
+            return ['valido' => false, 'mensaje' => "El campo '{$nombreCampo}' excede el límite de {$max} caracteres."];
+        }
+        return ['valido' => true, 'mensaje' => ''];
+    }
+
+    /**
+     * Valida un ID numérico.
+     */
+    public static function validarId(?int $id, string $nombreCampo): array {
+        if (!$id || $id <= 0) {
+            return ['valido' => false, 'mensaje' => "Debe seleccionar un valor válido para '{$nombreCampo}'."];
+        }
+        return ['valido' => true, 'mensaje' => ''];
+    }
+
+    /**
+     * Valida nombres de catálogos (letras, números, espacios y signos básicos).
+     */
+    public static function validarNombreCatalogo(?string $nombre, string $nombreCampo): array {
+        $nombre = trim($nombre ?? '');
+        if (empty($nombre)) {
+            return ['valido' => false, 'mensaje' => "El nombre de '{$nombreCampo}' es obligatorio."];
+        }
+        if (mb_strlen($nombre) < 3) {
+            return ['valido' => false, 'mensaje' => "El nombre de '{$nombreCampo}' es demasiado corto."];
+        }
+        if (!preg_match('/^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s\.\-\(\)]+$/', $nombre)) {
+            return ['valido' => false, 'mensaje' => "El campo '{$nombreCampo}' contiene caracteres no permitidos."];
+        }
+        return ['valido' => true, 'mensaje' => ''];
+    }
+
 }

@@ -34,10 +34,15 @@ class UsuarioControlador {
     //--------------------------------------------------------------------
 
     public function index(): void {
+        try {
         $roles = $this->modelo->obtenerRoles();
         $registroModelo = new RegistroModelo();
         $preguntas = $registroModelo->obtenerPreguntasSeguridad();
         require_once 'app/vista/usuarios/index.php';
+        } catch (\Exception $e) {
+            error_log("[UsuarioControlador] Error en index: " . $e->getMessage());
+            die("Ocurrió un error inesperado en el servidor.");
+        }
     }
 
     //--------------------------------------------------------------------
@@ -84,14 +89,36 @@ class UsuarioControlador {
 
     public function obtenerDatosPorRol(): void {
         header('Content-Type: application/json');
-        $rolId = (int)($_GET['rol_id'] ?? 0);
-        $estado = $_GET['estado'] ?? 'activo';
-        if (!$rolId || $rolId === 1) {
-            echo json_encode(['data' => []]);
-            return;
+        try {
+            $rolId   = (int)($_GET['rol_id'] ?? 0);
+            $estado  = $_GET['estado'] ?? 'activo';
+
+            if (!$rolId) {
+                echo json_encode(['draw' => 1, 'recordsTotal' => 0, 'recordsFiltered' => 0, 'data' => []]);
+                return;
+            }
+
+            $draw     = isset($_POST['draw'])   ? (int)$_POST['draw']   : 1;
+            $inicio   = isset($_POST['start'])  ? (int)$_POST['start']  : 0;
+            $cantidad = isset($_POST['length']) ? (int)$_POST['length'] : 10;
+            $busqueda = isset($_POST['search']['value']) ? trim($_POST['search']['value']) : '';
+            $colOrden = isset($_POST['order'][0]['column']) ? (int)$_POST['order'][0]['column'] : 0;
+            $dirOrden = isset($_POST['order'][0]['dir'])    ? $_POST['order'][0]['dir']          : 'asc';
+
+            $datos          = $this->modelo->obtenerPorRol($rolId, $estado, $inicio, $cantidad, $busqueda, $colOrden, $dirOrden);
+            $totalRegistros = $this->modelo->contarPorRol($rolId, $estado);
+            $totalFiltrados = $busqueda !== '' ? $this->modelo->contarFiltradosPorRol($rolId, $estado, $busqueda) : $totalRegistros;
+
+            echo json_encode([
+                'draw'            => $draw,
+                'recordsTotal'    => $totalRegistros,
+                'recordsFiltered' => $totalFiltrados,
+                'data'            => $datos,
+            ]);
+        } catch (\Exception $e) {
+            error_log("[UsuarioControlador] Error en obtenerDatosPorRol: " . $e->getMessage());
+            echo json_encode(['draw' => 1, 'recordsTotal' => 0, 'recordsFiltered' => 0, 'data' => [], 'error' => 'Error inesperado.']);
         }
-        $usuarios = $this->modelo->obtenerPorRol($rolId, $estado);
-        echo json_encode(['data' => $usuarios]);
     }
 
     //--------------------------------------------------------------------
@@ -99,6 +126,7 @@ class UsuarioControlador {
     //--------------------------------------------------------------------
     public function guardar(): void {
         header('Content-Type: application/json');
+        try {
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             echo json_encode(['success' => false, 'message' => 'Método no permitido.']);
@@ -211,6 +239,10 @@ class UsuarioControlador {
         } else {
             echo json_encode(['success' => false, 'message' => 'Error al crear el usuario.']);
         }
+        } catch (\Exception $e) {
+            error_log("[UsuarioControlador] Error en guardar: " . $e->getMessage());
+            echo json_encode(['success' => false, 'message' => 'Ocurrió un error inesperado en el servidor.']);
+        }
     }
 
     //--------------------------------------------------------------------
@@ -218,6 +250,7 @@ class UsuarioControlador {
     //--------------------------------------------------------------------
     public function actualizar(): void {
         header('Content-Type: application/json');
+        try {
         //validacion de metodo  
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             echo json_encode(['success' => false, 'message' => 'Método no permitido.']);
@@ -309,6 +342,10 @@ class UsuarioControlador {
         } else {
             echo json_encode(['success' => false, 'message' => 'Error al actualizar el usuario.']);
         }
+        } catch (\Exception $e) {
+            error_log("[UsuarioControlador] Error en actualizar: " . $e->getMessage());
+            echo json_encode(['success' => false, 'message' => 'Ocurrió un error inesperado en el servidor.']);
+        }
     }
 
     //--------------------------------------------------------------------
@@ -316,6 +353,7 @@ class UsuarioControlador {
     //--------------------------------------------------------------------
     public function actualizarContrasena(): void {
         header('Content-Type: application/json');
+        try {
         //validacion de metodo
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             echo json_encode(['success' => false, 'message' => 'Método no permitido.']);
@@ -378,6 +416,10 @@ class UsuarioControlador {
         } else {
             echo json_encode(['success' => false, 'message' => 'Error al actualizar la contraseña.']);
         }
+        } catch (\Exception $e) {
+            error_log("[UsuarioControlador] Error en actualizarContrasena: " . $e->getMessage());
+            echo json_encode(['success' => false, 'message' => 'Ocurrió un error inesperado en el servidor.']);
+        }
     }
 
     //--------------------------------------------------------------------
@@ -385,6 +427,7 @@ class UsuarioControlador {
     //--------------------------------------------------------------------
     public function alternarEstado(): void {
         header('Content-Type: application/json');
+        try {
         //validacion de metodo
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             echo json_encode(['success' => false, 'message' => 'Método no permitido.']);
@@ -434,6 +477,10 @@ class UsuarioControlador {
         } else {
             echo json_encode(['success' => false, 'message' => 'Usuario no encontrado.']);
         }
+        } catch (\Exception $e) {
+            error_log("[UsuarioControlador] Error en alternarEstado: " . $e->getMessage());
+            echo json_encode(['success' => false, 'message' => 'Ocurrió un error inesperado en el servidor.']);
+        }
     }
 
     //--------------------------------------------------------------------
@@ -441,6 +488,7 @@ class UsuarioControlador {
     //--------------------------------------------------------------------
     public function obtenerPreguntasSeguridad(): void {
         header('Content-Type: application/json');
+        try {
         $id = (int)($_GET['id'] ?? 0);
         if (!$id) {
             echo json_encode(['success' => false, 'message' => 'ID inválido.']);
@@ -453,6 +501,10 @@ class UsuarioControlador {
         } else {
             echo json_encode(['success' => false, 'message' => 'El usuario no tiene preguntas configuradas.']);
         }
+        } catch (\Exception $e) {
+            error_log("[UsuarioControlador] Error en obtenerPreguntasSeguridad: " . $e->getMessage());
+            echo json_encode(['success' => false, 'message' => 'Ocurrió un error inesperado en el servidor.']);
+        }
     }
 
     //--------------------------------------------------------------------
@@ -460,6 +512,7 @@ class UsuarioControlador {
     //--------------------------------------------------------------------
     public function actualizarPreguntasSeguridad(): void {
         header('Content-Type: application/json');
+        try {
         $id          = (int)($_POST['id'] ?? 0);
         $codigoFabrica = trim($_POST['factory_code'] ?? '');
         $p1          = (int)($_POST['pregunta_1'] ?? 0);
@@ -499,6 +552,10 @@ class UsuarioControlador {
             echo json_encode(['success' => true, 'message' => 'Preguntas de seguridad actualizadas correctamente.']);
         } else {
             echo json_encode(['success' => false, 'message' => 'Error al actualizar las preguntas.']);
+        }
+        } catch (\Exception $e) {
+            error_log("[UsuarioControlador] Error en actualizarPreguntasSeguridad: " . $e->getMessage());
+            echo json_encode(['success' => false, 'message' => 'Ocurrió un error inesperado en el servidor.']);
         }
     }
 }

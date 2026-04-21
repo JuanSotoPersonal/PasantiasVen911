@@ -62,141 +62,25 @@
           <div class="container-fluid">
             <div class="row">
               <div class="col-12">
-                <!--inicio::Card Tabla de Usuarios-->
-                <div class="card card-usuarios">
-                  <div class="card-header d-flex justify-content-between align-items-center">
-                    <h3 class="card-title mb-0">
-                      <i class="bi bi-people-fill me-2"></i>Listado de Usuarios
-                    </h3>
-                    <div class="card-tools ms-auto d-flex align-items-center">
-                      <span class="badge bg-success fs-6 me-3" id="badge-count-total">— usuarios</span>
-                      <button
-                        type="button"
-                        class="btn btn-ven-primary btn-sm"
-                        id="btn-abrir-modal-crear"
-                        data-bs-toggle="modal"
-                        data-bs-target="#modalCrearUsuario"
-                      >
-                        <i class="bi bi-person-plus-fill me-1"></i> Agregar Usuario
-                      </button>
-                    </div>
-                  </div>
-                  <div class="card-body">
-                    <div class="table-responsive">
-                      <table
-                        id="tablaUsuarios"
-                        class="table table-bordered table-striped table-hover align-middle table-usuarios-full"
-                      >
-                        <thead class="table-dark">
-                          <tr>
-                            <th>#</th>
-                            <th>Nombre Completo</th>
-                            <th>Usuario</th>
-                            <th>Cédula</th>
-                            <th>Rol</th>
-                            <th>Estado</th>
-                            <th class="text-center">Acciones</th>
-                          </tr>
-                        </thead>
-                        <tbody id="tbody-usuarios">
-                          <!-- DataTables lo llena via AJAX -->
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </div>
-                <!--fin::Card Tabla de Usuarios-->
-
-                <!--inicio::Tablas por Rol-->
+                <!--inicio::Sistema de Vistas de Dependencia (Tablas)-->
                 <?php
-                    $iconosPorRol = [
-                        'Administrador' => 'bi-shield-fill',
-                        'Despachador'   => 'bi-broadcast',
-                        'Operador'      => 'bi-headset',
-                        'Jefe'          => 'bi-star-fill',
-                        'Jefatura'      => 'bi-star-fill',
-                    ];
-                    foreach ($roles as $rol):
-                        if ($rol['id'] == 1) continue;
-                        $rolId     = (int)$rol['id'];
-                        $rolNombre = htmlspecialchars($rol['nombre']);
-                        $tablaId   = "tablaRol{$rolId}";
-                        $icono     = $iconosPorRol[$rolNombre] ?? 'bi-person-badge';
-                ?>
-                <div class="col-12 mt-4">
-                  <div class="card card-usuarios">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                      <h3 class="card-title mb-0">
-                        <i class="bi <?php echo $icono; ?> me-2"></i><?php echo $rolNombre; ?>s Registrados
-                      </h3>
-                      <div class="card-tools d-flex align-items-center gap-2">
-                         <span class="badge bg-success fs-6" id="badge-count-<?php echo $rolId; ?>">0 usuarios</span>
-                      </div>
-                    </div>
-                    <div class="card-body">
-                      <div class="table-responsive">
-                        <table
-                          id="<?= $tablaId ?>"
-                          class="table table-bordered table-striped table-hover align-middle table-usuarios-full"
-                          data-rol-id="<?= $rolId ?>"
-                          data-rol-nombre="<?= $rolNombre ?>"
-                        >
-                          <thead class="table-dark">
-                             <tr>
-                               <th>#</th>
-                               <th>Nombre Completo</th>
-                               <th>Usuario</th>
-                               <th>Cédula</th>
-                               <th>Estado</th>
-                               <th class="text-center">Acciones</th>
-                             </tr>
-                          </thead>
-                          <tbody><!-- DataTables AJAX --></tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <?php endforeach; ?>
-                <!--fin::Tablas por Rol-->
+                // Determinar qué tabla mostrar según el parámetro GET 't'
+                $tabActiva = $_GET['t'] ?? 'todos';
 
-                <!--inicio::Tabla Inactivos-->
-                <div class="col-12 mt-4">
-                  <div class="card card-usuarios-inactivos">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                      <h3 class="card-title mb-0">
-                        <i class="bi bi-person-x-fill me-2"></i>Usuarios Inactivos
-                      </h3>
-                      <div class="card-tools d-flex align-items-center gap-2">
-                         <span class="badge fs-6" id="badge-count-inactivos">0 usuarios</span>
-                      </div>
-                    </div>
-                    <div class="card-body">
-                      <div class="table-responsive">
-                        <table
-                          id="tablaInactivos"
-                          class="table table-bordered table-striped table-hover align-middle table-usuarios-full"
-                        >
-                          <thead class="table-dark">
-                             <tr>
-                               <th>#</th>
-                               <th>Nombre Completo</th>
-                               <th>Usuario</th>
-                               <th>Cédula</th>
-                               <th>Rol</th>
-                               <th>Estado</th>
-                               <th class="text-center">Acciones</th>
-                             </tr>
-                          </thead>
-                          <tbody id="tbody-inactivos">
-                             <!-- DataTables AJAX -->
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <!--fin::Tabla Inactivos-->
+                if ($tabActiva === 'todos') {
+                    require __DIR__ . '/componentes/_tabla_principal.php';
+                } elseif ($tabActiva === 'inactivos') {
+                    require __DIR__ . '/componentes/_tabla_inactivos.php';
+                } elseif (strpos($tabActiva, 'rol_') === 0) {
+                    $rolActivoId = (int)str_replace('rol_', '', $tabActiva);
+                    require __DIR__ . '/componentes/_tablas_roles.php';
+                } else {
+                    // Por si ingresan una ruta inválida
+                    require __DIR__ . '/componentes/_tabla_principal.php';
+                }
+                ?>
+                <!--fin::Sistema de Vistas de Dependencia (Tablas)-->
+
 
               </div>
             </div>

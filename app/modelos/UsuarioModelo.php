@@ -45,25 +45,96 @@ class UsuarioModelo {
     }
 
     //--------------------------------------------------------------------
-    // Retorna usuarios filtrados por rol_id y estado (para DataTables por rol)
+    // Retorna usuarios paginados filtrados por rol_id (DataTables por rol).
     //--------------------------------------------------------------------
-    public function obtenerPorRol(int $rolId, string $estado = 'activo'): array {
+    public function obtenerPorRol(int $rolId, string $estado = 'activo', int $inicio = 0, int $cantidad = 10, string $busqueda = '', int $colOrden = 0, string $dirOrden = 'asc'): array {
+        $columnasOrdenables = [
+            0 => 'u.id',
+            1 => 'u.nombre_completo',
+            2 => 'u.usuario',
+            3 => 'u.cedula',
+            4 => 'u.estado',
+        ];
+        $columnaOrden = $columnasOrdenables[$colOrden] ?? 'u.id';
+        $dirOrden     = strtolower($dirOrden) === 'asc' ? 'ASC' : 'DESC';
+
         try {
+            $busquedaLike = '%' . $busqueda . '%';
             $query = "SELECT u.id, u.usuario, u.nombre_completo, u.cedula,
                              u.estado, u.rol_id, r.nombre AS nombre_rol
                       FROM {$this->table_name} u
                       INNER JOIN roles r ON u.rol_id = r.id
-                      WHERE u.rol_id = :rol_id AND u.estado = :estado
-                      ORDER BY u.id ASC";
+                      WHERE u.rol_id = :rol_id
+                        AND u.estado = :estado
+                        AND (:busqueda = ''
+                          OR u.nombre_completo LIKE :b1
+                          OR u.usuario         LIKE :b2
+                          OR u.cedula          LIKE :b3
+                        )
+                      ORDER BY {$columnaOrden} {$dirOrden}
+                      LIMIT :cantidad OFFSET :inicio";
 
             $stmt = $this->conn->prepare($query);
-            $stmt->bindParam(':rol_id', $rolId, PDO::PARAM_INT);
-            $stmt->bindParam(':estado', $estado, PDO::PARAM_STR);
+            $stmt->bindValue(':rol_id',   $rolId,        PDO::PARAM_INT);
+            $stmt->bindValue(':estado',   $estado,       PDO::PARAM_STR);
+            $stmt->bindValue(':busqueda', $busqueda,     PDO::PARAM_STR);
+            $stmt->bindValue(':b1',       $busquedaLike, PDO::PARAM_STR);
+            $stmt->bindValue(':b2',       $busquedaLike, PDO::PARAM_STR);
+            $stmt->bindValue(':b3',       $busquedaLike, PDO::PARAM_STR);
+            $stmt->bindValue(':cantidad', $cantidad,     PDO::PARAM_INT);
+            $stmt->bindValue(':inicio',   $inicio,       PDO::PARAM_INT);
             $stmt->execute();
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (Exception $e) {
             error_log("[UsuarioModelo] Error en obtenerPorRol: " . $e->getMessage());
             return [];
+        }
+    }
+
+    //--------------------------------------------------------------------
+    // Total y filtrados para paginación server-side de la tabla por rol.
+    //--------------------------------------------------------------------
+    public function contarPorRol(int $rolId, string $estado = 'activo'): int {
+        try {
+            $stmt = $this->conn->prepare(
+                "SELECT COUNT(*) FROM {$this->table_name}
+                 WHERE rol_id = :rol_id AND estado = :estado"
+            );
+            $stmt->bindValue(':rol_id', $rolId,  PDO::PARAM_INT);
+            $stmt->bindValue(':estado', $estado, PDO::PARAM_STR);
+            $stmt->execute();
+            return (int)$stmt->fetchColumn();
+        } catch (Exception $e) {
+            error_log("[UsuarioModelo] Error en contarPorRol: " . $e->getMessage());
+            return 0;
+        }
+    }
+
+    public function contarFiltradosPorRol(int $rolId, string $estado, string $busqueda): int {
+        try {
+            $busquedaLike = '%' . $busqueda . '%';
+            $query = "SELECT COUNT(*)
+                      FROM {$this->table_name} u
+                      INNER JOIN roles r ON u.rol_id = r.id
+                      WHERE u.rol_id = :rol_id
+                        AND u.estado = :estado
+                        AND (:busqueda = ''
+                          OR u.nombre_completo LIKE :b1
+                          OR u.usuario         LIKE :b2
+                          OR u.cedula          LIKE :b3
+                        )";
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindValue(':rol_id',   $rolId,        PDO::PARAM_INT);
+            $stmt->bindValue(':estado',   $estado,       PDO::PARAM_STR);
+            $stmt->bindValue(':busqueda', $busqueda,     PDO::PARAM_STR);
+            $stmt->bindValue(':b1',       $busquedaLike, PDO::PARAM_STR);
+            $stmt->bindValue(':b2',       $busquedaLike, PDO::PARAM_STR);
+            $stmt->bindValue(':b3',       $busquedaLike, PDO::PARAM_STR);
+            $stmt->execute();
+            return (int)$stmt->fetchColumn();
+        } catch (Exception $e) {
+            error_log("[UsuarioModelo] Error en contarFiltradosPorRol: " . $e->getMessage());
+            return 0;
         }
     }
 

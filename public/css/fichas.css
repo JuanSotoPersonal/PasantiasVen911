@@ -1,0 +1,178 @@
+/* =============================================
+   Módulo de Fichas de Emergencia
+   ============================================= */
+
+:root {
+    --ven-green-primary: #16a34a;
+    --ven-green-dark:    #15803d;
+    --ven-green-darker:  #14532d;
+    --ven-green-deepest: #064e3b;
+    --ven-green-accent:  #22c55e;
+    --ven-green-light:   #f0fdf4;
+    --ven-green-border:  #bbf7d0;
+    --ven-green-shadow:  rgba(22, 163, 74, 0.4);
+    --ven-green-glow:    rgba(34, 197, 94, 0.2);
+}
+
+/* =============================================
+   BADGES DE ESTADO DE FICHA
+   ============================================= */
+
+.badge-ficha-estado {
+    font-size: 0.78rem;
+    padding: 0.35em 0.85em;
+    border-radius: 50px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3em;
+}
+
+.badge-pendiente  { background: #fef9c3; color: #854d0e; border: 1px solid #fde047; }
+.badge-en-proceso { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; }
+.badge-atendido   { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+.badge-cerrado    { background: #e0e7ff; color: #3730a3; border: 1px solid #a5b4fc; }
+.badge-finalizado { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; }
+
+/* =============================================
+   BOTONES DE ACCIÓN
+   ============================================= */
+
+.btn-ven-primary {
+    background: linear-gradient(135deg, var(--ven-green-primary) 0%, var(--ven-green-dark) 100%);
+    border: none; border-radius: 0.6rem; color: #fff; font-weight: 600;
+    letter-spacing: 0.3px; transition: all 0.25s ease;
+    box-shadow: 0 4px 6px -1px var(--ven-green-shadow);
+}
+.btn-ven-primary:hover, .btn-ven-primary:focus {
+    background: linear-gradient(135deg, var(--ven-green-dark) 0%, var(--ven-green-darker) 100%);
+    color: #fff; transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(22,163,74,0.55);
+}
+.btn-ven-primary:active { transform: translateY(0); }
+
+.btn-ven-edit {
+    background: linear-gradient(135deg, #166534 0%, #14532d 100%);
+    border: none; border-radius: 0.5rem; color: #fff; font-weight: 600;
+    transition: all 0.25s ease; box-shadow: 0 3px 6px rgba(22,101,52,0.4);
+}
+.btn-ven-edit:hover, .btn-ven-edit:focus {
+    background: linear-gradient(135deg, #14532d 0%, #064e3b 100%);
+    color: #fff; transform: translateY(-2px);
+}
+.btn-ven-edit:active { transform: translateY(0); }
+
+.btn-ven-detalle {
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+    border: none; border-radius: 0.5rem; color: #fff; font-weight: 600;
+    transition: all 0.25s ease; box-shadow: 0 3px 6px rgba(2, 132, 199, 0.35);
+}
+.btn-ven-detalle:hover { background: linear-gradient(135deg, #0369a1 0%, #075985 100%); color: #fff; transform: translateY(-2px); }
+.btn-ven-detalle:active { transform: translateY(0); }
+
+.btn-ven-cancel {
+    background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 0.6rem;
+    color: var(--ven-green-deepest); font-weight: 600; transition: all 0.2s ease;
+}
+.btn-ven-cancel:hover, .btn-ven-cancel:focus {
+    background: #dcfce7; border-color: #86efac; color: var(--ven-green-deepest); transform: translateY(-1px);
+}
+
+.btn-accion {
+    width: 32px; height: 32px; padding: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 8px; transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.btn-accion:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+
+/* =============================================
+   HEADER DEL MODAL
+   ============================================= */
+
+.modal-header-ven {
+    background: linear-gradient(135deg, var(--ven-green-primary) 0%, var(--ven-green-deepest) 100%);
+    color: #fff; border-bottom: none;
+    border-radius: calc(0.5rem - 1px) calc(0.5rem - 1px) 0 0;
+    padding: 1.1rem 1.5rem;
+}
+.modal-header-ven .btn-close { filter: brightness(0) invert(1); opacity: 0.8; transition: opacity 0.2s; }
+.modal-header-ven .btn-close:hover { opacity: 1; }
+.modal-header-ven .modal-title { color: #fff !important; font-weight: 700; font-size: 1.05rem; }
+
+/* Glassmorphism en modales */
+.modal-backdrop { background-color: rgba(6, 78, 59, 0.18) !important; backdrop-filter: blur(4px) !important; }
+.modal-backdrop.show { opacity: 1 !important; }
+.modal-content {
+    border: 1px solid rgba(187, 247, 208, 0.5); border-radius: 1rem;
+    box-shadow: 0 25px 50px -12px rgba(6, 78, 59, 0.35); overflow: hidden;
+    backdrop-filter: blur(8px); background: rgba(255, 255, 255, 0.97);
+}
+
+/* Inputs en modales */
+.modal .form-control:focus, .modal .form-select:focus {
+    border-color: var(--ven-green-accent);
+    box-shadow: 0 0 0 0.25rem var(--ven-green-glow);
+}
+.modal .form-label { color: var(--ven-green-deepest); font-weight: 600; }
+
+/* Títulos de sección en modales */
+.text-ven-green { color: var(--ven-green-primary) !important; }
+
+/* Animación de entrada de modal */
+.modal.fade .modal-dialog { transform: scale(0.95) translateY(-20px); transition: transform 0.25s ease; }
+.modal.show .modal-dialog { transform: scale(1) translateY(0); }
+
+/* =============================================
+   DATATABLE
+   ============================================= */
+
+.page-item.active .page-link {
+    background-color: var(--ven-green-primary) !important;
+    border-color: var(--ven-green-primary) !important;
+    color: #fff !important;
+}
+.page-link { color: var(--ven-green-darker); border-radius: 6px; margin: 0 2px; transition: all 0.2s; }
+.page-link:hover { background-color: var(--ven-green-light); border-color: var(--ven-green-border); color: var(--ven-green-primary); }
+
+/* =============================================
+   TABS DE CATÁLOGOS
+   ============================================= */
+
+.nav-tabs-ven { border-bottom: 2px solid var(--ven-green-border); }
+.nav-tabs-ven .nav-link {
+    color: var(--ven-green-darker);
+    font-weight: 600;
+    border: none;
+    border-bottom: 3px solid transparent;
+    border-radius: 0;
+    padding: 0.6rem 1.1rem;
+    transition: all 0.2s;
+}
+.nav-tabs-ven .nav-link:hover { color: var(--ven-green-primary); background: var(--ven-green-light); }
+.nav-tabs-ven .nav-link.active {
+    color: var(--ven-green-primary) !important;
+    border-bottom-color: var(--ven-green-primary) !important;
+    background: transparent;
+}
+
+/* =============================================
+   DETALLE DE FICHA EN MODAL
+   ============================================= */
+
+.ficha-detalle-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem 1.5rem;
+}
+.ficha-detalle-item label { font-size: 0.78rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.2rem; }
+.ficha-detalle-item span  { font-size: 0.93rem; color: #1f2937; }
+@media (max-width: 576px) { .ficha-detalle-grid { grid-template-columns: 1fr; } }
+
+/* SweetAlert2 */
+div:where(.swal2-container) div:where(.swal2-popup) {
+    background: #ffffff !important; color: var(--ven-green-deepest) !important;
+    border-radius: 1rem !important; border: 1px solid var(--ven-green-border) !important;
+}
+.swal2-confirm { background: linear-gradient(135deg, var(--ven-green-primary) 0%, var(--ven-green-dark) 100%) !important; border: none !important; }
+.swal2-cancel  { background: #f0fdf4 !important; color: var(--ven-green-deepest) !important; border: 1px solid var(--ven-green-border) !important; }

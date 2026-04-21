@@ -1,5 +1,19 @@
 <?php
 ob_start();
+
+// ==========================================
+// SEGURIDAD GLOBAL: Hardening de la Sesión
+// Previene secuestro de sesión (XSS) y CSRF.
+// ==========================================
+session_set_cookie_params([
+    'lifetime' => 0,
+    'path'     => '/',
+    'domain'   => '',       // Ajustar a dominio real en prod
+    'secure'   => true,     // Envío solo en HTTPS
+    'httponly' => true,     // Bloqueo lectura desde JS
+    'samesite' => 'Strict'  // Bloqueo ataques CSRF
+]);
+
 session_start();
 
 // Cabeceras de seguridad HTTP
@@ -81,9 +95,10 @@ if ($estaAutenticado) {
     }
 
     $rutasProtegidas = [
-        'usuario'      => ['usuarios', 'ver'],
+        'usuario'      => ['usuarios',  'ver'],
         'evento'       => ['historial', 'ver'],
         'notificacion' => ['fichas',    'ver'],
+        'ficha'        => ['fichas',    'ver'],
     ];
 
     $claveRuta = strtolower($nombreBaseControlador);

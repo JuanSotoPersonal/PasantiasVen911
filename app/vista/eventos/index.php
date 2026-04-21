@@ -60,33 +60,14 @@
         <!--inicio::Contenido principal-->
         <div class="app-content">
           <div class="container-fluid">
-            <!-- Tabla de Logs -->
-            <div class="card card-usuarios shadow-sm mb-4">
-              <div class="card-header d-flex justify-content-between align-items-center">
-                <h3 class="card-title mb-0">
-                  <i class="bi bi-clock-history me-2"></i>Historial de Auditoría
-                </h3>
-              </div>
-              <div class="card-body">
-                <div class="table-responsive">
-                  <table id="tablaEventos" class="table table-bordered table-striped table-hover align-middle w-100">
-                    <thead class="table-dark">
-                      <tr>
-                        <th>Acción</th>
-                        <th>Tabla</th>
-                        <th>Registro ID</th>
-                        <th>Administrador</th>
-                        <th>Fecha</th>
-                        <th class="text-center">Cambios</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <!-- Cargado por AJAX -->
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
+            <?php
+            // Sistema de Vistas de Dependencia (Tablas de Historial)
+            if ($tabActiva === 'ficha') {
+                require __DIR__ . '/componentes/_tabla_fichas.php';
+            } else {
+                require __DIR__ . '/componentes/_tabla_sistema.php';
+            }
+            ?>
           </div>
         </div>
         <!--fin::Contenido principal-->
@@ -152,7 +133,12 @@
 
     <!-- Lógica de la tabla de Logs -->
     <script src="public/js/tablas/datatables_config.js"></script>
-    <script src="public/js/tablas/eventos_datatable.js?v=1.1"></script>
+    <?php if ($tabActiva === 'ficha'): ?>
+        <script src="public/js/tablas/eventos_fichas_datatable.js?v=1.0"></script>
+    <?php else: ?>
+        <script src="public/js/tablas/eventos_datatable.js?v=1.1"></script>
+    <?php endif; ?>
+
     <!--fin::Scripts-->
   </body>
   <!--fin::Cuerpo-->

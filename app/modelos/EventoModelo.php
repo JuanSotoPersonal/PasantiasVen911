@@ -229,6 +229,104 @@ class EventoModelo {
     }
 
     //--------------------------------------------------------------------
+    // Retorna registros paginados de eventos_fichas compatible con DataTables.
+    //--------------------------------------------------------------------
+    public function obtenerPaginadoFichas(int $inicio, int $cantidad, string $busqueda, int $colOrden, string $dirOrden): array {
+        $columnas = [
+            0 => 'ef.tipo_evento',
+            1 => 'ef.ficha_id',
+            2 => 'ef.estado_anterior',
+            3 => 'ef.estado_nuevo',
+            4 => 'u.usuario',
+            5 => 'ef.fecha',
+        ];
+        $columnaOrden = $columnas[$colOrden] ?? 'ef.fecha';
+        $dirOrden     = strtolower($dirOrden) === 'asc' ? 'ASC' : 'DESC';
+
+        try {
+            $busquedaLike = '%' . $busqueda . '%';
+            $query = "SELECT 
+                        ef.*, 
+                        u.usuario AS nombre_admin
+                      FROM {$this->tabla_fichas} ef
+                      LEFT JOIN usuarios u ON ef.usuario_id = u.id
+                      WHERE (:busqueda = ''
+                          OR ef.tipo_evento      LIKE :b1
+                          OR ef.estado_anterior  LIKE :b2
+                          OR ef.estado_nuevo     LIKE :b3
+                          OR u.usuario           LIKE :b4
+                          OR ef.descripcion      LIKE :b5
+                          OR ef.ficha_id         LIKE :b6
+                      )
+                      ORDER BY {$columnaOrden} {$dirOrden}
+                      LIMIT :cantidad OFFSET :inicio";
+
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindValue(':busqueda', $busqueda,     PDO::PARAM_STR);
+            $stmt->bindValue(':b1',       $busquedaLike, PDO::PARAM_STR);
+            $stmt->bindValue(':b2',       $busquedaLike, PDO::PARAM_STR);
+            $stmt->bindValue(':b3',       $busquedaLike, PDO::PARAM_STR);
+            $stmt->bindValue(':b4',       $busquedaLike, PDO::PARAM_STR);
+            $stmt->bindValue(':b5',       $busquedaLike, PDO::PARAM_STR);
+            $stmt->bindValue(':b6',       $busquedaLike, PDO::PARAM_STR);
+            $stmt->bindValue(':cantidad', $cantidad,     PDO::PARAM_INT);
+            $stmt->bindValue(':inicio',   $inicio,       PDO::PARAM_INT);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (\Exception $e) {
+            error_log("[EventoModelo] Error en obtenerPaginadoFichas: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    //--------------------------------------------------------------------
+    // Retorna el total absoluto de registros en eventos_fichas.
+    //--------------------------------------------------------------------
+    public function contarTodosFichas(): int {
+        try {
+            $stmt = $this->conn->prepare("SELECT COUNT(*) FROM {$this->tabla_fichas}");
+            $stmt->execute();
+            return (int)$stmt->fetchColumn();
+        } catch (\Exception $e) {
+            error_log("[EventoModelo] Error en contarTodosFichas: " . $e->getMessage());
+            return 0;
+        }
+    }
+
+    //--------------------------------------------------------------------
+    // Retorna el total de registros que coinciden con una búsqueda en fichas.
+    //--------------------------------------------------------------------
+    public function contarFiltradosFichas(string $busqueda): int {
+        try {
+            $busquedaLike = '%' . $busqueda . '%';
+            $query = "SELECT COUNT(*)
+                      FROM {$this->tabla_fichas} ef
+                      LEFT JOIN usuarios u ON ef.usuario_id = u.id
+                      WHERE (:busqueda = ''
+                          OR ef.tipo_evento      LIKE :b1
+                          OR ef.estado_anterior  LIKE :b2
+                          OR ef.estado_nuevo     LIKE :b3
+                          OR u.usuario           LIKE :b4
+                          OR ef.descripcion      LIKE :b5
+                          OR ef.ficha_id         LIKE :b6
+                      )";
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindValue(':busqueda', $busqueda,     PDO::PARAM_STR);
+            $stmt->bindValue(':b1',       $busquedaLike, PDO::PARAM_STR);
+            $stmt->bindValue(':b2',       $busquedaLike, PDO::PARAM_STR);
+            $stmt->bindValue(':b3',       $busquedaLike, PDO::PARAM_STR);
+            $stmt->bindValue(':b4',       $busquedaLike, PDO::PARAM_STR);
+            $stmt->bindValue(':b5',       $busquedaLike, PDO::PARAM_STR);
+            $stmt->bindValue(':b6',       $busquedaLike, PDO::PARAM_STR);
+            $stmt->execute();
+            return (int)$stmt->fetchColumn();
+        } catch (\Exception $e) {
+            error_log("[EventoModelo] Error en contarFiltradosFichas: " . $e->getMessage());
+            return 0;
+        }
+    }
+
+    //--------------------------------------------------------------------
     // Historial completo de un usuario: acciones de sistema + fichas.
     // Retorna un array UNION ordenado por fecha descendente.
     //--------------------------------------------------------------------
@@ -240,7 +338,7 @@ class EventoModelo {
                         e.tabla_afectada                AS contexto,
                         e.descripcion,
                         e.fecha
-                      FROM {$this->tabla_sistema} e
+                      FROM eventos_sistema e
                       WHERE e.usuario_id = :uid1
                       UNION ALL
                       SELECT
@@ -249,7 +347,7 @@ class EventoModelo {
                         CONCAT('Ficha #', ef.ficha_id)  AS contexto,
                         ef.descripcion,
                         ef.fecha
-                      FROM {$this->tabla_fichas} ef
+                      FROM eventos_fichas ef
                       WHERE ef.usuario_id = :uid2
                       ORDER BY fecha DESC";
 

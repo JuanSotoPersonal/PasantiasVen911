@@ -5,7 +5,7 @@ use App\modelos\UsuarioModelo;
 class HomeControlador {
 
     //--------------------------------------------------------------------
-    // Constructor de Blindaje RBAC
+    // Constructor 
     //--------------------------------------------------------------------
     public function __construct() {
         if (!isset($_SESSION['user_id'])) {
@@ -19,19 +19,24 @@ class HomeControlador {
     //--------------------------------------------------------------------
 
     public function index() {
-        $usuarioModelo = new UsuarioModelo();
-        $estadisticas = $usuarioModelo->contarPorEstado();
+        try {
+            $usuarioModelo = new UsuarioModelo();
+            $estadisticas = $usuarioModelo->contarPorEstado();
 
-        $datos = [
-            'activo'   => 0,
-            'inactivo' => 0
-        ];
+            $datos = [
+                'activo'   => 0,
+                'inactivo' => 0
+            ];
 
-        foreach ($estadisticas as $dato_estadistico) {
-            $datos[$dato_estadistico['estado']] = (int)$dato_estadistico['total'];
+            foreach ($estadisticas as $dato_estadistico) {
+                $datos[$dato_estadistico['estado']] = (int)$dato_estadistico['total'];
+            }
+
+            // Carga la vista home 
+            require_once 'app/vista/home.php';
+        } catch (\Exception $e) {
+            error_log("[HomeControlador] Error en index: " . $e->getMessage());
+            die("Ocurrió un error inesperado al cargar el inicio.");
         }
-
-        // Carga la vista home 
-        require_once 'app/vista/home.php';
     }
 }
