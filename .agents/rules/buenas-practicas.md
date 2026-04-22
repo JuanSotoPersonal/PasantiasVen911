@@ -34,8 +34,12 @@ NUNCA utilices etiquetas restrictivas HTML (`minlength`, `maxlength`, `required`
 Falla con Elegancia: Un error no debe detener todo el sistema. Implementa bloques try-catch que devuelvan JSON amigable (`success: false`).
 
 5. Reglas de Estandarización Frontend (DataTables)
-Cada vez que se cree un DataTable, se debe crear un `.js` modular en `public/js/tablas`. 
+Cada vez que se cree un DataTable, se debe crear un `.js` modular en una subcarpeta asignada a su módulo dentro de `public/js/` (ej. `public/js/usuarios/`, `public/js/fichas/`, etc.). 
 IMPORTANTE: Para evitar duplicidad de código (Inercia Cero), nunca copies el bloque de configuración de idioma ni la función de seguridad global; asegúrate de importar el script `datatables_config.js` (`window.Ven911DataTablesLang` y `window.escapeHTML`) en la vista y usar sus variables. Mantén el mismo estilo visual (botones y layout) de los módulos existentes.
 
 6. Regla de Idioma
 Todo nombramiento de variables, clases, métodos y funciones debe estar rigurosamente en ESPAÑOL, limitando el inglés exclusivamente a palabras clave de los lenguajes, frameworks o convenciones estándar irremplazables.
+
+7. Estándar de Vistas (Componentización)
+Estructura de Vistas: Todas las vistas de módulos principales (ej. usuarios, fichas, etc.) deben estar obligatoriamente modularizadas. El archivo `index.php` de la vista debe servir únicamente de contenedor principal, delegando el contenido específico (modales, tablas, formularios complejos) a archivos individuales dentro de una subcarpeta llamada `componentes/`.
+Nomenclatura de Componentes: Los archivos de componentes deben usar el prefijo guion bajo y ser descriptivos: `_modal_crear.php`, `_tabla_principal.php`, `_configuracion.php`. Esto garantiza que el código sea escalable y evita archivos `index.php` masivos y difíciles de depurar.

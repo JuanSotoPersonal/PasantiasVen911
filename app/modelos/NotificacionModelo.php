@@ -10,12 +10,12 @@ require_once 'app/Config/Database.php';
 
 class NotificacionModelo {
 
-    private $conn;
+    private $conexion;
     private $tabla = 'notificaciones';
 
     public function __construct() {
         $database = new Database();
-        $this->conn = $database->getConnection();
+        $this->conexion = $database->obtenerConexion();
     }
 
     //--------------------------------------------------------------------
@@ -29,7 +29,7 @@ class NotificacionModelo {
                     ORDER BY fecha_creacion DESC
                     LIMIT 20";
 
-            $stmt = $this->conn->prepare($sql);
+            $stmt = $this->conexion->prepare($sql);
             $stmt->bindParam(':uid', $usuario_id, PDO::PARAM_INT);
             $stmt->execute();
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -48,7 +48,7 @@ class NotificacionModelo {
                     SET leido = 1
                     WHERE id = :id AND usuario_recibe_id = :uid";
 
-            $stmt = $this->conn->prepare($sql);
+            $stmt = $this->conexion->prepare($sql);
             $stmt->bindParam(':id',  $id_notif,   PDO::PARAM_INT);
             $stmt->bindParam(':uid', $usuario_id, PDO::PARAM_INT);
             return $stmt->execute();
@@ -64,7 +64,7 @@ class NotificacionModelo {
     public function marcarTodasLeidas(int $usuario_id): bool {
         try {
             $sql = "UPDATE {$this->tabla} SET leido = 1 WHERE usuario_recibe_id = :uid AND leido = 0";
-            $stmt = $this->conn->prepare($sql);
+            $stmt = $this->conexion->prepare($sql);
             $stmt->bindParam(':uid', $usuario_id, PDO::PARAM_INT);
             return $stmt->execute();
         } catch (Exception $e) {
@@ -81,7 +81,7 @@ class NotificacionModelo {
             $sql = "INSERT INTO {$this->tabla} (usuario_recibe_id, ficha_id, tipo, mensaje)
                     VALUES (:uid, :ficha_id, :tipo, :mensaje)";
 
-            $stmt = $this->conn->prepare($sql);
+            $stmt = $this->conexion->prepare($sql);
             $stmt->bindParam(':uid',      $usuario_recibe_id, PDO::PARAM_INT);
             $stmt->bindValue(':ficha_id', $ficha_id,          $ficha_id ? PDO::PARAM_INT : PDO::PARAM_NULL);
             $stmt->bindParam(':tipo',     $tipo,              PDO::PARAM_STR);
@@ -93,3 +93,4 @@ class NotificacionModelo {
         }
     }
 }
+

@@ -78,25 +78,24 @@
       <?php require __DIR__ . '/componentes/_modal_detalle.php'; ?>
     <?php endif; ?>
 
-    <script src="public/libs/overlayscrollbars/overlayscrollbars.browser.es6.min.js"></script>
-    <script src="public/libs/popperjs/popper.min.js"></script>
-    <script src="public/libs/bootstrap/bootstrap.min.js"></script>
-    <script src="public/js/adminlte.js"></script>
+    <!-- Scripts Globales -->
+    <?php require __DIR__ . '/../partials/scripts.php'; ?>
+
+    <!-- jQuery & DataTables (Específicos para este módulo) -->
     <script src="public/libs/datatables/jquery-3.7.1.min.js"></script>
     <script src="public/libs/datatables/dataTables.min.js"></script>
     <script src="public/libs/datatables/dataTables.bootstrap5.min.js"></script>
-    <script src="public/libs/sweetalert2/sweetalert2.min.js"></script>
 
     <script>
         window.VEN911_PERM_EDITAR         = <?= tienePerm('fichas', 'editar')         ? 'true' : 'false' ?>;
         window.VEN911_PERM_CAMBIAR_ESTADO  = <?= tienePerm('fichas', 'cambiar_estado')  ? 'true' : 'false' ?>;
     </script>
 
-    <script src="public/js/tablas/datatables_config.js"></script>
+    <script src="public/js/comun/datatables_config.js"></script>
     <?php if ($tabActiva === 'configuracion'): ?>
-      <script src="public/js/tablas/fichas_configuracion.js"></script>
+      <script src="public/js/fichas/fichas_configuracion.js"></script>
     <?php else: ?>
-      <script src="public/js/tablas/fichas_datatable.js?v=1.0"></script>
+      <script src="public/js/fichas/fichas_datatable.js?v=1.0"></script>
     <?php endif; ?>
   </body>
 </html>

@@ -90,7 +90,7 @@
                     <i class="bi ${config.icono}"></i>
                 </div>
                 <div class="flex-grow-1">
-                    <p class="notif-mensaje mb-0">${escapeHtml(notif.mensaje)}</p>
+                    <p class="notif-mensaje mb-0">${window.escapeHTML(notif.mensaje)}</p>
                     <span class="notif-tiempo"><i class="bi bi-clock me-1"></i>${tiempo}</span>
                 </div>
             `;
@@ -161,13 +161,6 @@
         if (diff < 3600)  return `Hace ${Math.floor(diff / 60)} min`;
         if (diff < 86400) return `Hace ${Math.floor(diff / 3600)} h`;
         return `Hace ${Math.floor(diff / 86400)} días`;
-    }
-
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>'"]/g, tag => ({
-            '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
-        }[tag] || tag));
     }
 
     // ================================================================

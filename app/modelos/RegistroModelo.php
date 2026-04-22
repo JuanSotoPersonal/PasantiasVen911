@@ -9,12 +9,12 @@ use Exception;
 require_once 'app/Config/Database.php';
 
 class RegistroModelo {
-    private $conn;
+    private $conexion;
 
     public function __construct() {
         try {
             $database = new Database();
-            $this->conn = $database->getConnection();
+            $this->conexion = $database->obtenerConexion();
         } catch (Exception $e) {
             error_log("[RegistroModelo] Error en constructor: " . $e->getMessage());
             die("Error de conexión a la base de datos.");
@@ -27,7 +27,7 @@ class RegistroModelo {
     public function obtenerPreguntasSeguridad(): array {
         try {
             $query = "SELECT id, pregunta FROM preguntas_seguridad ORDER BY id ASC";
-            $stmt = $this->conn->prepare($query);
+            $stmt = $this->conexion->prepare($query);
             $stmt->execute();
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (Exception $e) {
@@ -42,7 +42,7 @@ class RegistroModelo {
     public function validarLlaveActivacion(string $key): bool {
         try {
             $query = "SELECT COUNT(*) FROM configuracion_sistema WHERE llave_activacion = :key";
-            $stmt = $this->conn->prepare($query);
+            $stmt = $this->conexion->prepare($query);
             $stmt->bindParam(':key', $key, PDO::PARAM_STR);
             $stmt->execute();
             return (int)$stmt->fetchColumn() > 0;
@@ -58,7 +58,7 @@ class RegistroModelo {
     public function obtenerLlaveActivacion(): string {
         try {
             $query = "SELECT llave_activacion FROM configuracion_sistema LIMIT 1";
-            $stmt = $this->conn->prepare($query);
+            $stmt = $this->conexion->prepare($query);
             $stmt->execute();
             return (string)$stmt->fetchColumn();
         } catch (Exception $e) {
@@ -67,3 +67,4 @@ class RegistroModelo {
         }
     }
 }
+

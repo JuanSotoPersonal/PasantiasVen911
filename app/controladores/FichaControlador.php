@@ -26,6 +26,11 @@ class FichaControlador {
     // GET Muestra la vista principal del módulo de fichas
     //--------------------------------------------------------------------
     public function index(): void {
+        if (!tienePerm('fichas', 'ver')) {
+            header('Location: index.php?url=home');
+            exit;
+        }
+
         $tabActiva   = $_GET['t'] ?? 'todas';
         $usuarioId   = (int)$_SESSION['user_id'];
         $rolId       = (int)$_SESSION['user_rol_id'];

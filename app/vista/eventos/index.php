@@ -74,69 +74,30 @@
       </main>
       <!--fin::Principal de la Aplicación-->
 
-      <!-- MODAL PARA VER DETALLES (ESTILO VEN911) -->
-      <div class="modal fade" id="modalDetallesEvento" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-          <div class="modal-content border-0 shadow-lg">
-            <div class="modal-header modal-header-ven">
-              <h5 class="modal-title text-white">
-                <i class="bi bi-journal-text me-2"></i>Detalle de la Operación
-              </h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-              <div class="row">
-                <div class="col-md-6">
-                   <h6 class="fw-bold text-success"><i class="bi bi-arrow-down-circle-fill me-2"></i>Valor Anterior</h6>
-                   <div id="contentValorAnterior" class="p-3 bg-light border rounded json-container">
-                     <!-- JSON formateado -->
-                   </div>
-                </div>
-                <div class="col-md-6 mt-3 mt-md-0">
-                   <h6 class="fw-bold text-primary"><i class="bi bi-arrow-up-circle-fill me-2"></i>Valor Nuevo</h6>
-                   <div id="contentValorNuevo" class="p-3 bg-light border rounded json-container">
-                     <!-- JSON formateado -->
-                   </div>
-                </div>
-              </div>
-              <div class="mt-4">
-                 <h6 class="fw-bold text-secondary"><i class="bi bi-info-circle-fill me-2"></i>Descripción Adicional</h6>
-                 <div id="contentDetalles" class="p-3 bg-light border-start border-4 border-success rounded-end mt-1">
-                    <!-- Texto de detalles -->
-                 </div>
-              </div>
-            </div>
-            <div class="modal-footer border-0">
-               <button type="button" class="btn btn-ven-cancel" data-bs-dismiss="modal">Cerrar</button>
-            </div>
-          </div>
-        </div>
-      </div>
+
+      <!-- ============================================================
+           MODALES DEL MÓDULO
+           ============================================================ -->
+      <?php require __DIR__ . '/componentes/_modal_detalles.php'; ?>
 
     </div>
     <!--fin::Contenedor de la Aplicación-->
 
     <!--inicio::Scripts-->
-    <!--begin::Third Party Plugin(OverlayScrollbars)-->
-    <script src="public/libs/overlayscrollbars/overlayscrollbars.browser.es6.min.js"></script>
-    <!--begin::Required Plugin(popperjs for Bootstrap 5)-->
-    <script src="public/libs/popperjs/popper.min.js"></script>
-    <!--begin::Required Plugin(Bootstrap 5)-->
-    <script src="public/libs/bootstrap/bootstrap.min.js"></script>
-    <!--begin::Required Plugin(AdminLTE)-->
-    <script src="public/js/adminlte.js"></script>
-    <!-- jQuery (requerido por DataTables) -->
+    <!-- Scripts Globales -->
+    <?php require __DIR__ . '/../partials/scripts.php'; ?>
+
+    <!-- jQuery & DataTables (Específicos para este módulo) -->
     <script src="public/libs/datatables/jquery-3.7.1.min.js"></script>
-    <!-- DataTables -->
     <script src="public/libs/datatables/dataTables.min.js"></script>
     <script src="public/libs/datatables/dataTables.bootstrap5.min.js"></script>
 
     <!-- Lógica de la tabla de Logs -->
-    <script src="public/js/tablas/datatables_config.js"></script>
+    <script src="public/js/comun/datatables_config.js"></script>
     <?php if ($tabActiva === 'ficha'): ?>
-        <script src="public/js/tablas/eventos_fichas_datatable.js?v=1.0"></script>
+        <script src="public/js/eventos/eventos_fichas_datatable.js?v=1.0"></script>
     <?php else: ?>
-        <script src="public/js/tablas/eventos_datatable.js?v=1.1"></script>
+        <script src="public/js/eventos/eventos_datatable.js?v=1.1"></script>
     <?php endif; ?>
 
     <!--fin::Scripts-->

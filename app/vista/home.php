@@ -136,85 +136,22 @@
     </div>
     <!--fin::Contenedor de la Aplicación-->
 
-    <!--inicio::Script-->
-    <!--begin::Third Party Plugin(OverlayScrollbars)-->
-    <script src="public/libs/overlayscrollbars/overlayscrollbars.browser.es6.min.js"></script>
-    <!--end::Third Party Plugin(OverlayScrollbars)-->
-    <!--begin::Required Plugin(popperjs for Bootstrap 5)-->
-    <script src="public/libs/popperjs/popper.min.js"></script>
-    <!--end::Required Plugin(popperjs for Bootstrap 5)-->
-    <!--begin::Required Plugin(Bootstrap 5)-->
-    <script src="public/libs/bootstrap/bootstrap.min.js"></script>
-    <!--end::Required Plugin(Bootstrap 5)-->
-    <!--begin::Required Plugin(AdminLTE)-->
-    <script src="public/js/adminlte.js"></script>
-    <!--fin::Plugin Requerido(AdminLTE)-->
-
-    <!--inicio::Configuración de OverlayScrollbars-->
-    <script src="public/js/home_dashboard.js"></script>
-    <!--fin::Configuración de OverlayScrollbars-->
+    <!-- Scripts -->
+    <?php require __DIR__ . '/partials/scripts.php'; ?>
 
     <!-- Módulo de Notificaciones (SSE) -->
-    <script src="public/js/notificaciones.js"></script>
-    <!--fin::Notificaciones-->
+    <script src="public/js/comun/notificaciones.js"></script>
 
     <!-- ApexCharts -->
     <script src="public/libs/apexcharts/apexcharts.min.js"></script>
     
-    <!-- Script de la Gráfica de Usuarios -->
+    <!-- Exportar Datos a JS -->
     <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        const stats = <?php echo json_encode($datos); ?>;
-        
-        const options = {
-          series: [stats.activo, stats.inactivo],
-          chart: {
-            type: 'donut',
-            height: 350,
-            fontFamily: 'inherit'
-          },
-          labels: ['Activos', 'Inactivos'],
-          colors: ['#16a34a', '#dc2626'], // Verde corporativo y Rojo alerta
-          legend: {
-            position: 'bottom'
-          },
-          stroke: {
-            show: false
-          },
-          plotOptions: {
-            pie: {
-              donut: {
-                labels: {
-                  show: true,
-                  total: {
-                    show: true,
-                    label: 'Total Usuarios',
-                    color: '#064e3b',
-                    formatter: function (w) {
-                      return w.globals.seriesTotals.reduce((a, b) => a + b, 0)
-                    }
-                  }
-                }
-              }
-            }
-          },
-          responsive: [{
-            breakpoint: 480,
-            options: {
-              chart: {
-                width: 200
-              },
-              legend: {
-                position: 'bottom'
-              }
-            }
-          }]
-        };
-
-        const chart = new ApexCharts(document.querySelector("#usuariosChart"), options);
-        chart.render();
-      });
+      window.VENT911_STATS = <?php echo json_encode($datos); ?>;
     </script>
+    
+    <!-- Script de la Gráfica de Usuarios -->
+    <script src="public/js/home/home_graficas.js"></script>
 
     <!-- Agrega aquí los scripts específicos de tu página -->
     <!--fin::Script-->

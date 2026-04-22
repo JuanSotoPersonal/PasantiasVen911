@@ -27,6 +27,8 @@ $(function () {
         const isActivo = d === 'activo';
         const badgeClass = isActivo ? 'badge-activo' : 'badge-inactivo';
         const icon = isActivo ? 'bi-toggle-on' : 'bi-toggle-off';
+
+        // Si es SuperAdmin (id 1), el estado es estático por seguridad
         if (row.rol_id == 1) {
           return `
           <h3>
@@ -35,6 +37,18 @@ $(function () {
             </span>
           </h3>`;
         }
+
+        // Si NO tiene permiso de edición, mostramos el badge estático (sin botón)
+        if (!window.VEN911_PERM_EDITAR) {
+          return `
+          <h3>
+            <span class="badge badge-estado ${badgeClass}">
+              <i class="bi ${isActivo ? 'bi-check-circle-fill' : 'bi-x-circle-fill'} me-1"></i>${isActivo ? 'Activo' : 'Inactivo'}
+            </span>
+          </h3>`;
+        }
+
+        // Si tiene permiso, renderizamos el botón interactivo
         return `
           <button
             type="button"
@@ -55,56 +69,59 @@ $(function () {
       searchable: false,
       className: 'text-center',
       render: (d, type, row) => {
+        const htmlActions = [];
+
+        // CASO A: La fila es un Administrador (Rol 1)
         if (row.rol_id == 1) {
-          return `
+          // Icono estático de escudo
+          htmlActions.push(`
             <span class="btn-ven-edit btn-accion me-1 d-inline-flex align-items-center justify-content-center"
                   style="cursor: help; opacity: 0.9;" title="Administrador Protegido">
               <i class="bi bi-shield-lock-fill"></i>
             </span>
-            <button
-              type="button"
-              class="btn btn-ven-password btn-accion btn-password"
-              data-id="${row.id}"
-              data-nombre="${escapeHTML(row.nombre_completo)}"
-              title="Cambiar contraseña"
-            >
-              <i class="bi bi-key-fill"></i>
-            </button>
-            <button
-              type="button"
-              class="btn btn-ven-primary btn-accion btn-config-seguridad"
-              data-id="${row.id}"
-              data-nombre="${escapeHTML(row.nombre_completo)}"
-              title="Configurar Preguntas de Seguridad"
-            >
-              <i class="bi bi-shield-check"></i>
-            </button>
-          `;
+          `);
+
+          // Botón Password (Solo si el logueado es SuperAdmin O tiene permiso editar)
+          // Nota: Solo el SuperAdmin puede cambiar password de otro SuperAdmin usualmente
+          if (window.USER_ROL_ID === 1) {
+            htmlActions.push(`
+              <button type="button" class="btn btn-ven-password btn-accion btn-password"
+                data-id="${row.id}" data-nombre="${escapeHTML(row.nombre_completo)}" title="Cambiar contraseña">
+                <i class="bi bi-key-fill"></i>
+              </button>
+            `);
+            htmlActions.push(`
+              <button type="button" class="btn btn-ven-primary btn-accion btn-config-seguridad"
+                data-id="${row.id}" data-nombre="${escapeHTML(row.nombre_completo)}" title="Configurar Preguntas de Seguridad">
+                <i class="bi bi-shield-check"></i>
+              </button>
+            `);
+          }
+        } 
+        // CASO B: La fila es un usuario normal
+        else {
+          if (window.VEN911_PERM_EDITAR) {
+            htmlActions.push(`
+              <button type="button" class="btn btn-ven-edit btn-accion btn-editar me-1"
+                data-id="${row.id}" data-nombre="${escapeHTML(row.nombre_completo)}"
+                data-cedula="${escapeHTML(row.cedula || '')}" data-usuario="${escapeHTML(row.usuario)}"
+                data-rol="${row.rol_id}" data-id-rol="${row.rol_id}" title="Editar usuario">
+                <i class="bi bi-pencil-fill"></i>
+              </button>
+              <button type="button" class="btn btn-ven-password btn-accion btn-password"
+                data-id="${row.id}" data-nombre="${escapeHTML(row.nombre_completo)}" title="Cambiar contraseña">
+                <i class="bi bi-key-fill"></i>
+              </button>
+            `);
+          }
         }
-        return `
-          <button
-            type="button"
-            class="btn btn-ven-edit btn-accion btn-editar me-1"
-            data-id="${row.id}"
-            data-nombre="${escapeHTML(row.nombre_completo)}"
-            data-cedula="${escapeHTML(row.cedula || '')}"
-            data-usuario="${escapeHTML(row.usuario)}"
-            data-rol="${row.rol_id}"
-            data-id-rol="${row.rol_id}"
-            title="Editar usuario"
-          >
-            <i class="bi bi-pencil-fill"></i>
-          </button>
-          <button
-            type="button"
-            class="btn btn-ven-password btn-accion btn-password"
-            data-id="${row.id}"
-            data-nombre="${escapeHTML(row.nombre_completo)}"
-            title="Cambiar contraseña"
-          >
-            <i class="bi bi-key-fill"></i>
-          </button>
-        `;
+
+        // Si no se agregó nada (sin permisos), mostrar placeholder
+        if (htmlActions.length === 0) {
+          return '<span class="text-muted small italic"><i class="bi bi-lock-fill me-1"></i>Sin acceso</span>';
+        }
+
+        return htmlActions.join('');
       },
     },
   ];

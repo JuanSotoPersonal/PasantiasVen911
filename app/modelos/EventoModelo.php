@@ -9,13 +9,13 @@ require_once 'app/Config/Database.php';
 
 class EventoModelo {
 
-    private $conn;
+    private $conexion;
     private string $tabla_sistema = 'eventos_sistema';
     private string $tabla_fichas  = 'eventos_fichas';
 
     public function __construct() {
         $database = new Database();
-        $this->conn = $database->getConnection();
+        $this->conexion = $database->obtenerConexion();
     }
 
     //--------------------------------------------------------------------
@@ -44,7 +44,7 @@ class EventoModelo {
                       VALUES
                         (:usuario_id, :tipo_accion, :tabla, :registro_id, :anterior, :nuevo, :descripcion)";
 
-            $stmt = $this->conn->prepare($query);
+            $stmt = $this->conexion->prepare($query);
             $stmt->bindValue(':usuario_id',  $usuario_id,  $usuario_id !== null ? PDO::PARAM_INT : PDO::PARAM_NULL);
             $stmt->bindValue(':tipo_accion', $tipo_accion, PDO::PARAM_STR);
             $stmt->bindValue(':tabla',       $tabla,       PDO::PARAM_STR);
@@ -87,7 +87,7 @@ class EventoModelo {
                       VALUES
                         (:ficha_id, :usuario_id, :tipo_evento, :estado_anterior, :estado_nuevo, :anterior, :nuevo, :descripcion)";
 
-            $stmt = $this->conn->prepare($query);
+            $stmt = $this->conexion->prepare($query);
             $stmt->bindValue(':ficha_id',        $ficha_id,       PDO::PARAM_INT);
             $stmt->bindValue(':usuario_id',      $usuario_id,     $usuario_id !== null ? PDO::PARAM_INT : PDO::PARAM_NULL);
             $stmt->bindValue(':tipo_evento',     $tipo_evento,    PDO::PARAM_STR);
@@ -146,7 +146,7 @@ class EventoModelo {
                       ORDER BY {$columnaOrden} {$dirOrden}
                       LIMIT :cantidad OFFSET :inicio";
 
-            $stmt = $this->conn->prepare($query);
+            $stmt = $this->conexion->prepare($query);
             $stmt->bindValue(':busqueda', $busqueda,     PDO::PARAM_STR);
             $stmt->bindValue(':b1',       $busquedaLike, PDO::PARAM_STR);
             $stmt->bindValue(':b2',       $busquedaLike, PDO::PARAM_STR);
@@ -167,7 +167,7 @@ class EventoModelo {
     //--------------------------------------------------------------------
     public function contarTodos(): int {
         try {
-            $stmt = $this->conn->prepare("SELECT COUNT(*) FROM {$this->tabla_sistema}");
+            $stmt = $this->conexion->prepare("SELECT COUNT(*) FROM {$this->tabla_sistema}");
             $stmt->execute();
             return (int)$stmt->fetchColumn();
         } catch (\Exception $e) {
@@ -191,7 +191,7 @@ class EventoModelo {
                           OR u.usuario         LIKE :b3
                           OR e.descripcion     LIKE :b4
                       )";
-            $stmt = $this->conn->prepare($query);
+            $stmt = $this->conexion->prepare($query);
             $stmt->bindValue(':busqueda', $busqueda,     PDO::PARAM_STR);
             $stmt->bindValue(':b1',       $busquedaLike, PDO::PARAM_STR);
             $stmt->bindValue(':b2',       $busquedaLike, PDO::PARAM_STR);
@@ -218,8 +218,8 @@ class EventoModelo {
                       LEFT JOIN usuarios u ON ef.usuario_id = u.id
                       WHERE ef.ficha_id = :ficha_id
                       ORDER BY ef.fecha ASC";
-            $stmt = $this->conn->prepare($query);
-            $stmt->bindParam(':ficha_id', $ficha_id, PDO::PARAM_INT);
+            $stmt = $this->conexion->prepare($query);
+            $stmt->bindValue(':ficha_id', $ficha_id, PDO::PARAM_INT);
             $stmt->execute();
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (\Exception $e) {
@@ -261,7 +261,7 @@ class EventoModelo {
                       ORDER BY {$columnaOrden} {$dirOrden}
                       LIMIT :cantidad OFFSET :inicio";
 
-            $stmt = $this->conn->prepare($query);
+            $stmt = $this->conexion->prepare($query);
             $stmt->bindValue(':busqueda', $busqueda,     PDO::PARAM_STR);
             $stmt->bindValue(':b1',       $busquedaLike, PDO::PARAM_STR);
             $stmt->bindValue(':b2',       $busquedaLike, PDO::PARAM_STR);
@@ -284,7 +284,7 @@ class EventoModelo {
     //--------------------------------------------------------------------
     public function contarTodosFichas(): int {
         try {
-            $stmt = $this->conn->prepare("SELECT COUNT(*) FROM {$this->tabla_fichas}");
+            $stmt = $this->conexion->prepare("SELECT COUNT(*) FROM {$this->tabla_fichas}");
             $stmt->execute();
             return (int)$stmt->fetchColumn();
         } catch (\Exception $e) {
@@ -310,7 +310,7 @@ class EventoModelo {
                           OR ef.descripcion      LIKE :b5
                           OR ef.ficha_id         LIKE :b6
                       )";
-            $stmt = $this->conn->prepare($query);
+            $stmt = $this->conexion->prepare($query);
             $stmt->bindValue(':busqueda', $busqueda,     PDO::PARAM_STR);
             $stmt->bindValue(':b1',       $busquedaLike, PDO::PARAM_STR);
             $stmt->bindValue(':b2',       $busquedaLike, PDO::PARAM_STR);
@@ -351,9 +351,9 @@ class EventoModelo {
                       WHERE ef.usuario_id = :uid2
                       ORDER BY fecha DESC";
 
-            $stmt = $this->conn->prepare($query);
-            $stmt->bindParam(':uid1', $usuario_id, PDO::PARAM_INT);
-            $stmt->bindParam(':uid2', $usuario_id, PDO::PARAM_INT);
+            $stmt = $this->conexion->prepare($query);
+            $stmt->bindValue(':uid1', $usuario_id, PDO::PARAM_INT);
+            $stmt->bindValue(':uid2', $usuario_id, PDO::PARAM_INT);
             $stmt->execute();
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (\Exception $e) {
@@ -362,3 +362,4 @@ class EventoModelo {
         }
     }
 }
+

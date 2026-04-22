@@ -67,53 +67,7 @@
   </div>
 
   <!-- Scripts -->
- <?php
-/**
- * Partial: Scripts globales
- * Utiliza la variable $pageName para cargar condicionalmente los JS
- */
-$pageName = $pageName ?? 'home';
-?>
-<!-- SweetAlert2 (Para notificaciones comunes) -->
-<script src="public/libs/sweetalert2/sweetalert2.min.js"></script>
-
-<?php if ($pageName === 'login'): ?>
-  <!-- Scripts exclusivos del Login -->
-  <script src="public/js/login.js"></script>
-<?php else: ?>
-  <!-- Scripts exclusivos del Dashboard / Sistema -->
-  <script src="public/libs/overlayscrollbars/overlayscrollbars.browser.es6.min.js"></script>
-  <script src="public/libs/popperjs/popper.min.js"></script>
-  <script src="public/libs/bootstrap/bootstrap.min.js"></script>
-  <script src="public/js/adminlte.js"></script>
-
-  <!-- Configuración de Scrollbars -->
-  <script>
-    const SELECTOR_SIDEBAR_WRAPPER = '.sidebar-wrapper';
-    const Default = {
-      scrollbarTheme: 'os-theme-light',
-      scrollbarAutoHide: 'leave',
-      scrollbarClickScroll: true,
-    };
-    document.addEventListener('DOMContentLoaded', function () {
-      const sidebarWrapper = document.querySelector(SELECTOR_SIDEBAR_WRAPPER);
-      const isMobile = window.innerWidth <= 992;
-      if (
-        sidebarWrapper &&
-        OverlayScrollbarsGlobal?.OverlayScrollbars !== undefined &&
-        !isMobile
-      ) {
-        OverlayScrollbarsGlobal.OverlayScrollbars(sidebarWrapper, {
-          scrollbars: {
-            theme: Default.scrollbarTheme,
-            autoHide: Default.scrollbarAutoHide,
-            clickScroll: Default.scrollbarClickScroll,
-          },
-        });
-      }
-    });
-  </script>
-<?php endif; ?>
+  <?php require __DIR__ . '/partials/scripts.php'; ?>
 
 </body>
 </html>

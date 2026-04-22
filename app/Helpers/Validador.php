@@ -118,7 +118,7 @@ class Validador {
             return ['valido' => false, 'mensaje' => 'Las respuestas de seguridad no pueden exceder los 128 caracteres.'];
         }
         
-        if (!preg_match('/^[a-zA-Z0-9 ]+$/', $respuesta)) {
+        if (!preg_match('/^[a-zA-Z0-9 áéíóúÁÉÍÓÚñÑ]+$/', $respuesta)) {
             return ['valido' => false, 'mensaje' => 'Las respuestas de seguridad solo pueden contener letras, números y espacios.'];
         }
         

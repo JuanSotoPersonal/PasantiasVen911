@@ -9,16 +9,16 @@ use Exception;
 require_once 'app/Config/Database.php';
 
 class UsuarioModelo {
-    private $conn;
+    private $conexion;
     private $table_name = "usuarios";
 
     public function __construct() {
         try {
             $database = new Database();
-            $this->conn = $database->getConnection();
+            $this->conexion = $database->obtenerConexion();
         } catch (Exception $e) {
             error_log("[UsuarioModelo] Error en constructor: " . $e->getMessage());
-            die("Error de conexión a la base de datos.");
+            throw new Exception("Error de conexión a la base de datos.");
         }
     }
 
@@ -34,8 +34,8 @@ class UsuarioModelo {
                       WHERE u.estado = :estado
                       ORDER BY u.id ASC";
 
-            $stmt = $this->conn->prepare($query);
-            $stmt->bindParam(':estado', $estado, PDO::PARAM_STR);
+            $stmt = $this->conexion->prepare($query);
+            $stmt->bindValue(':estado', $estado, PDO::PARAM_STR);
             $stmt->execute();
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (Exception $e) {
@@ -74,7 +74,7 @@ class UsuarioModelo {
                       ORDER BY {$columnaOrden} {$dirOrden}
                       LIMIT :cantidad OFFSET :inicio";
 
-            $stmt = $this->conn->prepare($query);
+            $stmt = $this->conexion->prepare($query);
             $stmt->bindValue(':rol_id',   $rolId,        PDO::PARAM_INT);
             $stmt->bindValue(':estado',   $estado,       PDO::PARAM_STR);
             $stmt->bindValue(':busqueda', $busqueda,     PDO::PARAM_STR);
@@ -96,7 +96,7 @@ class UsuarioModelo {
     //--------------------------------------------------------------------
     public function contarPorRol(int $rolId, string $estado = 'activo'): int {
         try {
-            $stmt = $this->conn->prepare(
+            $stmt = $this->conexion->prepare(
                 "SELECT COUNT(*) FROM {$this->table_name}
                  WHERE rol_id = :rol_id AND estado = :estado"
             );
@@ -123,7 +123,7 @@ class UsuarioModelo {
                           OR u.usuario         LIKE :b2
                           OR u.cedula          LIKE :b3
                         )";
-            $stmt = $this->conn->prepare($query);
+            $stmt = $this->conexion->prepare($query);
             $stmt->bindValue(':rol_id',   $rolId,        PDO::PARAM_INT);
             $stmt->bindValue(':estado',   $estado,       PDO::PARAM_STR);
             $stmt->bindValue(':busqueda', $busqueda,     PDO::PARAM_STR);
@@ -149,7 +149,7 @@ class UsuarioModelo {
                       WHERE u.id = :id
                       LIMIT 1";
 
-            $stmt = $this->conn->prepare($query);
+            $stmt = $this->conexion->prepare($query);
             $stmt->bindParam(':id', $id, PDO::PARAM_INT);
             $stmt->execute();
             return $stmt->fetch(PDO::FETCH_ASSOC);
@@ -167,9 +167,9 @@ class UsuarioModelo {
             $query = "SELECT COUNT(*) FROM {$this->table_name}
                       WHERE usuario = :usuario AND id != :exclude_id";
 
-            $stmt = $this->conn->prepare($query);
-            $stmt->bindParam(':usuario', $usuario, PDO::PARAM_STR);
-            $stmt->bindParam(':exclude_id', $excludeId, PDO::PARAM_INT);
+            $stmt = $this->conexion->prepare($query);
+            $stmt->bindValue(':usuario',    $usuario,   PDO::PARAM_STR);
+            $stmt->bindValue(':exclude_id', $excludeId, PDO::PARAM_INT);
             $stmt->execute();
             return (int)$stmt->fetchColumn() > 0;
         } catch (Exception $e) {
@@ -187,9 +187,9 @@ class UsuarioModelo {
             $query = "SELECT COUNT(*) FROM {$this->table_name}
                       WHERE cedula = :cedula AND id != :exclude_id";
 
-            $stmt = $this->conn->prepare($query);
-            $stmt->bindParam(':cedula',     $cedula,    PDO::PARAM_STR);
-            $stmt->bindParam(':exclude_id', $excludeId, PDO::PARAM_INT);
+            $stmt = $this->conexion->prepare($query);
+            $stmt->bindValue(':cedula',     $cedula,    PDO::PARAM_STR);
+            $stmt->bindValue(':exclude_id', $excludeId, PDO::PARAM_INT);
             $stmt->execute();
             return (int)$stmt->fetchColumn() > 0;
         } catch (Exception $e) {
@@ -210,7 +210,7 @@ class UsuarioModelo {
                         (:usuario, :password, :nombre_completo, :cedula, :rol_id, :estado,
                          :p1, :p2, :r1, :r2)";
 
-            $stmt = $this->conn->prepare($query);
+            $stmt = $this->conexion->prepare($query);
             $stmt->bindValue(':usuario',         $datos['usuario'],         PDO::PARAM_STR);
             $stmt->bindValue(':password',        $datos['password'],        PDO::PARAM_STR);
             $stmt->bindValue(':nombre_completo', $datos['nombre_completo'], PDO::PARAM_STR);
@@ -243,7 +243,7 @@ class UsuarioModelo {
                           rol_id          = :rol_id
                       WHERE id = :id";
 
-            $stmt = $this->conn->prepare($query);
+            $stmt = $this->conexion->prepare($query);
             $stmt->bindValue(':nombre_completo', $datos['nombre_completo'], PDO::PARAM_STR);
             $stmt->bindValue(':cedula',          $datos['cedula'],          $datos['cedula'] ? PDO::PARAM_STR : PDO::PARAM_NULL);
             $stmt->bindValue(':usuario',         $datos['usuario'],         PDO::PARAM_STR);
@@ -263,9 +263,9 @@ class UsuarioModelo {
         try {
             $query = "UPDATE {$this->table_name} SET password = :password WHERE id = :id";
 
-            $stmt = $this->conn->prepare($query);
-            $stmt->bindParam(':password', $contrasenaHasheada, PDO::PARAM_STR);
-            $stmt->bindParam(':id',       $id,             PDO::PARAM_INT);
+            $stmt = $this->conexion->prepare($query);
+            $stmt->bindValue(':password', $contrasenaHasheada, PDO::PARAM_STR);
+            $stmt->bindValue(':id',       $id,                 PDO::PARAM_INT);
             return $stmt->execute();
         } catch (Exception $e) {
             error_log("[UsuarioModelo] Error en actualizarContrasena: " . $e->getMessage());
@@ -280,8 +280,8 @@ class UsuarioModelo {
         try {
             // Primero obtenemos el estado actual
             $query = "SELECT estado FROM {$this->table_name} WHERE id = :id LIMIT 1";
-            $stmt  = $this->conn->prepare($query);
-            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+            $stmt  = $this->conexion->prepare($query);
+            $stmt->bindValue(':id', $id, PDO::PARAM_INT);
             $stmt->execute();
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -290,9 +290,9 @@ class UsuarioModelo {
             $nuevoEstado = ($row['estado'] === 'activo') ? 'inactivo' : 'activo';
 
             $update = "UPDATE {$this->table_name} SET estado = :estado WHERE id = :id";
-            $stmt2  = $this->conn->prepare($update);
-            $stmt2->bindParam(':estado', $nuevoEstado, PDO::PARAM_STR);
-            $stmt2->bindParam(':id',     $id,          PDO::PARAM_INT);
+            $stmt2  = $this->conexion->prepare($update);
+            $stmt2->bindValue(':estado', $nuevoEstado, PDO::PARAM_STR);
+            $stmt2->bindValue(':id',     $id,          PDO::PARAM_INT);
             $stmt2->execute();
 
             return ['nuevo_estado' => $nuevoEstado];
@@ -307,7 +307,7 @@ class UsuarioModelo {
     //--------------------------------------------------------------------
     public function obtenerRoles(): array {
         try {
-            $stmt = $this->conn->prepare("SELECT id, nombre FROM roles ORDER BY id ASC");
+            $stmt = $this->conexion->prepare("SELECT id, nombre FROM roles ORDER BY id ASC");
             $stmt->execute();
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (Exception $e) {
@@ -322,8 +322,8 @@ class UsuarioModelo {
     public function verificarRespuestasSeguridad(int $id, string $ans1, string $ans2): bool {
         try {
             $query = "SELECT respuesta_1, respuesta_2 FROM {$this->table_name} WHERE id = :id";
-            $stmt = $this->conn->prepare($query);
-            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+            $stmt = $this->conexion->prepare($query);
+            $stmt->bindValue(':id', $id, PDO::PARAM_INT);
             $stmt->execute();
             $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -348,7 +348,7 @@ class UsuarioModelo {
                       JOIN preguntas_seguridad p1 ON u.pregunta_1_id = p1.id
                       JOIN preguntas_seguridad p2 ON u.pregunta_2_id = p2.id
                       WHERE u.id = :id";
-            $stmt = $this->conn->prepare($query);
+            $stmt = $this->conexion->prepare($query);
             $stmt->bindParam(':id', $id, PDO::PARAM_INT);
             $stmt->execute();
             return $stmt->fetch(PDO::FETCH_ASSOC);
@@ -369,8 +369,8 @@ class UsuarioModelo {
                       WHERE u.usuario = :usuario AND u.estado = 'activo'
                       LIMIT 1";
                       
-            $stmt = $this->conn->prepare($query);
-            $stmt->bindParam(':usuario', $nombreUsuario, PDO::PARAM_STR);
+            $stmt = $this->conexion->prepare($query);
+            $stmt->bindValue(':usuario', $nombreUsuario, PDO::PARAM_STR);
             $stmt->execute();
             return $stmt->fetch(PDO::FETCH_ASSOC);
         } catch (Exception $e) {
@@ -385,7 +385,7 @@ class UsuarioModelo {
     public function contarUsuarios(): int {
         try {
             $query = "SELECT COUNT(*) FROM {$this->table_name}";
-            $stmt = $this->conn->prepare($query);
+            $stmt = $this->conexion->prepare($query);
             $stmt->execute();
             return (int)$stmt->fetchColumn();
         } catch (Exception $e) {
@@ -403,7 +403,7 @@ class UsuarioModelo {
                     SET pregunta_1_id = :p1, pregunta_2_id = :p2, 
                         respuesta_1 = :r1, respuesta_2 = :r2 
                     WHERE id = :id";
-            $stmt = $this->conn->prepare($sql);
+            $stmt = $this->conexion->prepare($sql);
             $stmt->bindValue(':p1', $datos['pregunta_1_id'], PDO::PARAM_INT);
             $stmt->bindValue(':p2', $datos['pregunta_2_id'], PDO::PARAM_INT);
             $stmt->bindValue(':r1', $datos['respuesta_1'], PDO::PARAM_STR);
@@ -424,7 +424,7 @@ class UsuarioModelo {
             $query = "SELECT estado, COUNT(*) as total 
                       FROM {$this->table_name} 
                       GROUP BY estado";
-            $stmt = $this->conn->prepare($query);
+            $stmt = $this->conexion->prepare($query);
             $stmt->execute();
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (Exception $e) {
@@ -446,7 +446,7 @@ class UsuarioModelo {
                       JOIN modulos  m  ON p.modulo_id   = m.id
                       WHERE rp.rol_id = :rol_id";
 
-            $stmt = $this->conn->prepare($query);
+            $stmt = $this->conexion->prepare($query);
             $stmt->bindParam(':rol_id', $rolId, PDO::PARAM_INT);
             $stmt->execute();
             $filas = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -510,7 +510,7 @@ class UsuarioModelo {
                       ORDER BY {$columnaOrden} {$dirOrden}
                       LIMIT :cantidad OFFSET :inicio";
 
-            $stmt = $this->conn->prepare($query);
+            $stmt = $this->conexion->prepare($query);
             if ($estado !== 'todos') {
                 $stmt->bindValue(':estado', $estado, PDO::PARAM_STR);
             }
@@ -535,7 +535,7 @@ class UsuarioModelo {
     public function contarTodosUsuarios(string $estado = 'activo'): int {
         try {
             $condicionEstado = ($estado === 'todos') ? '' : 'WHERE estado = :estado';
-            $stmt = $this->conn->prepare(
+            $stmt = $this->conexion->prepare(
                 "SELECT COUNT(*) FROM {$this->table_name} {$condicionEstado}"
             );
             if ($estado !== 'todos') {
@@ -566,7 +566,7 @@ class UsuarioModelo {
                           OR u.cedula          LIKE :b3
                           OR r.nombre          LIKE :b4
                         )";
-            $stmt = $this->conn->prepare($query);
+            $stmt = $this->conexion->prepare($query);
             if ($estado !== 'todos') {
                 $stmt->bindValue(':estado', $estado, PDO::PARAM_STR);
             }
@@ -583,3 +583,4 @@ class UsuarioModelo {
         }
     }
 }
+

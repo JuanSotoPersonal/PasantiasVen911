@@ -53,8 +53,8 @@ class RegistroControlador {
         }
 
         // Validación de Código de Fábrica
-        $codigoFabrica = trim($_POST['factory_code'] ?? '');
-        if (!$this->registroModelo->validarLlaveActivacion($codigoFabrica)) {
+        $codigo_fabrica = trim($_POST['factory_code'] ?? '');
+        if (!$this->registroModelo->validarLlaveActivacion($codigo_fabrica)) {
             echo json_encode(['success' => false, 'message' => 'Código de activación de sistema inválido.']);
             return;
         }

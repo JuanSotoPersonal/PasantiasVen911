@@ -5,15 +5,17 @@
     </h3>
     <div class="card-tools ms-auto d-flex align-items-center">
       <span class="badge bg-success fs-6 me-3" id="badge-count-total">— usuarios</span>
-      <button
-        type="button"
-        class="btn btn-ven-primary btn-sm"
-        id="btn-abrir-modal-crear"
-        data-bs-toggle="modal"
-        data-bs-target="#modalCrearUsuario"
-      >
-        <i class="bi bi-person-plus-fill me-1"></i> Agregar Usuario
-      </button>
+      <?php if (tienePerm('usuarios', 'crear')): ?>
+        <button
+          type="button"
+          class="btn btn-ven-primary btn-sm"
+          id="btn-abrir-modal-crear"
+          data-bs-toggle="modal"
+          data-bs-target="#modalCrearUsuario"
+        >
+          <i class="bi bi-person-plus-fill me-1"></i> Agregar Usuario
+        </button>
+      <?php endif; ?>
     </div>
   </div>
   <div class="card-body">

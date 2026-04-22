@@ -228,8 +228,8 @@ class UsuarioControlador {
         ];
         
         if ($this->modelo->crear($datos)) {
-            $adminId = (int)$_SESSION['user_id'];
-            $this->log->registrarEvento($adminId, 'INSERT', 'usuarios', null, null, [
+            $admin_id = (int)$_SESSION['user_id'];
+            $this->log->registrarEvento($admin_id, 'INSERT', 'usuarios', null, null, [
                 'usuario' => $usuario, 
                 'nombre_completo' => $nombreCompleto, 
                 'cedula' => $cedula, 
@@ -322,8 +322,8 @@ class UsuarioControlador {
         ];
 
         if ($this->modelo->actualizarInformacion($id, $datos)) {
-            $adminId = (int)$_SESSION['user_id'];
-            $this->log->registrarEvento($adminId, 'UPDATE', 'usuarios', $id, 
+            $admin_id = (int)$_SESSION['user_id'];
+            $this->log->registrarEvento($admin_id, 'UPDATE', 'usuarios', $id, 
                 $usuarioAnterior ? [
                     'usuario'         => $usuarioAnterior['usuario'],
                     'nombre_completo' => $usuarioAnterior['nombre_completo'],
@@ -384,27 +384,27 @@ class UsuarioControlador {
 
         // EXTRA: Verificación de Seguridad para SuperAdmin
         if ($usuarioAnterior && (int)$usuarioAnterior['rol_id'] === 1) {
-            $ans1 = trim($_POST['ans_1'] ?? '');
-            $ans2 = trim($_POST['ans_2'] ?? '');
+            $res1 = trim($_POST['ans_1'] ?? '');
+            $res2 = trim($_POST['ans_2'] ?? '');
             
-            if (empty($ans1) || empty($ans2)) {
+            if (empty($res1) || empty($res2)) {
                 echo json_encode(['success' => false, 'message' => 'Debes responder las preguntas de seguridad.']);
                 return;
             }
 
-            if (!$this->modelo->verificarRespuestasSeguridad($id, $ans1, $ans2)) {
+            if (!$this->modelo->verificarRespuestasSeguridad($id, $res1, $res2)) {
                 echo json_encode(['success' => false, 'message' => 'Respuestas de seguridad incorrectas. Acceso denegado.']);
                 return;
             }
         }
 
         // Encriptar la nueva contraseña
-        $hasheada = password_hash($nuevaContrasena, PASSWORD_DEFAULT);
+        $contrasena_hash = password_hash($nuevaContrasena, PASSWORD_DEFAULT);
 
         //actualizacion de contraseña
-        if ($this->modelo->actualizarContrasena($id, $hasheada)) {
-            $adminId = (int)$_SESSION['user_id'];
-            $this->log->registrarEvento($adminId, 'UPDATE', 'usuarios', $id, 
+        if ($this->modelo->actualizarContrasena($id, $contrasena_hash)) {
+            $admin_id = (int)$_SESSION['user_id'];
+            $this->log->registrarEvento($admin_id, 'UPDATE', 'usuarios', $id, 
                 $usuarioAnterior ? [
                     'usuario'         => $usuarioAnterior['usuario'],
                     'nombre_completo' => $usuarioAnterior['nombre_completo']
@@ -462,9 +462,9 @@ class UsuarioControlador {
         $resultado = $this->modelo->alternarEstado($id);
         //validacion de que el estado se haya actualizado correctamente
         if ($resultado !== false) {
-            $adminId     = (int)$_SESSION['user_id'];
+            $admin_id    = (int)$_SESSION['user_id'];
             $nuevoEstado = $resultado['nuevo_estado'];
-            $this->log->registrarEvento($adminId, 'CAMBIO_ESTADO', 'usuarios', $id, 
+            $this->log->registrarEvento($admin_id, 'CAMBIO_ESTADO', 'usuarios', $id, 
                 ['estado' => $estadoAnterior], 
                 ['estado' => $nuevoEstado], 
                 "Usuario ID {$id} cambiado a '{$nuevoEstado}'."
@@ -547,8 +547,8 @@ class UsuarioControlador {
 
         // Ahora usamos el método unificado en el modelo
         if ($this->modelo->actualizarCamposSeguridad($id, $datos)) {
-            $adminId = (int)$_SESSION['user_id'];
-            $this->log->registrarEvento($adminId, 'UPDATE', 'usuarios', $id, null, null, "Preguntas de seguridad del usuario ID {$id} actualizadas.");
+            $admin_id = (int)$_SESSION['user_id'];
+            $this->log->registrarEvento($admin_id, 'UPDATE', 'usuarios', $id, null, null, "Preguntas de seguridad del usuario ID {$id} actualizadas.");
             echo json_encode(['success' => true, 'message' => 'Preguntas de seguridad actualizadas correctamente.']);
         } else {
             echo json_encode(['success' => false, 'message' => 'Error al actualizar las preguntas.']);

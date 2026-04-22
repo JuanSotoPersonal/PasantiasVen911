@@ -11,6 +11,9 @@ Denegación por Defecto: Configura el sistema para que bloquee todo acceso a men
 
 Gestión de Sesiones Segura: Genera IDs de sesión complejos, usa `session_regenerate_id(true)` tras el login y registra los eventos de auditoría (LOGIN/LOGOUT).
 
+Protección Modular de Vistas: Todas las inclusiones de componentes modulares (`require`) en las vistas deben estar estrictamente envueltas en condicionales `tienePerm()`. Adicionalmente, se deben exportar los permisos necesarios al objeto global `window` de JavaScript para que la interfaz (DataTables, botones de acción) oculte dinámicamente las funciones no autorizadas, garantizando que el cliente no pueda disparar acciones para las que no tiene código cargado ni permiso otorgado.
+
+
 💉 2. Validación y Manejo de Datos (Frontera Estricta)
 Validación en el Servidor (INERCIA CERO): Todo el peso de las validaciones recae absolutamente sobre el lado del Servidor. NUNCA apliques validaciones nativas obstructivas en el Frontend (como atributos HTML `minlength`, `maxlength` o `required`). 
 

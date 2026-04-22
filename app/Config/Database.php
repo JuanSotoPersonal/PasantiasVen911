@@ -6,34 +6,35 @@ use PDO;
 use PDOException;
 
 class Database {
-    private $host = "localhost";
-    private $db_name = "ficha_ven_911";
-    private $username = "root";
-    private $password = "";
-    private $conn;
+    private $servidor   = "localhost";
+    private $nombre_bd  = "ficha_ven_911";
+    private $usuario    = "root";
+    private $contrasena = "";
+    private $conexion;
 
     /**
      * Obtiene la conexión a la base de datos mediante PDO.
      *
-     * @return PDO|null
+     * @return PDO
+     * @throws \Exception Si falla la conexión
      */
-    public function getConnection() {
-        $this->conn = null;
+    public function obtenerConexion() {
+        $this->conexion = null;
 
         try {
-            $dsn = "mysql:host=" . $this->host . ";dbname=" . $this->db_name . ";charset=utf8mb4";
-            $options = [
+            $dsn = "mysql:host=" . $this->servidor . ";dbname=" . $this->nombre_bd . ";charset=utf8mb4";
+            $opciones = [
                 PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION, 
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,       
                 PDO::ATTR_EMULATE_PREPARES   => false,                  
             ];
-            $this->conn = new PDO($dsn, $this->username, $this->password, $options);
+            $this->conexion = new PDO($dsn, $this->usuario, $this->contrasena, $opciones);
             
-        } catch(PDOException $exception) {
-            error_log("Database connection error: " . $exception->getMessage());
-            die("Error de conexión a la base de datos.");
+        } catch(PDOException $e) {
+            error_log("[Database] Error de conexión: " . $e->getMessage());
+            throw new \Exception("Error de conexión a la base de datos.");
         }
 
-        return $this->conn;
+        return $this->conexion;
     }
 }

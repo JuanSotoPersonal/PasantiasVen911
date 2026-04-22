@@ -37,7 +37,7 @@
 
       <?php if (tienePerm('historial', 'ver')): ?>
         <li class="nav-item d-none d-md-block">
-          <a href="index.php?url=log" class="nav-link">
+          <a href="index.php?url=evento" class="nav-link">
             <i class="bi bi-clock-history me-1"></i>Historial
           </a>
         </li>

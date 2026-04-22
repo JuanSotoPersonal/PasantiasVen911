@@ -210,21 +210,29 @@ h1, h2, h3, h4, h5, h6, .brand-text {
   background-color: #042f24 !important;
   display: flex !important;
   flex-direction: column !important;
-  min-height: 100vh !important;
-  height: 100% !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
+  width: 280px !important; /* Incrementado para evitar scroll horizontal */
+  position: sticky !important;
+  top: 0;
+  overflow-x: hidden !important;
+  overflow-y: hidden !important;
 }
 
 .sidebar-wrapper {
   display: flex !important;
   flex-direction: column !important;
   flex: 1 !important;
-  overflow: hidden !important;
+  overflow-x: hidden !important;
+  overflow-y: hidden !important;
   background-color: transparent !important;
+  min-height: 0 !important;
+  width: 100% !important;
 }
 
 /* Solo esta área hace scroll */
 .sidebar-scroll-area {
-  flex: 1 !important;
+  flex: 1 1 auto !important;
   overflow-x: hidden !important;
   overflow-y: auto !important;
   min-height: 0 !important;
@@ -236,8 +244,10 @@ h1, h2, h3, h4, h5, h6, .brand-text {
 
 /* Bloque inferior siempre pegado al fondo del sidebar */
 .sidebar-sticky-footer {
+  margin-top: auto !important;
   flex-shrink: 0 !important;
   background-color: #042f24;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .sidebar-footer-nav {

@@ -10,11 +10,11 @@ require_once 'app/Config/Database.php';
 
 class FichaModelo {
 
-    private $conn;
+    private $conexion;
 
     public function __construct() {
         $database = new Database();
-        $this->conn = $database->getConnection();
+        $this->conexion = $database->obtenerConexion();
     }
 
     // ================================================================
@@ -93,7 +93,7 @@ class FichaModelo {
                       ORDER BY {$columnaOrden} {$dirOrden}
                       LIMIT :cantidad OFFSET :inicio";
 
-            $stmt = $this->conn->prepare($query);
+            $stmt = $this->conexion->prepare($query);
             if ($estado !== 'todos') {
                 $stmt->bindValue(':estado', $estado, PDO::PARAM_STR);
             }
@@ -128,7 +128,7 @@ class FichaModelo {
             }
             $where = implode(' AND ', $condiciones);
 
-            $stmt = $this->conn->prepare(
+            $stmt = $this->conexion->prepare(
                 "SELECT COUNT(*) FROM fichas_emergencia f WHERE {$where}"
             );
             if ($estado !== 'todos') {
@@ -168,7 +168,7 @@ class FichaModelo {
                           OR p.nombre_parroquia LIKE :b5
                           OR f.estado_ficha  LIKE :b6
                         )";
-            $stmt = $this->conn->prepare($query);
+            $stmt = $this->conexion->prepare($query);
             if ($estado !== 'todos') $stmt->bindValue(':estado', $estado, PDO::PARAM_STR);
             if ($rolId == 2 && $usuarioId > 0) $stmt->bindValue(':id_user', $usuarioId, PDO::PARAM_INT);
             $stmt->bindValue(':busqueda', $busqueda,     PDO::PARAM_STR);
@@ -206,7 +206,7 @@ class FichaModelo {
                       INNER JOIN parroquias         p          ON f.parroquia_id   = p.id
                       INNER JOIN municipios         m          ON p.municipio_id   = m.id
                       WHERE f.id = :id LIMIT 1";
-            $stmt = $this->conn->prepare($query);
+            $stmt = $this->conexion->prepare($query);
             $stmt->bindValue(':id', $id, PDO::PARAM_INT);
             $stmt->execute();
             return $stmt->fetch(PDO::FETCH_ASSOC);
@@ -218,12 +218,12 @@ class FichaModelo {
 
     public function crear(array $datos): int|false {
         try {
-            $this->conn->beginTransaction();
+            $this->conexion->beginTransaction();
 
             // 1. Upsert del solicitante por cédula
             $solicitanteId = $this->guardarSolicitante($datos);
             if (!$solicitanteId) {
-                $this->conn->rollBack();
+                $this->conexion->rollBack();
                 return false;
             }
 
@@ -232,7 +232,7 @@ class FichaModelo {
                         (parroquia_id, direccion_exacta, caso_id, descripcion_caso, solicitante_id, id_user, estado_ficha)
                       VALUES
                         (:parroquia_id, :direccion, :caso_id, :descripcion, :solicitante_id, :id_user, 'Pendiente')";
-            $stmt = $this->conn->prepare($query);
+            $stmt = $this->conexion->prepare($query);
             $stmt->bindValue(':parroquia_id',   $datos['parroquia_id'],   PDO::PARAM_INT);
             $stmt->bindValue(':direccion',       $datos['direccion_exacta'], PDO::PARAM_STR);
             $stmt->bindValue(':caso_id',         $datos['caso_id'],        PDO::PARAM_INT);
@@ -241,11 +241,11 @@ class FichaModelo {
             $stmt->bindValue(':id_user',         $datos['id_user'],        PDO::PARAM_INT);
             $stmt->execute();
 
-            $fichaId = (int)$this->conn->lastInsertId();
-            $this->conn->commit();
+            $fichaId = (int)$this->conexion->lastInsertId();
+            $this->conexion->commit();
             return $fichaId;
         } catch (Exception $e) {
-            $this->conn->rollBack();
+            $this->conexion->rollBack();
             error_log("[FichaModelo] Error en crear: " . $e->getMessage());
             return false;
         }
@@ -253,11 +253,11 @@ class FichaModelo {
 
     public function actualizar(int $id, array $datos, int $idOwner): bool {
         try {
-            $this->conn->beginTransaction();
+            $this->conexion->beginTransaction();
 
             $solicitanteId = $this->guardarSolicitante($datos);
             if (!$solicitanteId) {
-                $this->conn->rollBack();
+                $this->conexion->rollBack();
                 return false;
             }
 
@@ -269,7 +269,7 @@ class FichaModelo {
                         solicitante_id   = :solicitante_id,
                         id_owner         = :id_owner
                       WHERE id = :id";
-            $stmt = $this->conn->prepare($query);
+            $stmt = $this->conexion->prepare($query);
             $stmt->bindValue(':parroquia_id',  $datos['parroquia_id'],    PDO::PARAM_INT);
             $stmt->bindValue(':direccion',      $datos['direccion_exacta'], PDO::PARAM_STR);
             $stmt->bindValue(':caso_id',        $datos['caso_id'],         PDO::PARAM_INT);
@@ -279,10 +279,10 @@ class FichaModelo {
             $stmt->bindValue(':id',             $id,                       PDO::PARAM_INT);
             $stmt->execute();
 
-            $this->conn->commit();
+            $this->conexion->commit();
             return true;
         } catch (Exception $e) {
-            $this->conn->rollBack();
+            $this->conexion->rollBack();
             error_log("[FichaModelo] Error en actualizar: " . $e->getMessage());
             return false;
         }
@@ -297,7 +297,7 @@ class FichaModelo {
             $query = "UPDATE fichas_emergencia
                       SET estado_ficha = :estado, {$horaCierre} id_owner = :id_owner
                       WHERE id = :id";
-            $stmt = $this->conn->prepare($query);
+            $stmt = $this->conexion->prepare($query);
             $stmt->bindValue(':estado',   $nuevoEstado, PDO::PARAM_STR);
             $stmt->bindValue(':id_owner', $idOwner,     PDO::PARAM_INT);
             $stmt->bindValue(':id',       $id,          PDO::PARAM_INT);
@@ -318,7 +318,7 @@ class FichaModelo {
 
             if ($cedula !== '') {
                 // Buscar si ya existe por cédula
-                $stmt = $this->conn->prepare(
+                $stmt = $this->conexion->prepare(
                     "SELECT id FROM solicitantes WHERE cedula = :cedula LIMIT 1"
                 );
                 $stmt->bindValue(':cedula', $cedula, PDO::PARAM_STR);
@@ -327,7 +327,7 @@ class FichaModelo {
 
                 if ($existente) {
                     // Actualizar datos
-                    $update = $this->conn->prepare(
+                    $update = $this->conexion->prepare(
                         "UPDATE solicitantes SET nombre_solicitante = :nombre, telefono1 = :tel1, telefono2 = :tel2
                          WHERE id = :id"
                     );
@@ -341,7 +341,7 @@ class FichaModelo {
             }
 
             // Insertar nuevo solicitante
-            $insert = $this->conn->prepare(
+            $insert = $this->conexion->prepare(
                 "INSERT INTO solicitantes (cedula, nombre_solicitante, telefono1, telefono2)
                  VALUES (:cedula, :nombre, :tel1, :tel2)"
             );
@@ -350,7 +350,7 @@ class FichaModelo {
             $insert->bindValue(':tel1',   $datos['telefono1'],           PDO::PARAM_STR);
             $insert->bindValue(':tel2',   $datos['telefono2'] ?? null,   PDO::PARAM_STR);
             $insert->execute();
-            return (int)$this->conn->lastInsertId();
+            return (int)$this->conexion->lastInsertId();
         } catch (Exception $e) {
             error_log("[FichaModelo] Error en guardarSolicitante: " . $e->getMessage());
             return false;
@@ -363,23 +363,28 @@ class FichaModelo {
 
     // --- Tipos de Emergencia ---
     public function obtenerTiposEmergencia(int $estado = 1): array {
-        $stmt = $this->conn->prepare("SELECT id, nombre, descripcion, estado FROM tipos_emergencia WHERE estado = :estado ORDER BY nombre ASC");
+        $stmt = $this->conexion->prepare("SELECT id, nombre, descripcion, estado FROM tipos_emergencia WHERE estado = :estado ORDER BY nombre ASC");
         $stmt->execute([':estado' => $estado]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function crearTipoEmergencia(string $nombre, string $descripcion = ''): bool {
-        $stmt = $this->conn->prepare("INSERT INTO tipos_emergencia (nombre, descripcion, estado) VALUES (:nombre, :descripcion, 1)");
-        return $stmt->execute([':nombre' => $nombre, ':descripcion' => $descripcion]);
+        $stmt = $this->conexion->prepare("INSERT INTO tipos_emergencia (nombre, descripcion, estado) VALUES (:nombre, :descripcion, 1)");
+        $stmt->bindValue(':nombre',      $nombre,      PDO::PARAM_STR);
+        $stmt->bindValue(':descripcion', $descripcion, PDO::PARAM_STR);
+        return $stmt->execute();
     }
 
     public function actualizarTipoEmergencia(int $id, string $nombre, string $descripcion = ''): bool {
-        $stmt = $this->conn->prepare("UPDATE tipos_emergencia SET nombre = :nombre, descripcion = :descripcion WHERE id = :id");
-        return $stmt->execute([':nombre' => $nombre, ':descripcion' => $descripcion, ':id' => $id]);
+        $stmt = $this->conexion->prepare("UPDATE tipos_emergencia SET nombre = :nombre, descripcion = :descripcion WHERE id = :id");
+        $stmt->bindValue(':nombre',      $nombre,      PDO::PARAM_STR);
+        $stmt->bindValue(':descripcion', $descripcion, PDO::PARAM_STR);
+        $stmt->bindValue(':id',          $id,          PDO::PARAM_INT);
+        return $stmt->execute();
     }
 
     public function toggleEstadoTipoEmergencia(int $id): bool {
-        $stmt = $this->conn->prepare("UPDATE tipos_emergencia SET estado = 1 - estado WHERE id = :id");
+        $stmt = $this->conexion->prepare("UPDATE tipos_emergencia SET estado = 1 - estado WHERE id = :id");
         return $stmt->execute([':id' => $id]);
     }
 
@@ -391,7 +396,7 @@ class FichaModelo {
         if ($tipoId) $sql .= " AND c.tipo_emergencia_id = :tipo_id ";
         $sql .= " ORDER BY t.nombre ASC, c.nombre_caso ASC";
 
-        $stmt = $this->conn->prepare($sql);
+        $stmt = $this->conexion->prepare($sql);
         $stmt->bindValue(':estado', $estado, PDO::PARAM_INT);
         if ($tipoId) $stmt->bindValue(':tipo_id', $tipoId, PDO::PARAM_INT);
         $stmt->execute();
@@ -399,43 +404,55 @@ class FichaModelo {
     }
 
     public function crearCaso(int $tipoId, string $nombre, string $descripcion): bool {
-        $stmt = $this->conn->prepare(
+        $stmt = $this->conexion->prepare(
             "INSERT INTO casos (tipo_emergencia_id, nombre_caso, descripcion, estado) VALUES (:tipo_id, :nombre, :descripcion, 1)"
         );
-        return $stmt->execute([':tipo_id' => $tipoId, ':nombre' => $nombre, ':descripcion' => $descripcion]);
+        $stmt->bindValue(':tipo_id',     $tipoId,      PDO::PARAM_INT);
+        $stmt->bindValue(':nombre',      $nombre,      PDO::PARAM_STR);
+        $stmt->bindValue(':descripcion', $descripcion, PDO::PARAM_STR);
+        return $stmt->execute();
     }
 
     public function actualizarCaso(int $id, int $tipoId, string $nombre, string $descripcion): bool {
-        $stmt = $this->conn->prepare(
+        $stmt = $this->conexion->prepare(
             "UPDATE casos SET tipo_emergencia_id = :tipo_id, nombre_caso = :nombre, descripcion = :descripcion WHERE id = :id"
         );
-        return $stmt->execute([':tipo_id' => $tipoId, ':nombre' => $nombre, ':descripcion' => $descripcion, ':id' => $id]);
+        $stmt->bindValue(':tipo_id',     $tipoId,      PDO::PARAM_INT);
+        $stmt->bindValue(':nombre',      $nombre,      PDO::PARAM_STR);
+        $stmt->bindValue(':descripcion', $descripcion, PDO::PARAM_STR);
+        $stmt->bindValue(':id',          $id,          PDO::PARAM_INT);
+        return $stmt->execute();
     }
 
     public function toggleEstadoCaso(int $id): bool {
-        $stmt = $this->conn->prepare("UPDATE casos SET estado = 1 - estado WHERE id = :id");
+        $stmt = $this->conexion->prepare("UPDATE casos SET estado = 1 - estado WHERE id = :id");
         return $stmt->execute([':id' => $id]);
     }
 
     // --- Municipios ---
     public function obtenerMunicipios(int $estado = 1): array {
-        $stmt = $this->conn->prepare("SELECT id, nombre_municipio, descripcion, estado FROM municipios WHERE estado = :estado ORDER BY nombre_municipio ASC");
+        $stmt = $this->conexion->prepare("SELECT id, nombre_municipio, descripcion, estado FROM municipios WHERE estado = :estado ORDER BY nombre_municipio ASC");
         $stmt->execute([':estado' => $estado]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function crearMunicipio(string $nombre, string $descripcion = ''): bool {
-        $stmt = $this->conn->prepare("INSERT INTO municipios (nombre_municipio, descripcion, estado) VALUES (:nombre, :descripcion, 1)");
-        return $stmt->execute([':nombre' => $nombre, ':descripcion' => $descripcion]);
+        $stmt = $this->conexion->prepare("INSERT INTO municipios (nombre_municipio, descripcion, estado) VALUES (:nombre, :descripcion, 1)");
+        $stmt->bindValue(':nombre',      $nombre,      PDO::PARAM_STR);
+        $stmt->bindValue(':descripcion', $descripcion, PDO::PARAM_STR);
+        return $stmt->execute();
     }
 
     public function actualizarMunicipio(int $id, string $nombre, string $descripcion = ''): bool {
-        $stmt = $this->conn->prepare("UPDATE municipios SET nombre_municipio = :nombre, descripcion = :descripcion WHERE id = :id");
-        return $stmt->execute([':nombre' => $nombre, ':descripcion' => $descripcion, ':id' => $id]);
+        $stmt = $this->conexion->prepare("UPDATE municipios SET nombre_municipio = :nombre, descripcion = :descripcion WHERE id = :id");
+        $stmt->bindValue(':nombre',      $nombre,      PDO::PARAM_STR);
+        $stmt->bindValue(':descripcion', $descripcion, PDO::PARAM_STR);
+        $stmt->bindValue(':id',          $id,          PDO::PARAM_INT);
+        return $stmt->execute();
     }
 
     public function toggleEstadoMunicipio(int $id): bool {
-        $stmt = $this->conn->prepare("UPDATE municipios SET estado = 1 - estado WHERE id = :id");
+        $stmt = $this->conexion->prepare("UPDATE municipios SET estado = 1 - estado WHERE id = :id");
         return $stmt->execute([':id' => $id]);
     }
 
@@ -447,7 +464,7 @@ class FichaModelo {
         if ($municipioId) $sql .= " AND p.municipio_id = :municipio_id ";
         $sql .= " ORDER BY m.nombre_municipio ASC, p.nombre_parroquia ASC";
 
-        $stmt = $this->conn->prepare($sql);
+        $stmt = $this->conexion->prepare($sql);
         $stmt->bindValue(':estado', $estado, PDO::PARAM_INT);
         if ($municipioId) $stmt->bindValue(':municipio_id', $municipioId, PDO::PARAM_INT);
         $stmt->execute();
@@ -455,43 +472,56 @@ class FichaModelo {
     }
 
     public function crearParroquia(int $municipioId, string $nombre, string $descripcion = ''): bool {
-        $stmt = $this->conn->prepare(
+        $stmt = $this->conexion->prepare(
             "INSERT INTO parroquias (municipio_id, nombre_parroquia, descripcion, estado) VALUES (:municipio_id, :nombre, :descripcion, 1)"
         );
-        return $stmt->execute([':municipio_id' => $municipioId, ':nombre' => $nombre, ':descripcion' => $descripcion]);
+        $stmt->bindValue(':municipio_id', $municipioId, PDO::PARAM_INT);
+        $stmt->bindValue(':nombre',       $nombre,       PDO::PARAM_STR);
+        $stmt->bindValue(':descripcion',  $descripcion,  PDO::PARAM_STR);
+        return $stmt->execute();
     }
 
     public function actualizarParroquia(int $id, int $municipioId, string $nombre, string $descripcion = ''): bool {
-        $stmt = $this->conn->prepare(
+        $stmt = $this->conexion->prepare(
             "UPDATE parroquias SET municipio_id = :municipio_id, nombre_parroquia = :nombre, descripcion = :descripcion WHERE id = :id"
         );
-        return $stmt->execute([':municipio_id' => $municipioId, ':nombre' => $nombre, ':descripcion' => $descripcion, ':id' => $id]);
+        $stmt->bindValue(':municipio_id', $municipioId, PDO::PARAM_INT);
+        $stmt->bindValue(':nombre',       $nombre,       PDO::PARAM_STR);
+        $stmt->bindValue(':descripcion',  $descripcion,  PDO::PARAM_STR);
+        $stmt->bindValue(':id',           $id,           PDO::PARAM_INT);
+        return $stmt->execute();
     }
 
     public function toggleEstadoParroquia(int $id): bool {
-        $stmt = $this->conn->prepare("UPDATE parroquias SET estado = 1 - estado WHERE id = :id");
+        $stmt = $this->conexion->prepare("UPDATE parroquias SET estado = 1 - estado WHERE id = :id");
         return $stmt->execute([':id' => $id]);
     }
 
     // --- Organismos ---
     public function obtenerOrganismos(int $estado = 1): array {
-        $stmt = $this->conn->prepare("SELECT id, nombre_organismo, descripcion, estado FROM organismos WHERE estado = :estado ORDER BY nombre_organismo ASC");
+        $stmt = $this->conexion->prepare("SELECT id, nombre_organismo, descripcion, estado FROM organismos WHERE estado = :estado ORDER BY nombre_organismo ASC");
         $stmt->execute([':estado' => $estado]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function crearOrganismo(string $nombre, string $descripcion = ''): bool {
-        $stmt = $this->conn->prepare("INSERT INTO organismos (nombre_organismo, descripcion, estado) VALUES (:nombre, :descripcion, 1)");
-        return $stmt->execute([':nombre' => $nombre, ':descripcion' => $descripcion]);
+        $stmt = $this->conexion->prepare("INSERT INTO organismos (nombre_organismo, descripcion, estado) VALUES (:nombre, :descripcion, 1)");
+        $stmt->bindValue(':nombre',      $nombre,      PDO::PARAM_STR);
+        $stmt->bindValue(':descripcion', $descripcion, PDO::PARAM_STR);
+        return $stmt->execute();
     }
 
     public function actualizarOrganismo(int $id, string $nombre, string $descripcion = ''): bool {
-        $stmt = $this->conn->prepare("UPDATE organismos SET nombre_organismo = :nombre, descripcion = :descripcion WHERE id = :id");
-        return $stmt->execute([':nombre' => $nombre, ':descripcion' => $descripcion, ':id' => $id]);
+        $stmt = $this->conexion->prepare("UPDATE organismos SET nombre_organismo = :nombre, descripcion = :descripcion WHERE id = :id");
+        $stmt->bindValue(':nombre',      $nombre,      PDO::PARAM_STR);
+        $stmt->bindValue(':descripcion', $descripcion, PDO::PARAM_STR);
+        $stmt->bindValue(':id',          $id,          PDO::PARAM_INT);
+        return $stmt->execute();
     }
 
     public function toggleEstadoOrganismo(int $id): bool {
-        $stmt = $this->conn->prepare("UPDATE organismos SET estado = 1 - estado WHERE id = :id");
+        $stmt = $this->conexion->prepare("UPDATE organismos SET estado = 1 - estado WHERE id = :id");
         return $stmt->execute([':id' => $id]);
     }
 }
+

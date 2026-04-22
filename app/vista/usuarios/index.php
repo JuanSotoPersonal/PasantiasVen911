@@ -95,298 +95,48 @@
     </div>
     <!--fin::Contenedor de la Aplicación-->
 
-    <!-- ============================================================
-         MODAL: Crear Usuario
-         ============================================================ -->
-    <div class="modal fade" id="modalCrearUsuario" tabindex="-1" aria-labelledby="modalCrearUsuarioLabel" aria-hidden="true" data-bs-backdrop="static">
-      <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header modal-header-ven">
-            <h5 class="modal-title" id="modalCrearUsuarioLabel">
-              <i class="bi bi-person-plus-fill me-2"></i>Agregar Nuevo Usuario
-            </h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-          </div>
-          <form id="formCrearUsuario" novalidate>
-            <div class="modal-body">
-              <div class="row g-3">
-                <div class="col-md-6">
-                  <label for="crear-nombre" class="form-label fw-semibold">Nombre Completo <span class="text-danger">*</span></label>
-                  <input type="text" class="form-control" id="crear-nombre" name="nombre_completo" placeholder="Ej: Juan Pérez García" />
-                  <div class="form-text mt-1">Nombre y apellido legal del usuario.</div>
-                </div>
-                <div class="col-md-6">
-                  <label for="crear-cedula" class="form-label fw-semibold">Cédula <span class="text-danger">*</span></label>
-                  <div class="input-group">
-                    <span class="input-group-text">V-</span>
-                    <input type="text" class="form-control" id="crear-cedula" name="cedula" placeholder="Ej: 12345678" />
-                  </div>
-                  <div class="form-text">Solo números (entre 6 y 8).</div>
-                </div>
-                <div class="col-md-6">
-                  <label for="crear-usuario" class="form-label fw-semibold">Usuario (login) <span class="text-danger">*</span></label>
-                  <input type="text" class="form-control" id="crear-usuario" name="usuario" placeholder="Mín. 7 caracteres, sin espacios" />
-                  <div class="form-text mt-1">Nombre de usuario único para acceder al sistema.</div>
-                </div>
-
-                <div class="col-md-6">
-                  <label for="crear-rol" class="form-label fw-semibold">Rol <span class="text-danger">*</span></label>
-                  <select class="form-select" id="crear-rol" name="rol_id">
-                    <option value="">-- Seleccionar rol --</option>
-                    <?php foreach ($roles as $rol): ?>
-                      <?php if ($rol['id'] == 1) continue; ?>
-                      <option value="<?= htmlspecialchars((string)$rol['id']) ?>">
-                        <?= htmlspecialchars($rol['nombre']) ?>
-                      </option>
-                    <?php endforeach; ?>
-                  </select>
-                  <div class="form-text mt-1">Define los permisos de acceso al sistema.</div>
-                </div>
-                <!-- Sección de Seguridad Oculta (SuperAdmin Único vía Setup) -->
-                <div id="seccion-seguridad-crear" style="display: none;"></div>
-                <div class="col-md-6">
-                  <label for="crear-password" class="form-label fw-semibold">Contraseña <span class="text-danger">*</span></label>
-                  <div class="password-wrapper">
-                    <input type="password" class="form-control pe-5" id="crear-password" name="password" placeholder="Mín. 6 caracteres" />
-                    <button type="button" class="btn-eye" data-target="crear-password" title="Ver contraseña">
-                      <i class="bi bi-eye"></i>
-                    </button>
-                  </div>
-                  <div class="form-text mt-1">Mínimo 6 caracteres (alfanumérico).</div>
-                </div>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-ven-cancel" data-bs-dismiss="modal">
-                <i class="bi bi-x-lg me-1"></i>Cancelar
-              </button>
-              <button type="submit" class="btn btn-ven-primary" id="btn-guardar-crear">
-                <i class="bi bi-check-lg me-1"></i>Guardar Usuario
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
 
     <!-- ============================================================
-         MODAL: Editar Usuario
+         MODALES DEL MÓDULO
          ============================================================ -->
-    <div class="modal fade" id="modalEditarUsuario" tabindex="-1" aria-labelledby="modalEditarUsuarioLabel" aria-hidden="true" data-bs-backdrop="static">
-      <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header modal-header-ven">
-            <h5 class="modal-title" id="modalEditarUsuarioLabel">
-              <i class="bi bi-pencil-square me-2"></i>Editar Usuario
-            </h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-          </div>
-          <form id="formEditarUsuario" novalidate>
-            <input type="hidden" id="editar-id" name="id" />
-            <div class="modal-body">
-              <div class="row g-3">
-                <div class="col-md-6">
-                  <label for="editar-nombre" class="form-label fw-semibold">Nombre Completo <span class="text-danger">*</span></label>
-                  <input type="text" class="form-control" id="editar-nombre" name="nombre_completo" />
-                  <div class="form-text mt-1">Actualice el nombre si es necesario.</div>
-                </div>
-                <div class="col-md-6">
-                  <label for="editar-cedula" class="form-label fw-semibold">Cédula <span class="text-danger">*</span></label>
-                  <div class="input-group">
-                    <span class="input-group-text">V-</span>
-                    <input type="text" class="form-control" id="editar-cedula" name="cedula" />
-                  </div>
-                  <div class="form-text mt-1">Modificar solo si hubo un error en el registro inicial.</div>
-                </div>
-                <div class="col-md-6">
-                  <label for="editar-usuario" class="form-label fw-semibold">Usuario (login) <span class="text-danger">*</span></label>
-                  <input type="text" class="form-control" id="editar-usuario" name="usuario" />
-                  <div class="form-text mt-1">Nombre de usuario (login).</div>
-                </div>
+    <?php if (tienePerm('usuarios', 'crear')): ?>
+        <?php require __DIR__ . '/componentes/_modal_crear.php'; ?>
+    <?php endif; ?>
 
-                <div class="col-md-6">
-                  <label for="editar-rol" class="form-label fw-semibold">Rol <span class="text-danger">*</span></label>
-                  <select class="form-select" id="editar-rol" name="rol_id">
-                    <?php foreach ($roles as $rol): ?>
-                      <?php if ($rol['id'] == 1) continue; ?>
-                      <option value="<?= htmlspecialchars((string)$rol['id']) ?>">
-                        <?= htmlspecialchars($rol['nombre']) ?>
-                      </option>
-                    <?php endforeach; ?>
-                  </select>
-                  <div class="form-text mt-1">Seleccione el rol que define los permisos del usuario.</div>
-                </div>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-ven-cancel" data-bs-dismiss="modal">
-                <i class="bi bi-x-lg me-1"></i>Cancelar
-              </button>
-              <button type="submit" class="btn btn-ven-edit" id="btn-guardar-editar">
-                <i class="bi bi-save me-1"></i>Guardar Cambios
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
+    <?php if (tienePerm('usuarios', 'editar')): ?>
+        <?php require __DIR__ . '/componentes/_modal_editar.php'; ?>
+        <?php require __DIR__ . '/componentes/_modal_cambiar_password.php'; ?>
+    <?php endif; ?>
 
-    <!-- ============================================================
-         MODAL: Cambiar Contraseña
-         ============================================================ -->
-    <div class="modal fade" id="modalCambiarPassword" tabindex="-1" aria-labelledby="modalPasswordLabel" aria-hidden="true" data-bs-backdrop="static">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header modal-header-ven">
-            <h5 class="modal-title" id="modalPasswordLabel">
-              <i class="bi bi-shield-lock-fill me-2"></i>Cambiar Contraseña
-            </h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-          </div>
-          <form id="formCambiarPassword" novalidate>
-            <input type="hidden" id="pwd-id" name="id" />
-            <div class="modal-body">
-              <p class="mb-3 text-muted small">
-                Estableciendo nueva contraseña para: <strong id="pwd-nombre-usuario"></strong>
-              </p>
-              <div class="mb-3">
-                <label for="pwd-nueva" class="form-label fw-semibold">Nueva Contraseña <span class="text-danger">*</span></label>
-                <div class="password-wrapper">
-                  <input type="password" class="form-control pe-5" id="pwd-nueva" name="password" placeholder="Mín. 6 caracteres" />
-                  <button type="button" class="btn-eye" data-target="pwd-nueva" title="Ver contraseña">
-                    <i class="bi bi-eye"></i>
-                  </button>
-                </div>
-                <div class="form-text mt-1">La nueva contraseña debe ser segura.</div>
-              </div>
-              <div class="mb-3">
-                <label for="pwd-confirmar" class="form-label fw-semibold">Confirmar Contraseña <span class="text-danger">*</span></label>
-                <div class="password-wrapper">
-                  <input type="password" class="form-control pe-5" id="pwd-confirmar" name="password_confirm" placeholder="Repite la contraseña" />
-                  <button type="button" class="btn-eye" data-target="pwd-confirmar" title="Ver contraseña">
-                    <i class="bi bi-eye"></i>
-                  </button>
-                </div>
-                <div class="form-text mt-1">Repita la nueva contraseña exactamente.</div>
-              </div>
-              <!-- Sección de Validación de Seguridad (Autocargado vía JS si es SuperAdmin) -->
-              <div id="seccion-validacion-seguridad" class="mt-3 p-3 bg-warning bg-opacity-10 border border-warning border-opacity-25 rounded" style="display: none;">
-                 <h6 class="text-dark fw-bold mb-2 small"><i class="bi bi-shield-fill-exclamation me-2"></i>Verificación de Identidad</h6>
-                 <div class="mb-2">
-                    <label id="label-pregunta-1" class="form-label small fw-bold mb-1"></label>
-                    <input type="text" class="form-control form-control-sm" id="ans-1" name="ans_1" placeholder="Respuesta 1">
-                 </div>
-                 <div class="mb-0">
-                    <label id="label-pregunta-2" class="form-label small fw-bold mb-1"></label>
-                    <input type="text" class="form-control form-control-sm" id="ans-2" name="ans_2" placeholder="Respuesta 2">
-                 </div>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-ven-cancel" data-bs-dismiss="modal">
-                <i class="bi bi-x-lg me-1"></i>Cancelar
-              </button>
-              <button type="submit" class="btn btn-ven-password">
-                <i class="bi bi-shield-check me-1"></i>Actualizar Contraseña
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
+    <?php if ($_SESSION['user_rol_id'] == 1): ?>
+        <?php require __DIR__ . '/componentes/_modal_config_seguridad.php'; ?>
+    <?php endif; ?>
 
-    <!-- ============================================================
-         MODAL: Actualizar Preguntas de Seguridad (SuperAdmin)
-         ============================================================ -->
-    <div class="modal fade" id="modalConfigSeguridad" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header modal-header-ven">
-            <h5 class="modal-title">
-              <i class="bi bi-shield-lock-fill me-2"></i>Configurar Preguntas de Seguridad
-            </h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-          </div>
-          <form id="formConfigSeguridad" novalidate>
-            <input type="hidden" id="seg-id" name="id" />
-            <div class="modal-body">
-              <div class="alert alert-info py-2 small">
-                <i class="bi bi-info-circle me-1"></i> Requiere el <strong>Código de Fábrica</strong> para autorizar el cambio.
-              </div>
-              
-              <div class="mb-3">
-                <label for="seg-factory-code" class="form-label fw-bold">Código de Fábrica</label>
-                <input type="text" class="form-control border-danger border-opacity-50" id="seg-factory-code" name="factory_code" placeholder="XXXX-XXXX-XXXX">
-                <div class="form-text mt-1">Código de 12 dígitos para autorizar el cambio de preguntas.</div>
-              </div>
-
-              <div class="row g-3">
-                <div class="col-12">
-                  <label class="form-label small fw-bold">Nueva Pregunta 1</label>
-                  <select class="form-select form-select-sm" name="pregunta_1">
-                    <option value="">-- Seleccionar --</option>
-                    <?php foreach ($preguntas as $p): ?>
-                      <option value="<?= $p['id'] ?>"><?= htmlspecialchars($p['pregunta']) ?></option>
-                    <?php endforeach; ?>
-                  </select>
-                  <div class="form-text mt-1">Seleccione una pregunta válida.</div>
-                </div>
-                <div class="col-12">
-                  <input type="text" class="form-control form-control-sm" name="respuesta_1" placeholder="Nueva respuesta 1">
-                  <div class="form-text mt-1">Respuesta a la primera pregunta de seguridad.</div>
-                </div>
-                <div class="col-12">
-                  <label class="form-label small fw-bold">Nueva Pregunta 2</label>
-                  <select class="form-select form-select-sm" name="pregunta_2">
-                    <option value="">-- Seleccionar --</option>
-                    <?php foreach ($preguntas as $p): ?>
-                      <option value="<?= $p['id'] ?>"><?= htmlspecialchars($p['pregunta']) ?></option>
-                    <?php endforeach; ?>
-                  </select>
-                  <div class="form-text mt-1">Esta pregunta será usada como respaldo secundario.</div>
-                  </div>
-                <div class="col-12">
-                  <input type="text" class="form-control form-control-sm" name="respuesta_2" placeholder="Nueva respuesta 2">
-                  <div class="form-text mt-1">Respuesta a la segunda pregunta de seguridad.</div>
-                </div>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-ven-cancel" data-bs-dismiss="modal">Cancelar</button>
-              <button type="submit" class="btn btn-ven-primary">
-                <i class="bi bi-check-circle me-1"></i>Actualizar Seguridad
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
 
     <!--inicio::Scripts-->
-    <!--begin::Third Party Plugin(OverlayScrollbars)-->
-    <script src="public/libs/overlayscrollbars/overlayscrollbars.browser.es6.min.js"></script>
-    <!--begin::Required Plugin(popperjs for Bootstrap 5)-->
-    <script src="public/libs/popperjs/popper.min.js"></script>
-    <!--begin::Required Plugin(Bootstrap 5)-->
-    <script src="public/libs/bootstrap/bootstrap.min.js"></script>
-    <!--begin::Required Plugin(AdminLTE)-->
-    <script src="public/js/adminlte.js"></script>
-    <!-- SweetAlert2 -->
-    <script src="public/libs/sweetalert2/sweetalert2.min.js"></script>
-    <!-- jQuery (requerido por DataTables) -->
+    <!-- Scripts Globales -->
+    <?php require __DIR__ . '/../partials/scripts.php'; ?>
+
+    <!-- jQuery & DataTables (Específicos para este módulo) -->
     <script src="public/libs/datatables/jquery-3.7.1.min.js"></script>
-    <!-- DataTables -->
     <script src="public/libs/datatables/dataTables.min.js"></script>
     <script src="public/libs/datatables/dataTables.bootstrap5.min.js"></script>
+
+    <!-- Exportar Permisos a JS -->
+    <script>
+        window.VEN911_PERM_CREAR  = <?= tienePerm('usuarios', 'crear')  ? 'true' : 'false' ?>;
+        window.VEN911_PERM_EDITAR = <?= tienePerm('usuarios', 'editar') ? 'true' : 'false' ?>;
+        window.USER_ROL_ID        = <?= (int)$_SESSION['user_rol_id'] ?>;
+    </script>
 
     <!--inicio::Configuración de OverlayScrollbars-->
     <script src="public/js/usuarios/overlay.js"></script>
     <!--fin::Configuración de OverlayScrollbars-->
 
     <!--inicio::Módulo Usuarios JS-->
-    <script src="public/js/tablas/datatables_config.js"></script>
-    <script src="public/js/tablas/usuarios_datatable.js"></script>
-    <script src="public/js/tablas/usuarios_roles.js"></script>
+    <script src="public/js/comun/datatables_config.js"></script>
+    <script src="public/js/usuarios/usuarios_datatable.js"></script>
+    <script src="public/js/usuarios/usuarios_roles.js"></script>
     <!--fin::Módulo Usuarios JS-->
     <!--fin::Scripts-->
 
