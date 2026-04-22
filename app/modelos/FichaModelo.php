@@ -362,48 +362,45 @@ class FichaModelo {
     // ================================================================
 
     // --- Tipos de Emergencia ---
-    public function obtenerTiposEmergencia(): array {
-        $stmt = $this->conn->query("SELECT id, nombre FROM tipos_emergencia ORDER BY nombre ASC");
+    public function obtenerTiposEmergencia(int $estado = 1): array {
+        $stmt = $this->conn->prepare("SELECT id, nombre, descripcion, estado FROM tipos_emergencia WHERE estado = :estado ORDER BY nombre ASC");
+        $stmt->execute([':estado' => $estado]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function crearTipoEmergencia(string $nombre): bool {
-        $stmt = $this->conn->prepare("INSERT INTO tipos_emergencia (nombre) VALUES (:nombre)");
-        return $stmt->execute([':nombre' => $nombre]);
+    public function crearTipoEmergencia(string $nombre, string $descripcion = ''): bool {
+        $stmt = $this->conn->prepare("INSERT INTO tipos_emergencia (nombre, descripcion, estado) VALUES (:nombre, :descripcion, 1)");
+        return $stmt->execute([':nombre' => $nombre, ':descripcion' => $descripcion]);
     }
 
-    public function actualizarTipoEmergencia(int $id, string $nombre): bool {
-        $stmt = $this->conn->prepare("UPDATE tipos_emergencia SET nombre = :nombre WHERE id = :id");
-        return $stmt->execute([':nombre' => $nombre, ':id' => $id]);
+    public function actualizarTipoEmergencia(int $id, string $nombre, string $descripcion = ''): bool {
+        $stmt = $this->conn->prepare("UPDATE tipos_emergencia SET nombre = :nombre, descripcion = :descripcion WHERE id = :id");
+        return $stmt->execute([':nombre' => $nombre, ':descripcion' => $descripcion, ':id' => $id]);
     }
 
-    public function eliminarTipoEmergencia(int $id): bool {
-        $stmt = $this->conn->prepare("DELETE FROM tipos_emergencia WHERE id = :id");
+    public function toggleEstadoTipoEmergencia(int $id): bool {
+        $stmt = $this->conn->prepare("UPDATE tipos_emergencia SET estado = 1 - estado WHERE id = :id");
         return $stmt->execute([':id' => $id]);
     }
 
     // --- Casos ---
-    public function obtenerCasos(?int $tipoId = null): array {
-        if ($tipoId) {
-            $stmt = $this->conn->prepare(
-                "SELECT c.id, c.nombre_caso, c.descripcion, c.tipo_emergencia_id, t.nombre AS tipo_emergencia
-                 FROM casos c INNER JOIN tipos_emergencia t ON c.tipo_emergencia_id = t.id
-                 WHERE c.tipo_emergencia_id = :tipo_id ORDER BY c.nombre_caso ASC"
-            );
-            $stmt->execute([':tipo_id' => $tipoId]);
-        } else {
-            $stmt = $this->conn->query(
-                "SELECT c.id, c.nombre_caso, c.descripcion, c.tipo_emergencia_id, t.nombre AS tipo_emergencia
-                 FROM casos c INNER JOIN tipos_emergencia t ON c.tipo_emergencia_id = t.id
-                 ORDER BY t.nombre ASC, c.nombre_caso ASC"
-            );
-        }
+    public function obtenerCasos(?int $tipoId = null, int $estado = 1): array {
+        $sql = "SELECT c.id, c.nombre_caso, c.descripcion, c.tipo_emergencia_id, t.nombre AS tipo_emergencia, c.estado
+                FROM casos c INNER JOIN tipos_emergencia t ON c.tipo_emergencia_id = t.id
+                WHERE c.estado = :estado ";
+        if ($tipoId) $sql .= " AND c.tipo_emergencia_id = :tipo_id ";
+        $sql .= " ORDER BY t.nombre ASC, c.nombre_caso ASC";
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindValue(':estado', $estado, PDO::PARAM_INT);
+        if ($tipoId) $stmt->bindValue(':tipo_id', $tipoId, PDO::PARAM_INT);
+        $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function crearCaso(int $tipoId, string $nombre, string $descripcion): bool {
         $stmt = $this->conn->prepare(
-            "INSERT INTO casos (tipo_emergencia_id, nombre_caso, descripcion) VALUES (:tipo_id, :nombre, :descripcion)"
+            "INSERT INTO casos (tipo_emergencia_id, nombre_caso, descripcion, estado) VALUES (:tipo_id, :nombre, :descripcion, 1)"
         );
         return $stmt->execute([':tipo_id' => $tipoId, ':nombre' => $nombre, ':descripcion' => $descripcion]);
     }
@@ -415,67 +412,86 @@ class FichaModelo {
         return $stmt->execute([':tipo_id' => $tipoId, ':nombre' => $nombre, ':descripcion' => $descripcion, ':id' => $id]);
     }
 
-    public function eliminarCaso(int $id): bool {
-        $stmt = $this->conn->prepare("DELETE FROM casos WHERE id = :id");
+    public function toggleEstadoCaso(int $id): bool {
+        $stmt = $this->conn->prepare("UPDATE casos SET estado = 1 - estado WHERE id = :id");
         return $stmt->execute([':id' => $id]);
     }
 
     // --- Municipios ---
-    public function obtenerMunicipios(): array {
-        $stmt = $this->conn->query("SELECT id, nombre_municipio FROM municipios ORDER BY nombre_municipio ASC");
+    public function obtenerMunicipios(int $estado = 1): array {
+        $stmt = $this->conn->prepare("SELECT id, nombre_municipio, descripcion, estado FROM municipios WHERE estado = :estado ORDER BY nombre_municipio ASC");
+        $stmt->execute([':estado' => $estado]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function crearMunicipio(string $nombre): bool {
-        $stmt = $this->conn->prepare("INSERT INTO municipios (nombre_municipio) VALUES (:nombre)");
-        return $stmt->execute([':nombre' => $nombre]);
+    public function crearMunicipio(string $nombre, string $descripcion = ''): bool {
+        $stmt = $this->conn->prepare("INSERT INTO municipios (nombre_municipio, descripcion, estado) VALUES (:nombre, :descripcion, 1)");
+        return $stmt->execute([':nombre' => $nombre, ':descripcion' => $descripcion]);
     }
 
-    public function actualizarMunicipio(int $id, string $nombre): bool {
-        $stmt = $this->conn->prepare("UPDATE municipios SET nombre_municipio = :nombre WHERE id = :id");
-        return $stmt->execute([':nombre' => $nombre, ':id' => $id]);
+    public function actualizarMunicipio(int $id, string $nombre, string $descripcion = ''): bool {
+        $stmt = $this->conn->prepare("UPDATE municipios SET nombre_municipio = :nombre, descripcion = :descripcion WHERE id = :id");
+        return $stmt->execute([':nombre' => $nombre, ':descripcion' => $descripcion, ':id' => $id]);
     }
 
-    public function eliminarMunicipio(int $id): bool {
-        $stmt = $this->conn->prepare("DELETE FROM municipios WHERE id = :id");
+    public function toggleEstadoMunicipio(int $id): bool {
+        $stmt = $this->conn->prepare("UPDATE municipios SET estado = 1 - estado WHERE id = :id");
         return $stmt->execute([':id' => $id]);
     }
 
     // --- Parroquias ---
-    public function obtenerParroquias(?int $municipioId = null): array {
-        if ($municipioId) {
-            $stmt = $this->conn->prepare(
-                "SELECT p.id, p.nombre_parroquia, p.municipio_id, m.nombre_municipio
-                 FROM parroquias p INNER JOIN municipios m ON p.municipio_id = m.id
-                 WHERE p.municipio_id = :municipio_id ORDER BY p.nombre_parroquia ASC"
-            );
-            $stmt->execute([':municipio_id' => $municipioId]);
-        } else {
-            $stmt = $this->conn->query(
-                "SELECT p.id, p.nombre_parroquia, p.municipio_id, m.nombre_municipio
-                 FROM parroquias p INNER JOIN municipios m ON p.municipio_id = m.id
-                 ORDER BY m.nombre_municipio ASC, p.nombre_parroquia ASC"
-            );
-        }
+    public function obtenerParroquias(?int $municipioId = null, int $estado = 1): array {
+        $sql = "SELECT p.id, p.nombre_parroquia, p.descripcion, p.municipio_id, m.nombre_municipio, p.estado
+                FROM parroquias p INNER JOIN municipios m ON p.municipio_id = m.id
+                WHERE p.estado = :estado ";
+        if ($municipioId) $sql .= " AND p.municipio_id = :municipio_id ";
+        $sql .= " ORDER BY m.nombre_municipio ASC, p.nombre_parroquia ASC";
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindValue(':estado', $estado, PDO::PARAM_INT);
+        if ($municipioId) $stmt->bindValue(':municipio_id', $municipioId, PDO::PARAM_INT);
+        $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function crearParroquia(int $municipioId, string $nombre): bool {
+    public function crearParroquia(int $municipioId, string $nombre, string $descripcion = ''): bool {
         $stmt = $this->conn->prepare(
-            "INSERT INTO parroquias (municipio_id, nombre_parroquia) VALUES (:municipio_id, :nombre)"
+            "INSERT INTO parroquias (municipio_id, nombre_parroquia, descripcion, estado) VALUES (:municipio_id, :nombre, :descripcion, 1)"
         );
-        return $stmt->execute([':municipio_id' => $municipioId, ':nombre' => $nombre]);
+        return $stmt->execute([':municipio_id' => $municipioId, ':nombre' => $nombre, ':descripcion' => $descripcion]);
     }
 
-    public function actualizarParroquia(int $id, int $municipioId, string $nombre): bool {
+    public function actualizarParroquia(int $id, int $municipioId, string $nombre, string $descripcion = ''): bool {
         $stmt = $this->conn->prepare(
-            "UPDATE parroquias SET municipio_id = :municipio_id, nombre_parroquia = :nombre WHERE id = :id"
+            "UPDATE parroquias SET municipio_id = :municipio_id, nombre_parroquia = :nombre, descripcion = :descripcion WHERE id = :id"
         );
-        return $stmt->execute([':municipio_id' => $municipioId, ':nombre' => $nombre, ':id' => $id]);
+        return $stmt->execute([':municipio_id' => $municipioId, ':nombre' => $nombre, ':descripcion' => $descripcion, ':id' => $id]);
     }
 
-    public function eliminarParroquia(int $id): bool {
-        $stmt = $this->conn->prepare("DELETE FROM parroquias WHERE id = :id");
+    public function toggleEstadoParroquia(int $id): bool {
+        $stmt = $this->conn->prepare("UPDATE parroquias SET estado = 1 - estado WHERE id = :id");
+        return $stmt->execute([':id' => $id]);
+    }
+
+    // --- Organismos ---
+    public function obtenerOrganismos(int $estado = 1): array {
+        $stmt = $this->conn->prepare("SELECT id, nombre_organismo, descripcion, estado FROM organismos WHERE estado = :estado ORDER BY nombre_organismo ASC");
+        $stmt->execute([':estado' => $estado]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function crearOrganismo(string $nombre, string $descripcion = ''): bool {
+        $stmt = $this->conn->prepare("INSERT INTO organismos (nombre_organismo, descripcion, estado) VALUES (:nombre, :descripcion, 1)");
+        return $stmt->execute([':nombre' => $nombre, ':descripcion' => $descripcion]);
+    }
+
+    public function actualizarOrganismo(int $id, string $nombre, string $descripcion = ''): bool {
+        $stmt = $this->conn->prepare("UPDATE organismos SET nombre_organismo = :nombre, descripcion = :descripcion WHERE id = :id");
+        return $stmt->execute([':nombre' => $nombre, ':descripcion' => $descripcion, ':id' => $id]);
+    }
+
+    public function toggleEstadoOrganismo(int $id): bool {
+        $stmt = $this->conn->prepare("UPDATE organismos SET estado = 1 - estado WHERE id = :id");
         return $stmt->execute([':id' => $id]);
     }
 }

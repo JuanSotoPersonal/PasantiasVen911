@@ -23,6 +23,16 @@
           <i class="bi bi-geo-alt-fill me-1"></i>Parroquias
         </button>
       </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-organismos-btn" data-bs-toggle="tab" data-bs-target="#tab-organismos" type="button">
+          <i class="bi bi-building-fill me-1"></i>Organismos
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-inactivos-btn" data-bs-toggle="tab" data-bs-target="#tab-inactivos" type="button">
+          <i class="bi bi-trash-fill me-1"></i>Inhabilitados
+        </button>
+      </li>
     </ul>
   </div>
 
@@ -32,12 +42,15 @@
     <!-- TAB: TIPOS DE EMERGENCIA -->
     <!-- ================================================ -->
     <div class="tab-pane fade show active" id="tab-tipos" role="tabpanel">
+      <!-- ... (contenido existente) ... -->
       <div class="card shadow-sm">
         <div class="card-header d-flex justify-content-between align-items-center">
           <h5 class="card-title mb-0"><i class="bi bi-lightning-charge-fill me-2"></i>Tipos de Emergencia</h5>
-          <button class="btn btn-ven-primary btn-sm" id="btnNuevoTipo">
-            <i class="bi bi-plus-circle-fill me-1"></i>Nuevo Tipo
-          </button>
+          <div class="card-tools ms-auto">
+            <button class="btn btn-ven-primary btn-sm" id="btnNuevoTipo">
+              <i class="bi bi-plus-circle-fill me-1"></i>Nuevo Tipo
+            </button>
+          </div>
         </div>
         <div class="card-body">
           <div class="table-responsive">
@@ -46,6 +59,8 @@
                 <tr>
                   <th width="60">#</th>
                   <th>Nombre</th>
+                  <th>Descripción</th>
+                  <th width="100">Estado</th>
                   <th width="110" class="text-center">Acciones</th>
                 </tr>
               </thead>
@@ -60,12 +75,15 @@
     <!-- TAB: CASOS -->
     <!-- ================================================ -->
     <div class="tab-pane fade" id="tab-casos" role="tabpanel">
+      <!-- ... (contenido existente) ... -->
       <div class="card shadow-sm">
         <div class="card-header d-flex justify-content-between align-items-center">
           <h5 class="card-title mb-0"><i class="bi bi-list-ul me-2"></i>Casos por Tipo</h5>
-          <button class="btn btn-ven-primary btn-sm" id="btnNuevoCaso">
-            <i class="bi bi-plus-circle-fill me-1"></i>Nuevo Caso
-          </button>
+          <div class="card-tools ms-auto">
+            <button class="btn btn-ven-primary btn-sm" id="btnNuevoCaso">
+              <i class="bi bi-plus-circle-fill me-1"></i>Nuevo Caso
+            </button>
+          </div>
         </div>
         <div class="card-body">
           <div class="mb-3">
@@ -85,6 +103,7 @@
                   <th>Caso</th>
                   <th>Tipo de Emergencia</th>
                   <th>Descripción</th>
+                  <th width="100">Estado</th>
                   <th width="110" class="text-center">Acciones</th>
                 </tr>
               </thead>
@@ -102,9 +121,11 @@
       <div class="card shadow-sm">
         <div class="card-header d-flex justify-content-between align-items-center">
           <h5 class="card-title mb-0"><i class="bi bi-map-fill me-2"></i>Municipios</h5>
-          <button class="btn btn-ven-primary btn-sm" id="btnNuevoMunicipio">
-            <i class="bi bi-plus-circle-fill me-1"></i>Nuevo Municipio
-          </button>
+          <div class="card-tools ms-auto">
+            <button class="btn btn-ven-primary btn-sm" id="btnNuevoMunicipio">
+              <i class="bi bi-plus-circle-fill me-1"></i>Nuevo Municipio
+            </button>
+          </div>
         </div>
         <div class="card-body">
           <div class="table-responsive">
@@ -113,6 +134,8 @@
                 <tr>
                   <th width="60">#</th>
                   <th>Nombre del Municipio</th>
+                  <th>Descripción</th>
+                  <th width="100">Estado</th>
                   <th width="110" class="text-center">Acciones</th>
                 </tr>
               </thead>
@@ -130,9 +153,11 @@
       <div class="card shadow-sm">
         <div class="card-header d-flex justify-content-between align-items-center">
           <h5 class="card-title mb-0"><i class="bi bi-geo-alt-fill me-2"></i>Parroquias</h5>
-          <button class="btn btn-ven-primary btn-sm" id="btnNuevaParroquia">
-            <i class="bi bi-plus-circle-fill me-1"></i>Nueva Parroquia
-          </button>
+          <div class="card-tools ms-auto">
+            <button class="btn btn-ven-primary btn-sm" id="btnNuevaParroquia">
+              <i class="bi bi-plus-circle-fill me-1"></i>Nueva Parroquia
+            </button>
+          </div>
         </div>
         <div class="card-body">
           <div class="mb-3">
@@ -151,11 +176,116 @@
                   <th width="60">#</th>
                   <th>Parroquia</th>
                   <th>Municipio</th>
+                  <th>Descripción</th>
+                  <th width="100">Estado</th>
                   <th width="110" class="text-center">Acciones</th>
                 </tr>
               </thead>
               <tbody></tbody>
             </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================ -->
+    <!-- TAB: ORGANISMOS -->
+    <!-- ================================================ -->
+    <div class="tab-pane fade" id="tab-organismos" role="tabpanel">
+      <div class="card shadow-sm">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="card-title mb-0"><i class="bi bi-building-fill me-2"></i>Organismos de Respuesta</h5>
+          <div class="card-tools ms-auto">
+            <button class="btn btn-ven-primary btn-sm" id="btnNuevoOrganismo">
+              <i class="bi bi-plus-circle-fill me-1"></i>Nuevo Organismo
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table id="tablaOrganismos" class="table table-bordered table-striped table-hover align-middle w-100">
+              <thead class="table-dark">
+                <tr>
+                  <th width="60">#</th>
+                  <th>Nombre del Organismo</th>
+                  <th>Descripción</th>
+                  <th width="100">Estado</th>
+                  <th width="110" class="text-center">Acciones</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================ -->
+    <!-- TAB: INACTIVOS (PAPELERA) -->
+    <!-- ================================================ -->
+    <div class="tab-pane fade" id="tab-inactivos" role="tabpanel">
+      <div class="card shadow-sm border-0 overflow-hidden">
+        <div class="card-header d-flex justify-content-between align-items-center bg-light py-3">
+          <h5 class="card-title mb-0">
+            <i class="bi bi-archive-fill me-2 text-ven-green"></i>Registros Inhabilitados
+          </h5>
+        </div>
+        <div class="card-body">
+          <!-- Mini-pestañas internas para los 5 catálogos inactivos -->
+          <ul class="nav nav-pills nav-pills-ven mb-4 gap-2" id="pills-inactivos" role="tablist">
+            <li class="nav-item">
+              <button class="nav-link active py-2 px-3 small d-flex align-items-center" data-bs-toggle="pill" data-bs-target="#inactivos-tipos">
+                Tipos <span class="badge ms-2" id="count-inactivos-tipos">0</span>
+              </button>
+            </li>
+            <li class="nav-item">
+              <button class="nav-link py-2 px-3 small d-flex align-items-center" data-bs-toggle="pill" data-bs-target="#inactivos-casos">
+                Casos <span class="badge ms-2" id="count-inactivos-casos">0</span>
+              </button>
+            </li>
+            <li class="nav-item">
+              <button class="nav-link py-2 px-3 small d-flex align-items-center" data-bs-toggle="pill" data-bs-target="#inactivos-municipios">
+                Municipios <span class="badge ms-2" id="count-inactivos-municipios">0</span>
+              </button>
+            </li>
+            <li class="nav-item">
+              <button class="nav-link py-2 px-3 small d-flex align-items-center" data-bs-toggle="pill" data-bs-target="#inactivos-parroquias">
+                Parroquias <span class="badge ms-2" id="count-inactivos-parroquias">0</span>
+              </button>
+            </li>
+            <li class="nav-item">
+              <button class="nav-link py-2 px-3 small d-flex align-items-center" data-bs-toggle="pill" data-bs-target="#inactivos-organismos">
+                Organismos <span class="badge ms-2" id="count-inactivos-organismos">0</span>
+              </button>
+            </li>
+          </ul>
+
+          <div class="tab-content" id="pills-inactivos-contenido">
+            <div class="tab-pane fade show active" id="inactivos-tipos">
+              <table id="tablaTiposInactivos" class="table table-sm table-bordered w-100">
+                <thead class="table-dark"><tr><th>#</th><th>Nombre</th><th>Estado</th><th>Acciones</th></tr></thead>
+              </table>
+            </div>
+            <div class="tab-pane fade" id="inactivos-casos">
+              <table id="tablaCasosInactivos" class="table table-sm table-bordered w-100">
+                <thead class="table-dark"><tr><th>#</th><th>Caso</th><th>Tipo</th><th>Estado</th><th>Acciones</th></tr></thead>
+              </table>
+            </div>
+            <div class="tab-pane fade" id="inactivos-municipios">
+              <table id="tablaMunicipiosInactivos" class="table table-sm table-bordered w-100">
+                <thead class="table-dark"><tr><th>#</th><th>Municipio</th><th>Estado</th><th>Acciones</th></tr></thead>
+              </table>
+            </div>
+            <div class="tab-pane fade" id="inactivos-parroquias">
+              <table id="tablaParroquiasInactivos" class="table table-sm table-bordered w-100">
+                <thead class="table-dark"><tr><th>#</th><th>Parroquia</th><th>Municipio</th><th>Estado</th><th>Acciones</th></tr></thead>
+              </table>
+            </div>
+            <div class="tab-pane fade" id="inactivos-organismos">
+              <table id="tablaOrganismosInactivos" class="table table-sm table-bordered w-100">
+                <thead class="table-dark"><tr><th>#</th><th>Organismo</th><th>Estado</th><th>Acciones</th></tr></thead>
+              </table>
+            </div>
           </div>
         </div>
       </div>
@@ -184,6 +314,10 @@
           <div class="mb-3">
             <label id="cat_simple_label" for="cat_simple_valor" class="form-label">Nombre</label>
             <input type="text" class="form-control" id="cat_simple_valor" name="nombre" autocomplete="off">
+          </div>
+          <div class="mb-3">
+            <label for="cat_simple_descripcion" class="form-label">Descripción</label>
+            <textarea class="form-control" id="cat_simple_descripcion" name="descripcion" rows="2"></textarea>
           </div>
         </form>
       </div>
@@ -264,6 +398,10 @@
           <div class="mb-3">
             <label for="parroquia_nombre" class="form-label">Nombre de la Parroquia <span class="text-danger">*</span></label>
             <input type="text" class="form-control" id="parroquia_nombre" name="nombre_parroquia" autocomplete="off">
+          </div>
+          <div class="mb-3">
+            <label for="parroquia_descripcion" class="form-label">Descripción</label>
+            <textarea class="form-control" id="parroquia_descripcion" name="descripcion" rows="2"></textarea>
           </div>
         </form>
       </div>

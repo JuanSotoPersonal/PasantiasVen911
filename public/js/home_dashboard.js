@@ -2,7 +2,7 @@
  * Lógica compartida para el Dashboard Principal
  * Configuración de scrollbars y utilidades de UI
  */
-const SELECTOR_SIDEBAR_WRAPPER = '.sidebar-wrapper';
+const SELECTOR_SIDEBAR_WRAPPER = '.sidebar-scroll-area';
 const DefaultLayout = {
   scrollbarTheme: 'os-theme-light',
   scrollbarAutoHide: 'leave',
@@ -21,6 +21,10 @@ document.addEventListener('DOMContentLoaded', function () {
     !isMobile
   ) {
     OverlayScrollbarsGlobal.OverlayScrollbars(sidebarWrapper, {
+      overflow: {
+        x: 'hidden',   // Bloquear scroll horizontal
+        y: 'scroll',   // Solo scroll vertical
+      },
       scrollbars: {
         theme: DefaultLayout.scrollbarTheme,
         autoHide: DefaultLayout.scrollbarAutoHide,

@@ -9,7 +9,7 @@
     <link rel="preload" href="public/css/adminlte.css" as="style" />
     <link rel="stylesheet" href="public/css/adminlte.css" />
     <link rel="stylesheet" href="public/css/home.css" />
-    <link rel="stylesheet" href="public/css/fichas.css" />
+    <link rel="stylesheet" href="public/css/fichas.css?v=1.1" />
     <link rel="stylesheet" href="public/libs/source-sans-3/index.css" />
     <link rel="stylesheet" href="public/libs/overlayscrollbars/overlayscrollbars.min.css" />
     <link rel="stylesheet" href="public/libs/bootstrap-icons/bootstrap-icons.min.css" />
@@ -85,7 +85,7 @@
     <script src="public/libs/datatables/jquery-3.7.1.min.js"></script>
     <script src="public/libs/datatables/dataTables.min.js"></script>
     <script src="public/libs/datatables/dataTables.bootstrap5.min.js"></script>
-    <script src="public/libs/sweetalert2/sweetalert2.all.min.js"></script>
+    <script src="public/libs/sweetalert2/sweetalert2.min.js"></script>
 
     <script>
         window.VEN911_PERM_EDITAR         = <?= tienePerm('fichas', 'editar')         ? 'true' : 'false' ?>;

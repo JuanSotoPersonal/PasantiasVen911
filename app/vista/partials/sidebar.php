@@ -23,7 +23,8 @@
 
   <!--inicio::Envoltorio de la Barra Lateral-->
   <div class="sidebar-wrapper">
-    <nav class="mt-2">
+    <div class="sidebar-scroll-area">
+      <nav class="mt-2">
       <!--inicio::Menú de la Barra Lateral-->
       <ul
         class="nav sidebar-menu flex-column"
@@ -183,25 +184,39 @@
       </ul>
       <!--fin::Menú de la Barra Lateral-->
     </nav>
+    </div><!-- fin::sidebar-scroll-area -->
 
-    <!--inicio::Pie de Sidebar-->
-    <div class="sidebar-footer-nav">
-      <ul class="nav sidebar-menu flex-column">
-        <li class="nav-item">
-          <a href="#" class="nav-link">
-            <i class="nav-icon bi bi-question-circle"></i>
-            <p>Preguntas Frecuentes</p>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="documentacion_oficial_v3.html" target="_blank" rel="noopener noreferrer" class="nav-link text-success fw-bold">
-            <i class="nav-icon bi bi-journal-code"></i>
-            <p>Manual Oficial (v3.5)</p>
-          </a>
-        </li>
-      </ul>
+    <!--inicio::Bloque fijo al fondo-->
+    <div class="sidebar-sticky-footer">
+
+      <!--inicio::Pie de Sidebar-->
+      <div class="sidebar-footer-nav">
+        <ul class="nav sidebar-menu flex-column">
+          <li class="nav-item">
+            <a href="#" class="nav-link">
+              <i class="nav-icon bi bi-question-circle"></i>
+              <p>Preguntas Frecuentes</p>
+            </a>
+          </li>
+        </ul>
+      </div>
+      <!--fin::Pie de Sidebar-->
+
+      <!--inicio::Logos Institucionales-->
+      <div class="sidebar-institutional-logo">
+        <img src="public/assets/img/logos/LOGO MIJP JUSTICIA Y PAZ - BLANCO (1).webp"
+             alt="MIJP"
+             class="sidebar-mijp-logo">
+        <div class="footer-logo-divider"></div>
+        <img src="public/assets/img/logos/VEN 9-1-1.webp"
+             alt="VEN 9-1-1"
+             class="sidebar-footer-ven-logo">
+      </div>
+      <!--fin::Logos Institucionales-->
+
     </div>
-    <!--fin::Pie de Sidebar-->
+    <!--fin::Bloque fijo al fondo-->
+
   </div>
   <!--fin::Envoltorio de la Barra Lateral-->
 </aside>

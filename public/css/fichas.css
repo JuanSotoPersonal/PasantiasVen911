@@ -14,6 +14,9 @@
     --ven-green-glow:    rgba(34, 197, 94, 0.2);
 }
 
+.text-ven-green { color: var(--ven-green-primary) !important; }
+.bg-ven-primary { background: var(--ven-green-deepest) !important; color: #fff !important; }
+
 /* =============================================
    BADGES DE ESTADO DE FICHA
    ============================================= */
@@ -138,22 +141,74 @@
 /* =============================================
    TABS DE CATÁLOGOS
    ============================================= */
+.nav-tabs-ven { 
+    border-bottom: 2px solid var(--ven-green-border); 
+    margin-bottom: 1.5rem;
+}
 
-.nav-tabs-ven { border-bottom: 2px solid var(--ven-green-border); }
 .nav-tabs-ven .nav-link {
-    color: var(--ven-green-darker);
+    color: #4b5563; /* Gris neutro */
     font-weight: 600;
     border: none;
     border-bottom: 3px solid transparent;
     border-radius: 0;
-    padding: 0.6rem 1.1rem;
+    padding: 0.75rem 1.25rem;
     transition: all 0.2s;
+    background: transparent !important;
 }
-.nav-tabs-ven .nav-link:hover { color: var(--ven-green-primary); background: var(--ven-green-light); }
+
+.nav-tabs-ven .nav-link:hover {
+    color: var(--ven-green-primary);
+    background: var(--ven-green-light) !important;
+}
+
 .nav-tabs-ven .nav-link.active {
     color: var(--ven-green-primary) !important;
     border-bottom-color: var(--ven-green-primary) !important;
-    background: transparent;
+    background: transparent !important;
+}
+
+/* =============================================
+   PILLS DE CATÁLOGOS (PAPELERA)
+   ============================================= */
+
+.nav-pills-ven .nav-link {
+    color: #4b5563;
+    font-weight: 600;
+    font-size: 0.85rem;
+    border-radius: 0.6rem;
+    transition: all 0.25s ease;
+    padding: 0.5rem 1rem;
+    border: 1px solid transparent;
+}
+
+.nav-pills-ven .nav-link:hover {
+    color: var(--ven-green-primary);
+    background: var(--ven-green-light);
+    border-color: var(--ven-green-border);
+}
+
+.nav-pills-ven .nav-link.active {
+    background: linear-gradient(135deg, var(--ven-green-primary) 0%, var(--ven-green-dark) 100%) !important;
+    color: #fff !important;
+    box-shadow: 0 4px 10px rgba(22, 163, 74, 0.25);
+    border: none;
+}
+
+.nav-pills-ven .nav-link .badge {
+    background: rgba(255, 255, 255, 0.2) !important;
+    color: #fff !important;
+    font-weight: 700;
+}
+
+.nav-pills-ven .nav-link:not(.active) .badge {
+    background: #e5e7eb !important;
+    color: #4b5563 !important;
+}
+
+.nav-pills-ven .nav-link:hover:not(.active) .badge {
+    background: var(--ven-green-border) !important;
+    color: var(--ven-green-darker) !important;
 }
 
 /* =============================================
@@ -176,3 +231,53 @@ div:where(.swal2-container) div:where(.swal2-popup) {
 }
 .swal2-confirm { background: linear-gradient(135deg, var(--ven-green-primary) 0%, var(--ven-green-dark) 100%) !important; border: none !important; }
 .swal2-cancel  { background: #f0fdf4 !important; color: var(--ven-green-deepest) !important; border: 1px solid var(--ven-green-border) !important; }
+
+
+/* =============================================
+   BADGES DE ESTADO (CATÁLOGOS) - Mismo estilo que Usuarios
+   ============================================= */
+
+.btn-toggle-estado {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    outline: none !important;
+    display: inline-block;
+    line-height: normal;
+}
+
+.btn-toggle-estado:hover {
+    opacity: 0.85;
+    transform: scale(1.08);
+}
+
+.badge-estado {
+    font-size: 0.72rem !important;
+    padding: 0.4em 0.85em !important;
+    border-radius: 50px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.03em !important;
+    display: inline-flex !important;
+    align-items: center;
+    gap: 4px;
+    border: none !important;
+}
+
+.badge-activo {
+    background: linear-gradient(135deg, #16a34a, #15803d) !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 6px rgba(22, 163, 74, 0.4) !important;
+}
+
+.badge-inactivo {
+    background: #6b7280 !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+}
+
+/* Ajuste específico para que herede la fuente del sistema */
+.badge-estado * {
+    font-family: inherit;
+}

@@ -8,19 +8,21 @@
   --ven-bg-soft: #f0fdf4;       /* Fondo suave verdoso */
 }
 
+
 /* Sidebar Branding Refined */
 .sidebar-brand {
   height: auto !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-  background: linear-gradient(135deg, rgba(6, 78, 59, 1) 0%, rgba(4, 47, 36, 1) 100%) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: linear-gradient(135deg, rgba(6, 78, 59, 1) 0%, rgba(2, 28, 18, 1) 100%) !important;
 }
 
 .brand-link {
-  height: 85px !important;
+  height: 90px !important;
   display: flex !important;
   align-items: center !important;
-  justify-content: center !important; /* Centrado tras quitar logo */
-  padding: 1rem !important;
+  justify-content: center !important;
+  gap: 12px !important;
+  padding: 1.25rem 1.5rem !important;
   background: transparent !important;
   border-bottom: none !important;
   box-shadow: none !important;
@@ -28,40 +30,53 @@
 }
 
 .brand-image {
-  display: none !important; /* Asegurar que no quede rastro */
+  display: none !important;
 }
 
 .brand-text {
-  margin-left: 0 !important; /* Quitar margen */
-  text-align: center;
+  margin-left: 0 !important;
+  text-align: left;
 }
 
 .brand-text-main {
-  font-size: 1.3rem !important; /* Más grande */
+  font-size: 1.4rem !important;
   font-weight: 800 !important;
   color: #ffffff !important;
-  letter-spacing: 0.5px;
-  line-height: 1;
+  letter-spacing: -0.3px;
+  line-height: 1.1;
+  display: block;
 }
 
 .brand-text-sub {
-  font-weight: 400 !important;
-  font-size: 0.85rem !important;
-  color: #22c55e !important;
+  font-weight: 500 !important;
+  font-size: 0.72rem !important;
+  color: var(--ven-accent) !important;
   text-transform: uppercase;
-  letter-spacing: 3px;
-  margin-top: 5px;
+  letter-spacing: 4px;
+  margin-top: 4px;
+  display: block;
 }
 
 /* Sidebar Background */
 .app-sidebar {
-  background-color: #042f24 !important; /* Más oscuro que el brand para contraste */
+  background-color: #042f24 !important;
+  overflow-x: hidden !important;
 }
 
 /* Active Menu Items */
+.sidebar-menu .nav-link {
+  padding: 0.6rem 1rem 0.6rem 0.6rem !important;
+  margin: 1px 6px 1px 4px !important;
+  border-radius: 8px !important;
+  font-size: 0.9rem !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+}
+
 .sidebar-menu .nav-link.active {
-  background-color: var(--ven-primary) !important;
+  background: linear-gradient(135deg, var(--ven-primary) 0%, var(--ven-primary-hover) 100%) !important;
   color: #ffffff !important;
+  box-shadow: 0 3px 10px rgba(22, 163, 74, 0.3);
 }
 
 .sidebar-menu .nav-link.active .nav-icon {
@@ -69,7 +84,7 @@
 }
 
 .sidebar-menu .nav-link:hover {
-  background-color: rgba(22, 197, 94, 0.1) !important;
+  background-color: rgba(34, 197, 94, 0.12) !important;
   color: var(--ven-accent) !important;
 }
 
@@ -190,38 +205,98 @@ h1, h2, h3, h4, h5, h6, .brand-text {
 }
 
 /* Sidebar Footer Adjustments */
-.sidebar-wrapper {
-  position: relative !important;
+/* Sidebar Fix: Elastic Flexbox (No sub-pixel gaps) */
+.app-sidebar {
+  background-color: #042f24 !important;
   display: flex !important;
   flex-direction: column !important;
-  height: calc(100vh - 110px) !important; /* Ajuste para evitar desbordamiento inferior */
-  overflow-y: auto;
-  padding-bottom: 50px !important;
+  min-height: 100vh !important;
+  height: 100% !important;
 }
 
-.sidebar-wrapper nav {
-  flex-grow: 1 !important;
+.sidebar-wrapper {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 !important;
+  overflow: hidden !important;
+  background-color: transparent !important;
+}
+
+/* Solo esta área hace scroll */
+.sidebar-scroll-area {
+  flex: 1 !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  min-height: 0 !important;
+}
+
+.sidebar-scroll-area nav {
+  display: block !important;
+}
+
+/* Bloque inferior siempre pegado al fondo del sidebar */
+.sidebar-sticky-footer {
+  flex-shrink: 0 !important;
+  background-color: #042f24;
 }
 
 .sidebar-footer-nav {
-  position: absolute !important;
-  bottom: 5px !important; /* Margen de seguridad desde el fondo */
-  left: 0 !important;
-  width: 100% !important;
-  background-color: #042f24 !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
   padding: 8px 0 !important;
-  z-index: 10;
+  background-color: #042f24 !important;
 }
 
 .sidebar-footer-nav .nav-link {
-  color: rgba(255, 255, 255, 0.5) !important;
-  transition: all 0.3s ease;
+  padding: 0.5rem 1rem !important;
+  margin: 1px 8px !important;
+  border-radius: 8px !important;
+  font-size: 0.85rem !important;
+  color: rgba(255, 255, 255, 0.45) !important;
+  transition: all 0.2s ease;
 }
 
 .sidebar-footer-nav .nav-link:hover {
-  color: var(--ven-accent) !important;
+  color: rgba(255, 255, 255, 0.8) !important;
   background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Logos institucionales al fondo */
+.sidebar-institutional-logo {
+  padding: 10px 16px 16px;
+  background-color: #042f24;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+  border-top: 1px solid rgba(255,255,255,0.04);
+}
+
+.sidebar-mijp-logo {
+  height: 30px;
+  width: auto;
+  object-fit: contain;
+  opacity: 0.45;
+  transition: opacity 0.2s ease;
+}
+
+.sidebar-footer-ven-logo {
+  height: 30px;
+  width: auto;
+  object-fit: contain;
+  opacity: 0.45;
+  transition: opacity 0.2s ease;
+}
+
+.footer-logo-divider {
+  width: 1px;
+  height: 20px;
+  background: rgba(255,255,255,0.08);
+  flex-shrink: 0;
+}
+
+.sidebar-mijp-logo:hover,
+.sidebar-footer-ven-logo:hover {
+  opacity: 0.9;
 }
 
 /* SweetAlert Custom Theme (Global Dashboard) */
@@ -298,6 +373,29 @@ i.bi, i.fas, i.far, i.fab, i.fa {
 .nav-sidebar .nav-link:hover i,
 .nav-sidebar .nav-link.active i {
   color: #ffffff !important;
+}
+
+/* Iconos de sub-módulos (Anidados) */
+.nav-treeview .nav-link i {
+  color: var(--ven-accent) !important;
+  font-size: 0.82rem;
+}
+
+.nav-treeview .nav-link.active i,
+.nav-treeview .nav-link:hover i {
+  color: #ffffff !important;
+}
+
+/* Guía visual vertical para sub-menús */
+.nav-treeview {
+  border-left: 2px solid rgba(34, 197, 94, 0.15);
+  margin-left: 22px;
+  padding-left: 4px;
+}
+
+.nav-treeview .nav-link {
+  padding: 0.45rem 0.85rem 0.45rem 0.5rem !important;
+  font-size: 0.85rem !important;
 }
 
 /* Efecto hover interactivo para iconos que actúan como disparadores */

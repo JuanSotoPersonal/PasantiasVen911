@@ -16,10 +16,12 @@
         ?>
       <?php endif; ?>
     </h3>
-    <?php if (tienePerm('fichas', 'crear') && $tabActiva !== 'catalogos'): ?>
-    <button class="btn btn-ven-primary btn-sm" id="btnNuevaFicha">
-      <i class="bi bi-plus-circle-fill me-1"></i> Nueva Ficha
-    </button>
+    <?php if (tienePerm('fichas', 'crear') && $tabActiva !== 'configuracion'): ?>
+    <div class="card-tools ms-auto">
+      <button class="btn btn-ven-primary btn-sm" id="btnNuevaFicha">
+        <i class="bi bi-plus-circle-fill me-1"></i> Nueva Ficha
+      </button>
+    </div>
     <?php endif; ?>
   </div>
   <div class="card-body">

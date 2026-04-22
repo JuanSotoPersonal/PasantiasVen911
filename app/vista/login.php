@@ -19,7 +19,7 @@
     <div class="logo-container">
       <img src="public/assets/img/ven911_logo.webp" alt="Logo VEN 911" class="logo-img">
     </div>
-    
+
     <h1 class="login-title">VEN 911 Carabobo</h1>
     <p class="login-subtitle">Sistema Integrado de Gestión de Emergencias</p>
     

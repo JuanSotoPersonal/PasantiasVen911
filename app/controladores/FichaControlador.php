@@ -305,7 +305,7 @@ class FichaControlador {
                         if (!$v['valido']) return $v;
                         return ($accion === 'crear') ? $this->modelo->crearTipoEmergencia($nombre) : $this->modelo->actualizarTipoEmergencia($id, $nombre);
                     })(),
-                    'eliminar'  => $this->modelo->eliminarTipoEmergencia($id),
+                    'eliminar'  => $this->modelo->toggleEstadoTipoEmergencia($id),
                     default     => false,
                 },
                 'caso' => match ($accion) {
@@ -324,23 +324,25 @@ class FichaControlador {
                             ? $this->modelo->crearCaso($tipoId, $nombre, $desc) 
                             : $this->modelo->actualizarCaso($id, $tipoId, $nombre, $desc);
                     })(),
-                    'eliminar' => $this->modelo->eliminarCaso($id),
+                    'eliminar' => $this->modelo->toggleEstadoCaso($id),
                     default    => false,
                 },
                 'municipio' => match ($accion) {
                     'crear', 'editar' => (function() use ($id, $accion) {
-                        $nombre = trim($_POST['nombre_municipio'] ?? '');
+                        $nombre = trim($_POST['nombre_municipio'] ?? $_POST['nombre'] ?? '');
+                        $desc   = trim($_POST['descripcion'] ?? '');
                         $v = Validador::validarNombreCatalogo($nombre, 'Nombre del Municipio');
                         if (!$v['valido']) return $v;
-                        return ($accion === 'crear') ? $this->modelo->crearMunicipio($nombre) : $this->modelo->actualizarMunicipio($id, $nombre);
+                        return ($accion === 'crear') ? $this->modelo->crearMunicipio($nombre, $desc) : $this->modelo->actualizarMunicipio($id, $nombre, $desc);
                     })(),
-                    'eliminar' => $this->modelo->eliminarMunicipio($id),
+                    'eliminar' => $this->modelo->toggleEstadoMunicipio($id),
                     default    => false,
                 },
                 'parroquia' => match ($accion) {
                     'crear', 'editar' => (function() use ($id, $accion) {
                         $munId  = (int)($_POST['municipio_id'] ?? 0);
-                        $nombre = trim($_POST['nombre_parroquia'] ?? '');
+                        $nombre = trim($_POST['nombre_parroquia'] ?? $_POST['nombre'] ?? '');
+                        $desc   = trim($_POST['descripcion'] ?? '');
                         
                         $vId = Validador::validarId($munId, 'Municipio');
                         if (!$vId['valido']) return $vId;
@@ -349,10 +351,21 @@ class FichaControlador {
                         if (!$vNom['valido']) return $vNom;
                         
                         return ($accion === 'crear') 
-                            ? $this->modelo->crearParroquia($munId, $nombre) 
-                            : $this->modelo->actualizarParroquia($id, $munId, $nombre);
+                            ? $this->modelo->crearParroquia($munId, $nombre, $desc) 
+                            : $this->modelo->actualizarParroquia($id, $munId, $nombre, $desc);
                     })(),
-                    'eliminar' => $this->modelo->eliminarParroquia($id),
+                    'eliminar' => $this->modelo->toggleEstadoParroquia($id),
+                    default    => false,
+                },
+                'organismo' => match ($accion) {
+                    'crear', 'editar' => (function() use ($id, $accion) {
+                        $nombre = trim($_POST['nombre_organismo'] ?? $_POST['nombre'] ?? '');
+                        $desc   = trim($_POST['descripcion'] ?? '');
+                        $v = Validador::validarNombreCatalogo($nombre, 'Nombre del Organismo');
+                        if (!$v['valido']) return $v;
+                        return ($accion === 'crear') ? $this->modelo->crearOrganismo($nombre, $desc) : $this->modelo->actualizarOrganismo($id, $nombre, $desc);
+                    })(),
+                    'eliminar' => $this->modelo->toggleEstadoOrganismo($id),
                     default    => false,
                 },
                 default => false,
@@ -382,12 +395,14 @@ class FichaControlador {
             $catalogo    = $_GET['cat']          ?? '';
             $tipoId      = (int)($_GET['tipo_id']      ?? 0);
             $municipioId = (int)($_GET['municipio_id'] ?? 0);
+            $estado      = (int)($_GET['estado'] ?? 1);
 
             $datos = match ($catalogo) {
-                'tipo_emergencia' => $this->modelo->obtenerTiposEmergencia(),
-                'caso'            => $this->modelo->obtenerCasos($tipoId      ?: null),
-                'municipio'       => $this->modelo->obtenerMunicipios(),
-                'parroquia'       => $this->modelo->obtenerParroquias($municipioId ?: null),
+                'tipo_emergencia' => $this->modelo->obtenerTiposEmergencia($estado),
+                'caso'            => $this->modelo->obtenerCasos($tipoId ?: null, $estado),
+                'municipio'       => $this->modelo->obtenerMunicipios($estado),
+                'parroquia'       => $this->modelo->obtenerParroquias($municipioId ?: null, $estado),
+                'organismo'       => $this->modelo->obtenerOrganismos($estado),
                 default           => [],
             };
 
