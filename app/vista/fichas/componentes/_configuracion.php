@@ -113,9 +113,9 @@
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table id="tablaMunicipios" class="table table-hover align-middle w-100">
-                            <thead class="bg-light text-secondary small text-uppercase fw-bold">
-                                <tr><th width="60">ID</th><th class="text-nowrap">Nombre del Municipio</th><th>Descripción</th><th width="100">Estado</th><th width="110" class="text-center text-dark">Acciones</th></tr>
+                        <table id="tablaMunicipios" class="table table-bordered table-striped table-hover align-middle w-100">
+                            <thead class="table-dark">
+                                <tr><th width="60">#</th><th class="text-nowrap">Nombre del Municipio</th><th>Descripción</th><th width="100">Estado</th><th width="110" class="text-center text-white">Acciones</th></tr>
                             </thead>
                             <tbody></tbody>
                         </table>
@@ -217,28 +217,28 @@
 
                     <div class="tab-content" id="pills-inactivos-contenido">
                         <div class="tab-pane fade show active" id="inactivos-tipos">
-                            <table id="tablaTiposInactivos" class="table table-sm table-hover w-100">
-                                <thead class="bg-dark text-white"><tr><th>ID</th><th>Nombre</th><th>Estado</th><th>Acciones</th></tr></thead>
+                            <table id="tablaTiposInactivos" class="table table-sm table-bordered table-striped table-hover w-100">
+                                <thead class="table-dark"><tr><th>#</th><th>Nombre</th><th>Estado</th><th>Acciones</th></tr></thead>
                             </table>
                         </div>
                         <div class="tab-pane fade" id="inactivos-casos">
-                            <table id="tablaCasosInactivos" class="table table-sm table-hover w-100">
-                                <thead class="bg-dark text-white"><tr><th>ID</th><th>Caso</th><th>Tipo</th><th>Estado</th><th>Acciones</th></tr></thead>
+                            <table id="tablaCasosInactivos" class="table table-sm table-bordered table-striped table-hover w-100">
+                                <thead class="table-dark"><tr><th>#</th><th>Caso</th><th>Tipo</th><th>Estado</th><th>Acciones</th></tr></thead>
                             </table>
                         </div>
                         <div class="tab-pane fade" id="inactivos-municipios">
-                            <table id="tablaMunicipiosInactivos" class="table table-sm table-hover w-100">
-                                <thead class="bg-dark text-white"><tr><th>ID</th><th>Municipio</th><th>Estado</th><th>Acciones</th></tr></thead>
+                            <table id="tablaMunicipiosInactivos" class="table table-sm table-bordered table-striped table-hover w-100">
+                                <thead class="table-dark"><tr><th>#</th><th>Municipio</th><th>Estado</th><th>Acciones</th></tr></thead>
                             </table>
                         </div>
                         <div class="tab-pane fade" id="inactivos-parroquias">
-                            <table id="tablaParroquiasInactivos" class="table table-sm table-hover w-100">
-                                <thead class="bg-dark text-white"><tr><th>ID</th><th>Parroquia</th><th>Municipio</th><th>Estado</th><th>Acciones</th></tr></thead>
+                            <table id="tablaParroquiasInactivos" class="table table-sm table-bordered table-striped table-hover w-100">
+                                <thead class="table-dark"><tr><th>#</th><th>Parroquia</th><th>Municipio</th><th>Estado</th><th>Acciones</th></tr></thead>
                             </table>
                         </div>
                         <div class="tab-pane fade" id="inactivos-organismos">
-                            <table id="tablaOrganismosInactivos" class="table table-sm table-hover w-100">
-                                <thead class="bg-dark text-white"><tr><th>ID</th><th>Organismo</th><th>Estado</th><th>Acciones</th></tr></thead>
+                            <table id="tablaOrganismosInactivos" class="table table-sm table-bordered table-striped table-hover w-100">
+                                <thead class="table-dark"><tr><th>#</th><th>Organismo</th><th>Estado</th><th>Acciones</th></tr></thead>
                             </table>
                         </div>
                     </div>
