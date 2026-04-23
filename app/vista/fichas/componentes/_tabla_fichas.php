@@ -19,6 +19,7 @@
                 'todas'       => 'Todas las Fichas',
                 'pendientes' => 'Fichas Pendientes',
                 'en_proceso' => 'Fichas en Proceso',
+                'atendidos'  => 'Fichas Atendidas',
                 'cerradas'   => 'Fichas Cerradas (Historial)',
                 'finalizadas'=> 'Fichas Finalizadas',
                 default      => 'Fichas de Emergencia'

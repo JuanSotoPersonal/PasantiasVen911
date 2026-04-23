@@ -65,6 +65,12 @@ $seccion   = explode('/', $urlActual)[0] ?? '';
                                     </a>
                                 </li>
                                 <li class="nav-item">
+                                    <a href="index.php?url=ficha&t=atendidos" class="nav-link <?= ($seccion === 'ficha' && $tabFicha === 'atendidos') ? 'active' : '' ?>">
+                                        <i class="nav-icon bi bi-check-lg text-success"></i>
+                                        <p>Atendidos</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
                                     <a href="index.php?url=ficha&t=cerradas" class="nav-link <?= ($seccion === 'ficha' && $tabFicha === 'cerradas') ? 'active' : '' ?>">
                                         <i class="nav-icon bi bi-lock-fill"></i>
                                         <p>Cerradas</p>

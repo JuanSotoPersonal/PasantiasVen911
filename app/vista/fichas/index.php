@@ -14,6 +14,7 @@ $tabActiva = $_GET['t'] ?? 'todas';
 $estadoFiltro = match($tabActiva) {
     'pendientes'  => 'Pendiente',
     'en_proceso'  => 'En Proceso',
+    'atendidos'   => 'Atendido',
     'cerradas'    => 'Cerrado',
     'finalizadas' => 'Finalizado',
     default       => 'todos',
