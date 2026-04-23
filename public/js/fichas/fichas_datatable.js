@@ -49,8 +49,11 @@ $(document).ready(function () {
         },
         columns: [
             {
-                data: 'id',
-                render: (d) => `<span class="fw-bold text-secondary">#${d}</span>`
+                data: null,
+                width: '50px',
+                orderable: false,
+                searchable: false,
+                render: (d, type, row, meta) => `<span class="fw-bold text-secondary">${meta.row + 1}</span>`
             },
             {
                 data: 'nombre_solicitante',

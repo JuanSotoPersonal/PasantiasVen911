@@ -40,11 +40,11 @@
     <div class="card-body p-0">
         <div class="table-responsive">
             <table id="tablaFichas" 
-                   class="table table-hover align-middle mb-0 w-100"
+                   class="table table-bordered table-striped table-hover align-middle w-100"
                    data-estado="<?= htmlspecialchars($estadoFiltro) ?>">
-                <thead class="bg-light text-secondary small text-uppercase fw-bold">
+                <thead class="table-dark">
                     <tr>
-                        <th class="ps-3">ID</th>
+                        <th>#</th>
                         <th>Solicitante</th>
                         <th>Tipo de Caso</th>
                         <th>Parroquia</th>
