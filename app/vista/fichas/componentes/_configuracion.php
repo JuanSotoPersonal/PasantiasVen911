@@ -54,9 +54,11 @@
             <div class="card shadow-sm border-0 rounded-bottom">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
                     <h5 class="card-title mb-0 fw-bold text-success"><i class="bi bi-lightning-charge-fill me-2"></i>Tipos de Emergencia</h5>
-                    <button class="btn btn-ven-primary btn-sm rounded-pill px-3" id="btnNuevoTipo">
-                        <i class="bi bi-plus-circle-fill me-1"></i>Nuevo Tipo
-                    </button>
+                    <div class="card-tools ms-auto">
+                        <button class="btn btn-ven-primary btn-sm rounded-pill px-3" id="btnNuevoTipo">
+                            <i class="bi bi-plus-circle-fill me-1"></i>Nuevo Tipo
+                        </button>
+                    </div>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -76,9 +78,11 @@
             <div class="card shadow-sm border-0 rounded-bottom">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
                     <h5 class="card-title mb-0 fw-bold text-success"><i class="bi bi-list-ul me-2"></i>Catálogo de Casos por Incidente</h5>
-                    <button class="btn btn-ven-primary btn-sm rounded-pill px-3" id="btnNuevoCaso">
-                        <i class="bi bi-plus-circle-fill me-1"></i>Nuevo Caso
-                    </button>
+                    <div class="card-tools ms-auto">
+                        <button class="btn btn-ven-primary btn-sm rounded-pill px-3" id="btnNuevoCaso">
+                            <i class="bi bi-plus-circle-fill me-1"></i>Nuevo Caso
+                        </button>
+                    </div>
                 </div>
                 <div class="card-body">
                     <div class="mb-3 d-flex align-items-center gap-3">
@@ -107,9 +111,11 @@
             <div class="card shadow-sm border-0 rounded-bottom">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
                     <h5 class="card-title mb-0 fw-bold text-success"><i class="bi bi-map-fill me-2"></i>Municipios Administrativos</h5>
-                    <button class="btn btn-ven-primary btn-sm rounded-pill px-3" id="btnNuevoMunicipio">
-                        <i class="bi bi-plus-circle-fill me-1"></i>Nuevo Municipio
-                    </button>
+                    <div class="card-tools ms-auto">
+                        <button class="btn btn-ven-primary btn-sm rounded-pill px-3" id="btnNuevoMunicipio">
+                            <i class="bi bi-plus-circle-fill me-1"></i>Nuevo Municipio
+                        </button>
+                    </div>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -129,9 +135,11 @@
             <div class="card shadow-sm border-0 rounded-bottom">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
                     <h5 class="card-title mb-0 fw-bold text-success"><i class="bi bi-geo-alt-fill me-2"></i>Parroquias Locales</h5>
-                    <button class="btn btn-ven-primary btn-sm rounded-pill px-3" id="btnNuevaParroquia">
-                        <i class="bi bi-plus-circle-fill me-1"></i>Nueva Parroquia
-                    </button>
+                    <div class="card-tools ms-auto">
+                        <button class="btn btn-ven-primary btn-sm rounded-pill px-3" id="btnNuevaParroquia">
+                            <i class="bi bi-plus-circle-fill me-1"></i>Nueva Parroquia
+                        </button>
+                    </div>
                 </div>
                 <div class="card-body">
                     <div class="mb-3 d-flex align-items-center gap-3">
@@ -160,9 +168,11 @@
             <div class="card shadow-sm border-0 rounded-bottom">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
                     <h5 class="card-title mb-0 fw-bold text-success"><i class="bi bi-building-fill me-2"></i>Organismos de Respuesta Inmediata</h5>
-                    <button class="btn btn-ven-primary btn-sm rounded-pill px-3" id="btnNuevoOrganismo">
-                        <i class="bi bi-plus-circle-fill me-1"></i>Nuevo Organismo
-                    </button>
+                    <div class="card-tools ms-auto">
+                        <button class="btn btn-ven-primary btn-sm rounded-pill px-3" id="btnNuevoOrganismo">
+                            <i class="bi bi-plus-circle-fill me-1"></i>Nuevo Organismo
+                        </button>
+                    </div>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
