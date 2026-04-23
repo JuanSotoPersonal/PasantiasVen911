@@ -1,17 +1,21 @@
 <?php
 /**
- * Partial: Scripts globales
- * Centraliza la carga de librerías JS y configuraciones comunes de la UI.
- * Utiliza la variable $pageName para carga condicional.
+ * scripts.php - Cargador Central de Lógica Javascript
+ * 
+ * Centraliza la invocación de librerías core y configuraciones de UI
+ * condicionales según el módulo activo.
  */
+
+// 1. DETERMINACIÓN DEL CONTEXTO DE EJECUCIÓN
 $pageName = $pageName ?? 'home';
 ?>
 
-<!-- SweetAlert2 (Común a todas las vistas) -->
+<!-- 2. LIBRERÍAS TRANSVERSALES (SweetAlert2) -->
 <script src="public/libs/sweetalert2/sweetalert2.min.js"></script>
 
-<?php if ($pageName === 'login' || $pageName === 'setup'): ?>
-    <!-- Scripts exclusivos de Autenticación y Configuración Inicial -->
+<!-- 3. CARGA SEGÚN CONTEXTO (Login vs Dashboard) -->
+<?php if (in_array($pageName, ['login', 'setup'])): ?>
+    <!-- Scripts exclusivos de Autenticación -->
     <?php if ($pageName === 'login'): ?>
         <script src="public/js/auth/login.js"></script>
     <?php elseif ($pageName === 'setup'): ?>
@@ -19,28 +23,36 @@ $pageName = $pageName ?? 'home';
     <?php endif; ?>
 
 <?php else: ?>
-    <!-- Scripts exclusivos del Dashboard / Sistema -->
+    <!-- Scripts Robustos del Sistema (Dashboard) -->
     <script src="public/libs/overlayscrollbars/overlayscrollbars.browser.es6.min.js"></script>
     <script src="public/libs/popperjs/popper.min.js"></script>
     <script src="public/libs/bootstrap/bootstrap.min.js"></script>
     <script src="public/js/adminlte.js"></script>
+    
+    <!-- jQuery Ecosystem (DataTables/Select2 dependencias) -->
+    <script src="public/libs/datatables/jquery-3.7.1.min.js"></script>
+    <script src="public/libs/select2/select2.min.js"></script>
+    <script src="public/libs/select2/es.js"></script>
 
-    <!-- Configuración Global de Scrollbars (OverlayScrollbars) -->
+    <!-- 4. CONFIGURACIÓN DE COMPORTAMIENTO DE INTERFAZ -->
     <script>
+        /**
+         * Inicialización de OverlayScrollbars para la Sidebar.
+         * Garantiza una experiencia de scroll suave y estética.
+         */
         const SELECTOR_SIDEBAR_WRAPPER = '.sidebar-scroll-area';
         const DefaultConfig = {
             scrollbarTheme: 'os-theme-light',
             scrollbarAutoHide: 'leave',
             scrollbarClickScroll: true,
         };
+
         document.addEventListener('DOMContentLoaded', function () {
             const initScroll = () => {
                 const target = document.querySelector(SELECTOR_SIDEBAR_WRAPPER);
                 if (target && typeof OverlayScrollbarsGlobal !== 'undefined') {
                     OverlayScrollbarsGlobal.OverlayScrollbars(target, {
-                        overflow: {
-                            x: 'hidden',
-                        },
+                        overflow: { x: 'hidden' },
                         scrollbars: {
                             theme: DefaultConfig.scrollbarTheme,
                             autoHide: DefaultConfig.scrollbarAutoHide,
@@ -48,13 +60,14 @@ $pageName = $pageName ?? 'home';
                         },
                     });
                 } else if (target) {
-                    // Re-intento si la librería no ha cargado aún
                     setTimeout(initScroll, 100);
                 }
             };
             
+            // Solo activar scrollbars en desktop para optimizar rendimiento móvil
             const isMobile = window.innerWidth <= 992;
             if (!isMobile) initScroll();
         });
     </script>
 <?php endif; ?>
+

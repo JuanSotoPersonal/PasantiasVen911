@@ -119,8 +119,45 @@
 }
 .modal .form-label { color: var(--ven-green-deepest); font-weight: 600; }
 
-/* Títulos de sección en modales */
-.text-ven-green { color: var(--ven-green-primary) !important; }
+/* =============================================
+   TÍTULOS DE SECCIÓN Y ORGANIZACIÓN
+   ============================================= */
+
+.section-title-container {
+    position: relative;
+    padding-left: 0.5rem;
+}
+
+.section-title-container h6 {
+    letter-spacing: 0.05em;
+    position: relative;
+    z-index: 1;
+}
+
+.section-title-container::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: var(--ven-green-primary);
+    border-radius: 4px;
+    opacity: 0.7;
+}
+
+/* Ajustes de Formulario en Modales */
+.modal .form-control, .modal .form-select {
+    font-size: 0.9rem;
+    padding: 0.6rem 0.9rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.modal .form-control:focus {
+    border-color: var(--ven-green-primary) !important;
+}
+
+/* ... (resto del archivo original) ... */
 
 /* Animación de entrada de modal */
 .modal.fade .modal-dialog { transform: scale(0.95) translateY(-20px); transition: transform 0.25s ease; }

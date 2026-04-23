@@ -82,9 +82,10 @@ class Validador {
      * @return array ['valido' => bool, 'mensaje' => string]
      */
     public static function validarCedula(?string $cedula, bool $obligatoria = true): array {
-        $cedula = trim($cedula ?? '');
+        $cedula = trim((string)($cedula ?? ''));
         
-        if (empty($cedula)) {
+        // Atrapa vacíos literales o strings "null"/"undefined" inyectados por FormData en JS
+        if ($cedula === '' || strtolower($cedula) === 'null' || strtolower($cedula) === 'undefined') {
             if ($obligatoria) {
                 return ['valido' => false, 'mensaje' => 'La cédula es obligatoria.'];
             }
@@ -147,7 +148,7 @@ class Validador {
     public static function validarTextoLibre(?string $texto, string $nombreCampo, int $min = 5, int $max = 500): array {
         $texto = trim($texto ?? '');
         if (empty($texto)) {
-            return ['valido' => false, 'mensaje' => "El campo '{$nombreCampo}' es obligatorio."];
+            return ($min === 0) ? ['valido' => true, 'mensaje' => ''] : ['valido' => false, 'mensaje' => "El campo '{$nombreCampo}' es obligatorio."];
         }
         if (mb_strlen($texto) < $min) {
             return ['valido' => false, 'mensaje' => "El campo '{$nombreCampo}' es demasiado corto (mínimo {$min} caracteres)."];
@@ -176,11 +177,31 @@ class Validador {
         if (empty($nombre)) {
             return ['valido' => false, 'mensaje' => "El nombre de '{$nombreCampo}' es obligatorio."];
         }
-        if (mb_strlen($nombre) < 3) {
-            return ['valido' => false, 'mensaje' => "El nombre de '{$nombreCampo}' es demasiado corto."];
+        if (mb_strlen($nombre) < 1) {
+            return ['valido' => false, 'mensaje' => "El nombre de '{$nombreCampo}' no puede estar vacío."];
+        }
+        if (mb_strlen($nombre) > 100) {
+            return ['valido' => false, 'mensaje' => "El nombre de '{$nombreCampo}' no puede exceder los 100 caracteres."];
         }
         if (!preg_match('/^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s\.\-\(\)]+$/', $nombre)) {
             return ['valido' => false, 'mensaje' => "El campo '{$nombreCampo}' contiene caracteres no permitidos."];
+        }
+        return ['valido' => true, 'mensaje' => ''];
+    }
+
+    /**
+     * Valida nombres estrictamente alfabéticos (solo letras y espacios).
+     */
+    public static function validarNombreAlfabetico(?string $nombre, string $nombreCampo, int $max = 60): array {
+        $nombre = trim($nombre ?? '');
+        if (empty($nombre)) {
+            return ['valido' => false, 'mensaje' => "El nombre de '{$nombreCampo}' es obligatorio."];
+        }
+        if (mb_strlen($nombre) > $max) {
+            return ['valido' => false, 'mensaje' => "El nombre de '{$nombreCampo}' no puede exceder los {$max} caracteres."];
+        }
+        if (!preg_match('/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/', $nombre)) {
+            return ['valido' => false, 'mensaje' => "El campo '{$nombreCampo}' solo puede contener letras y espacios."];
         }
         return ['valido' => true, 'mensaje' => ''];
     }

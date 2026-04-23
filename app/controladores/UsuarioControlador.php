@@ -38,6 +38,13 @@ class UsuarioControlador {
         $roles = $this->modelo->obtenerRoles();
         $registroModelo = new RegistroModelo();
         $preguntas = $registroModelo->obtenerPreguntasSeguridad();
+        
+        $tabActiva = $_GET['t'] ?? 'todos';
+        $rolActivoId = 0;
+        if (strpos($tabActiva, 'rol_') === 0) {
+            $rolActivoId = (int)str_replace('rol_', '', $tabActiva);
+        }
+
         require_once 'app/vista/usuarios/index.php';
         } catch (\Exception $e) {
             error_log("[UsuarioControlador] Error en index: " . $e->getMessage());

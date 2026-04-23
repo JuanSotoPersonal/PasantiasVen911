@@ -1,6 +1,17 @@
 
 $(document).ready(function () {
 
+    // Inicializar Select2 estético (con buscador) en todos los selects del módulo
+    $('.form-select').each(function () {
+        const $modal = $(this).closest('.modal');
+        $(this).select2({
+            theme: 'bootstrap-5',
+            dropdownParent: $modal.length ? $modal : $(document.body),
+            width: '100%',
+            language: 'es'
+        });
+    });
+
     const tablaEl = $('#tablaFichas');
     const estadoFiltro = tablaEl.data('estado') || 'todos';
     const puedeEditar =  window.VEN911_PERM_EDITAR  ?? false;
@@ -80,7 +91,7 @@ $(document).ready(function () {
                                 data-id="${row.id}" title="Ver detalle" id="btnDetalle-${row.id}">
                             <i class="bi bi-eye-fill"></i>
                         </button>`;
-                    if (puedeEditar) {
+                    if (puedeEditar && row.estado_ficha !== 'Cerrado' && row.estado_ficha !== 'Finalizado') {
                         btns += `
                         <button class="btn btn-ven-edit btn-accion btn-editar-ficha"
                                 data-id="${row.id}" title="Editar" id="btnEditar-${row.id}">
@@ -113,14 +124,14 @@ $(document).ready(function () {
     $('#crear_municipio_id').on('change', function () {
         const municipioId = $(this).val();
         const sel = $('#crear_parroquia_id');
-        if (!municipioId) { sel.prop('disabled', true).html('<option value="">-- Primero seleccione municipio --</option>'); return; }
+        if (!municipioId) { sel.prop('disabled', true).html('<option value="">-- Primero seleccione municipio --</option>').trigger('change'); return; }
         cargarParroquias(municipioId, sel, null);
     });
 
     $('#editar_municipio_id').on('change', function () {
         const municipioId = $(this).val();
         const sel = $('#editar_parroquia_id');
-        if (!municipioId) { sel.html('<option value="">-- Seleccione municipio --</option>'); return; }
+        if (!municipioId) { sel.html('<option value="">-- Seleccione municipio --</option>').trigger('change'); return; }
         cargarParroquias(municipioId, sel, null);
     });
 
@@ -131,7 +142,7 @@ $(document).ready(function () {
                 const sel = valorActual == p.id ? 'selected' : '';
                 opts += `<option value="${p.id}" ${sel}>${escapeHTML(p.nombre_parroquia)}</option>`;
             });
-            $sel.prop('disabled', false).html(opts);
+            $sel.prop('disabled', false).html(opts).trigger('change');
         }, 'json');
     }
 
@@ -141,14 +152,14 @@ $(document).ready(function () {
     $('#crear_tipo_emergencia_id').on('change', function () {
         const tipoId = $(this).val();
         const sel = $('#crear_caso_id');
-        if (!tipoId) { sel.prop('disabled', true).html('<option value="">-- Primero seleccione tipo --</option>'); return; }
+        if (!tipoId) { sel.prop('disabled', true).html('<option value="">-- Primero seleccione tipo --</option>').trigger('change'); return; }
         cargarCasos(tipoId, sel, null);
     });
 
     $('#editar_tipo_emergencia_id').on('change', function () {
         const tipoId = $(this).val();
         const sel = $('#editar_caso_id');
-        if (!tipoId) { sel.html('<option value="">-- Seleccione tipo --</option>'); return; }
+        if (!tipoId) { sel.html('<option value="">-- Seleccione tipo --</option>').trigger('change'); return; }
         cargarCasos(tipoId, sel, null);
     });
 
@@ -159,7 +170,7 @@ $(document).ready(function () {
                 const sel = valorActual == c.id ? 'selected' : '';
                 opts += `<option value="${c.id}" ${sel}>${escapeHTML(c.nombre_caso)}</option>`;
             });
-            $sel.prop('disabled', false).html(opts);
+            $sel.prop('disabled', false).html(opts).trigger('change');
         }, 'json');
     }
 
@@ -176,7 +187,7 @@ $(document).ready(function () {
             contentType: false,
             success: function (res) {
                 if (res.success) {
-                    bootstrap.Modal.getInstance(document.getElementById('modalCrearFicha')).hide();
+                    bootstrap.Modal.getOrCreateInstance(document.getElementById('modalCrearFicha')).hide();
                     Swal.fire('¡Registrada!', res.message, 'success');
                     tablaFichas.ajax.reload(null, false);
                 } else {
@@ -196,8 +207,7 @@ $(document).ready(function () {
         $('#contenidoDetalleFicha').html('<div class="text-center py-4"><div class="spinner-border text-success"></div></div>');
         $('#contenedorCambioEstado').empty();
 
-        const modal = new bootstrap.Modal(document.getElementById('modalDetalleFicha'));
-        modal.show();
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('modalDetalleFicha')).show();
 
         $.get(`index.php?url=ficha/detalle&id=${fichaId}`, function (res) {
             if (!res.success || !res.data) {
@@ -268,7 +278,7 @@ $(document).ready(function () {
             if (!result.isConfirmed) return;
             $.post('index.php?url=ficha/cambiarEstado', { ficha_id: fichaId, nuevo_estado: nuevoEstado }, function (res) {
                 if (res.success) {
-                    bootstrap.Modal.getInstance(document.getElementById('modalDetalleFicha')).hide();
+                    bootstrap.Modal.getOrCreateInstance(document.getElementById('modalDetalleFicha')).hide();
                     Swal.fire('¡Actualizado!', res.message, 'success');
                     tablaFichas.ajax.reload(null, false);
                 } else {
@@ -293,8 +303,8 @@ $(document).ready(function () {
             $('#editar_nombre_solicitante').val(f.nombre_solicitante);
             $('#editar_telefono1').val(f.telefono1);
             $('#editar_telefono2').val(f.telefono2 || '');
-            $('#editar_municipio_id').val(f.municipio_id);
-            $('#editar_tipo_emergencia_id').val(f.tipo_emergencia_id);
+            $('#editar_municipio_id').val(f.municipio_id).trigger('change.select2');
+            $('#editar_tipo_emergencia_id').val(f.tipo_emergencia_id).trigger('change.select2');
             $('#editar_descripcion_caso').val(f.descripcion_caso);
             $('#editar_direccion_exacta').val(f.direccion_exacta);
 
@@ -302,7 +312,7 @@ $(document).ready(function () {
             cargarParroquias(f.municipio_id, $('#editar_parroquia_id'), f.parroquia_id);
             cargarCasos(f.tipo_emergencia_id, $('#editar_caso_id'), f.caso_id);
 
-            new bootstrap.Modal(document.getElementById('modalEditarFicha')).show();
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('modalEditarFicha')).show();
         }, 'json');
     });
 
@@ -319,7 +329,7 @@ $(document).ready(function () {
             contentType: false,
             success: function (res) {
                 if (res.success) {
-                    bootstrap.Modal.getInstance(document.getElementById('modalEditarFicha')).hide();
+                    bootstrap.Modal.getOrCreateInstance(document.getElementById('modalEditarFicha')).hide();
                     Swal.fire('¡Guardado!', res.message, 'success');
                     tablaFichas.ajax.reload(null, false);
                 } else {

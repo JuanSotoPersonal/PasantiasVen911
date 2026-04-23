@@ -43,3 +43,14 @@ Todo nombramiento de variables, clases, métodos y funciones debe estar rigurosa
 7. Estándar de Vistas (Componentización)
 Estructura de Vistas: Todas las vistas de módulos principales (ej. usuarios, fichas, etc.) deben estar obligatoriamente modularizadas. El archivo `index.php` de la vista debe servir únicamente de contenedor principal, delegando el contenido específico (modales, tablas, formularios complejos) a archivos individuales dentro de una subcarpeta llamada `componentes/`.
 Nomenclatura de Componentes: Los archivos de componentes deben usar el prefijo guion bajo y ser descriptivos: `_modal_crear.php`, `_tabla_principal.php`, `_configuracion.php`. Esto garantiza que el código sea escalable y evita archivos `index.php` masivos y difíciles de depurar.
+
+8. Regla de Autonomía (Dependencias Estáticas y Offline)
+Prohibición de CDNs Externos: Queda estrictamente prohibido enlazar librerías CSS o Javascript a través de redes de distribución de contenido (CDN) externas (ej. url de jsdelivr, unpkg, cdnjs). 
+Todas las librerías o dependencias de terceros deben descargarse rigurosamente y almacenarse en el servidor local dentro de la carpeta `public/libs/`. Esto garantiza que el sistema pueda funcionar al 100% en redes intranet, entornos aislados sin acceso a Internet y blinda la plataforma contra caídas de servidores externos o actualizaciones maliciosas que rompan la interfaz.
+
+9. Regla de Estética y Documentación de Código (Clean Code)
+Todo archivo fuente debe seguir un estándar de organización visual y comentarios basado en el modelo de `index.php`. Esto incluye:
+- Encabezado Descriptivo: Cada archivo debe iniciar con un bloque de comentario que explique su propósito global.
+- Segmentación por Bloques: La lógica debe dividirse en secciones numeradas y tituladas (ej. // 1. SEGURIDAD, // 2. RUTEO).
+- Comentarios Tácticos en Español: No se deben comentar obviedades ("suma 1"), sino intenciones técnicas o justificaciones de negocio ("Bypass de seguridad para Admin").
+- Limpieza Visual: El código debe estar correctamente indentado y usar saltos de línea estratégicos para separar responsabilidades lógicas dentro de una misma función o archivo.

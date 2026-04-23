@@ -1,46 +1,64 @@
-<div class="card shadow-sm mb-4">
-  <div class="card-header d-flex justify-content-between align-items-center">
-    <h3 class="card-title mb-0">
-      <?php if ($tabActiva === 'configuracion'): ?>
-        <i class="bi bi-gear-fill me-2"></i>Configuración del Sistema
-      <?php else: ?>
-        <i class="bi bi-file-earmark-medical-fill me-2"></i>
-        <?php
-          $titulos = [
-            'todas'      => 'Todas las Fichas',
-            'pendientes' => 'Fichas Pendientes',
-            'en_proceso' => 'Fichas En Proceso',
-            'cerradas'   => 'Fichas Cerradas',
-          ];
-          echo $titulos[$tabActiva] ?? 'Fichas de Emergencia';
-        ?>
-      <?php endif; ?>
-    </h3>
-    <?php if (tienePerm('fichas', 'crear') && $tabActiva !== 'configuracion'): ?>
-    <div class="card-tools ms-auto">
-      <button class="btn btn-ven-primary btn-sm" id="btnNuevaFicha">
-        <i class="bi bi-plus-circle-fill me-1"></i> Nueva Ficha
-      </button>
+<?php
+/**
+ * _tabla_fichas.php - Contenedor Principal de Datos (DataTables)
+ * 
+ * Renderiza la estructura de la tabla para el listado de emergencias.
+ * La carga de datos se realiza de forma asíncrona (Server-Side) mediante
+ * el motor de fichas_datatable.js utilizando el estado de filtrado actual.
+ */
+?>
+
+<div class="card shadow-sm border-0 rounded-4 overflow-hidden mb-4">
+    
+    <!-- Cabecera de la Tabla: Contexto y Acciones -->
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <h3 class="card-title mb-0 fw-bold text-success">
+            <i class="bi bi-file-earmark-medical-fill me-2 text-warning"></i>
+            <?php
+            echo match($tabActiva) {
+                'todas'       => 'Todas las Fichas',
+                'pendientes' => 'Fichas Pendientes',
+                'en_proceso' => 'Fichas en Proceso',
+                'cerradas'   => 'Fichas Cerradas (Historial)',
+                'finalizadas'=> 'Fichas Finalizadas',
+                default      => 'Fichas de Emergencia'
+            };
+            ?>
+        </h3>
+
+        <!-- Herramienta de Registro (Solo autorizados) -->
+        <?php if (tienePerm('fichas', 'crear')): ?>
+            <div class="card-tools ms-auto">
+                <button class="btn btn-ven-primary btn-sm px-3 shadow-sm rounded-pill" id="btnNuevaFicha">
+                    <i class="bi bi-plus-circle-fill me-1"></i> Abrir Nueva Ficha
+                </button>
+            </div>
+        <?php endif; ?>
     </div>
-    <?php endif; ?>
-  </div>
-  <div class="card-body">
-    <div class="table-responsive">
-      <table id="tablaFichas" class="table table-bordered table-striped table-hover align-middle w-100"
-             data-estado="<?= htmlspecialchars($estadoFiltro) ?>">
-        <thead class="table-dark">
-          <tr>
-            <th>ID</th>
-            <th>Solicitante</th>
-            <th>Caso</th>
-            <th>Parroquia</th>
-            <th>Estado</th>
-            <th>Fecha Creación</th>
-            <th class="text-center">Acciones</th>
-          </tr>
-        </thead>
-        <tbody><!-- Cargado por AJAX --></tbody>
-      </table>
+
+    <!-- Cuerpo de la Tabla: Estructura DataTables -->
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table id="tablaFichas" 
+                   class="table table-hover align-middle mb-0 w-100"
+                   data-estado="<?= htmlspecialchars($estadoFiltro) ?>">
+                <thead class="bg-light text-secondary small text-uppercase fw-bold">
+                    <tr>
+                        <th class="ps-3">ID</th>
+                        <th>Solicitante</th>
+                        <th>Tipo de Caso</th>
+                        <th>Parroquia</th>
+                        <th>Estado</th>
+                        <th>Apertura</th>
+                        <th class="text-center pe-3">Gestión</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- La data se inyecta dinámicamente mediante Server-Side Processing -->
+                </tbody>
+            </table>
+        </div>
     </div>
-  </div>
+
 </div>
+

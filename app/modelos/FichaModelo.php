@@ -498,6 +498,17 @@ class FichaModelo {
     }
 
     // --- Organismos ---
+    private function existeNombreCatalogo(string $tabla, string $columna, string $nombre, ?int $idActual = null): bool {
+        $sql = "SELECT COUNT(*) FROM {$tabla} WHERE {$columna} = :nombre AND estado = 1";
+        if ($idActual) $sql .= " AND id != :id";
+        
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->bindValue(':nombre', $nombre, PDO::PARAM_STR);
+        if ($idActual) $stmt->bindValue(':id', $idActual, PDO::PARAM_INT);
+        $stmt->execute();
+        return (int)$stmt->fetchColumn() > 0;
+    }
+
     public function obtenerOrganismos(int $estado = 1): array {
         $stmt = $this->conexion->prepare("SELECT id, nombre_organismo, descripcion, estado FROM organismos WHERE estado = :estado ORDER BY nombre_organismo ASC");
         $stmt->execute([':estado' => $estado]);
@@ -505,6 +516,9 @@ class FichaModelo {
     }
 
     public function crearOrganismo(string $nombre, string $descripcion = ''): bool {
+        if ($this->existeNombreCatalogo('organismos', 'nombre_organismo', $nombre)) {
+            throw new Exception("El organismo '{$nombre}' ya está registrado y activo.");
+        }
         $stmt = $this->conexion->prepare("INSERT INTO organismos (nombre_organismo, descripcion, estado) VALUES (:nombre, :descripcion, 1)");
         $stmt->bindValue(':nombre',      $nombre,      PDO::PARAM_STR);
         $stmt->bindValue(':descripcion', $descripcion, PDO::PARAM_STR);
@@ -512,6 +526,9 @@ class FichaModelo {
     }
 
     public function actualizarOrganismo(int $id, string $nombre, string $descripcion = ''): bool {
+        if ($this->existeNombreCatalogo('organismos', 'nombre_organismo', $nombre, $id)) {
+            throw new Exception("Ya existe otro organismo activo con el nombre '{$nombre}'.");
+        }
         $stmt = $this->conexion->prepare("UPDATE organismos SET nombre_organismo = :nombre, descripcion = :descripcion WHERE id = :id");
         $stmt->bindValue(':nombre',      $nombre,      PDO::PARAM_STR);
         $stmt->bindValue(':descripcion', $descripcion, PDO::PARAM_STR);

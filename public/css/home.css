@@ -17,12 +17,11 @@
 }
 
 .brand-link {
-  height: 90px !important;
+  height: 90px !important; 
   display: flex !important;
   align-items: center !important;
-  justify-content: center !important;
-  gap: 12px !important;
-  padding: 1.25rem 1.5rem !important;
+  justify-content: center !important; /* Centrado total al desaparecer el logo */
+  padding: 0 !important; 
   background: transparent !important;
   border-bottom: none !important;
   box-shadow: none !important;
@@ -30,31 +29,72 @@
 }
 
 .brand-image {
-  display: none !important;
+  display: none !important; /* Asegurar que el logo desaparezca por CSS también */
 }
 
 .brand-text {
   margin-left: 0 !important;
-  text-align: left;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center; /* Alinear ejes al centro */
+  line-height: 1; 
 }
 
 .brand-text-main {
-  font-size: 1.4rem !important;
-  font-weight: 800 !important;
+  font-size: 2.1rem !important; /* Tamaño masivo exclusivo para el texto */
+  font-weight: 900 !important; /* Extra bold institucional */
   color: #ffffff !important;
-  letter-spacing: -0.3px;
-  line-height: 1.1;
+  letter-spacing: 1px; /* Limpio, sin sombras ruidosas */
+  text-shadow: none; 
   display: block;
 }
 
 .brand-text-sub {
-  font-weight: 500 !important;
-  font-size: 0.72rem !important;
-  color: var(--ven-accent) !important;
+  font-weight: 400 !important; /* Delgado para contrastar el grueso de arriba */
+  font-size: 0.8rem !important;
+  color: var(--ven-accent) !important; 
   text-transform: uppercase;
-  letter-spacing: 4px;
-  margin-top: 4px;
+  letter-spacing: 12px; /* Tracking extremo (High-end UI trend) */
+  margin-top: 8px; /* Darle respiro */
+  margin-right: -12px; /* Corrección óptica por el tracking para evitar que se descuadre del centro */
   display: block;
+  opacity: 0.8;
+}
+
+/* Home Dashboard Header Logo */
+.home-hero-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: white;
+  padding: 10px 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.03);
+  margin-bottom: 20px;
+}
+
+.home-hero-logo {
+  height: 50px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
+
+.home-hero-title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--ven-dark);
+  letter-spacing: -0.5px;
+}
+
+.home-hero-subtitle {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #6c757d;
+  font-weight: 500;
 }
 
 /* Sidebar Background */
@@ -282,31 +322,32 @@ h1, h2, h3, h4, h5, h6, .brand-text {
 }
 
 .sidebar-mijp-logo {
-  height: 30px;
+  height: 45px;
   width: auto;
   object-fit: contain;
-  opacity: 0.45;
-  transition: opacity 0.2s ease;
+  opacity: 0.70; /* Base más nítida */
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 .sidebar-footer-ven-logo {
-  height: 30px;
+  height: 45px;
   width: auto;
   object-fit: contain;
-  opacity: 0.45;
-  transition: opacity 0.2s ease;
+  opacity: 0.70;
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 .footer-logo-divider {
   width: 1px;
-  height: 20px;
-  background: rgba(255,255,255,0.08);
+  height: 30px; /* Aumentar también la línea separadora en proporción */
+  background: rgba(255,255,255,0.15);
   flex-shrink: 0;
 }
 
 .sidebar-mijp-logo:hover,
 .sidebar-footer-ven-logo:hover {
-  opacity: 0.9;
+  opacity: 1; /* Opacidad completa al pasar el mouse */
+  transform: scale(1.05); /* Leve efecto 3D al apuntar */
 }
 
 /* SweetAlert Custom Theme (Global Dashboard) */

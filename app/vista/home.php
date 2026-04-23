@@ -1,160 +1,121 @@
+<?php
+/**
+ * home.php - Vista Principal (Dashboard)
+ * 
+ * Este archivo renderiza el panel de control central del sistema Ven911.
+ * Incluye la distribución visual de estadísticas y el acceso a los módulos core.
+ * Basado en el estándar de diseño AdminLTE 3 configurado para la institución.
+ */
+
+// 1. CONFIGURACIÓN DE PÁGINA
+$pageName = 'home';
+?>
 <!doctype html>
-<html lang="en">
-  <!--inicio::Encabezado-->
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Ven911 | Dashboard</title>
+<html lang="es">
 
-    <!--inicio::Meta Tags de Accesibilidad-->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-    <meta name="color-scheme" content="light dark" />
-    <meta name="theme-color" content="#16a34a" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#064e3b" media="(prefers-color-scheme: dark)" />
-    <!--fin::Meta Tags de Accesibilidad-->
-
-    <!--inicio::Meta Tags Primarios-->
-    <meta name="title" content="Ven911 | Dashboard" />
-    <meta name="author" content="Ven911 Development Team" />
-    <meta name="description" content="Sistema de gestión Ven911." />
-    <!--fin::Meta Tags Primarios-->
-
-    <!--inicio::Funciones de Accesibilidad-->
-    <meta name="supported-color-schemes" content="light dark" />
-    <link rel="preload" href="public/css/adminlte.css" as="style" />
-    <link rel="stylesheet" href="public/css/adminlte.css" />
-    <!-- Personalización del Tema VEN 911 -->
-    <link rel="stylesheet" href="public/css/home.css" />
-    <!-- Módulo de Notificaciones -->
+<head>
+    <title>Ven911 | Dashboard Central</title>
+    
+    <!-- 2. CABECERA GLOBALES Y ESTILOS -->
+    <?php require __DIR__ . '/partials/head.php'; ?>
+    
+    <!-- Estilos específicos para notificaciones push y diseño home -->
     <link rel="stylesheet" href="public/css/notificaciones.css" />
-    <!--fin::Funciones de Accesibilidad-->
+</head>
 
-    <!--inicio::Fuentes-->
-    <link
-      rel="stylesheet"
-      href="public/libs/source-sans-3/index.css"
-    />
-    <!--fin::Fuentes-->
-
-    <!--inicio::Plugin de Terceros(OverlayScrollbars)-->
-    <link
-      rel="stylesheet"
-      href="public/libs/overlayscrollbars/overlayscrollbars.min.css"
-    />
-    <!--fin::Plugin de Terceros(OverlayScrollbars)-->
-
-    <!--inicio::Plugin de Terceros(Bootstrap Icons)-->
-    <link
-      rel="stylesheet"
-      href="public/libs/bootstrap-icons/bootstrap-icons.min.css"
-    />
-    <!--fin::Plugin de Terceros(Bootstrap Icons)-->
-
-    <!--inicio::Plugin Requerido(AdminLTE)-->
-    <!-- Ya se carga en el head con personalizaciones -->
-    <!--fin::Plugin Requerido(AdminLTE)-->
-
-    <!-- CSS específico de la página -->
-  </head>
-  <!--fin::Encabezado-->
-
-  <!--inicio::Cuerpo-->
-  <body class="layout-fixed sidebar-expand-lg bg-body-tertiary">
-    <!--inicio::Contenedor de la Aplicación-->
+<body class="layout-fixed sidebar-expand-lg bg-body-tertiary">
+    
     <div class="app-wrapper">
 
-      <?php require __DIR__ . '/partials/navbar.php'; ?>
+        <!-- 3. COMPONENTES DE INTERFAZ GLOBAL -->
+        <?php require __DIR__ . '/partials/navbar.php'; ?>
+        <?php require __DIR__ . '/partials/sidebar.php'; ?>
 
-      <?php require __DIR__ . '/partials/sidebar.php'; ?>
-
-      
-<!--inicio::Principal de la Aplicación -->
-<main class="app-main">
-  <!--inicio::Encabezado de Contenido de la Aplicación-->
-  <div class="app-content-header">
-    <!--inicio::Contenedor-->
-    <div class="container-fluid">
-      <!--inicio::Fila-->
-      <div class="row">
-        <div class="col-sm-6">
-          <h3 class="mb-0">Panel de Control</h3>
-        </div>
-        <div class="col-sm-6">
-          <ol class="breadcrumb float-sm-end">
-            <li class="breadcrumb-item"><a href="#">Inicio</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
-          </ol>
-        </div>
-      </div>
-      <!--fin::Fila-->
-    </div>
-    <!--fin::Contenedor-->
-  </div>
-  <!--fin::Encabezado de Contenido de la Aplicación-->
-
-  <!--inicio::Contenido de la Aplicación-->
-  <div class="app-content">
-    <!--inicio::Contenedor-->
-    <div class="container-fluid">
-      <!--inicio::Fila-->
-      <div class="row">
-        <div class="col-12">
-          <div class="card">
-            <div class="card-header">
-              <h3 class="card-title">Bienvenido</h3>
+        <!-- 4. CONTENIDO PRINCIPAL (APP-MAIN) -->
+        <main class="app-main">
+            
+            <!-- Encabezado Hero: Identidad Institucional -->
+            <div class="app-content-header border-0 pb-0">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="home-hero-header mt-2 d-flex align-items-center">
+                                <img src="public/assets/img/logos/VEN 9-1-1.webp" alt="VEN 911 Logo" class="home-hero-logo me-3">
+                                <div>
+                                    <h1 class="home-hero-title h2 mb-1">Panel de Control</h1>
+                                    <p class="home-hero-subtitle text-muted mb-0">Sistema Integrado de Gestión de Emergencias VEN 911</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
-              Tu sistema Ven911 está listo para ser desarrollado.
-            </div>
-          </div>
-        </div>
-      </div>
-      <!--fin::Fila-->
 
-      <div class="row">
-        <div class="col-md-6 mt-4">
-          <div class="card h-100 shadow-sm border-0">
-            <div class="card-header bg-white border-bottom">
-              <h3 class="card-title text-success fw-bold">
-                <i class="bi bi-pie-chart-fill me-2"></i>Distribución de Usuarios
-              </h3>
-            </div>
-            <div class="card-body">
-              <div id="usuariosChart"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!--fin::Contenedor-->
-  </div>
-  <!--fin::Contenido de la Aplicación-->
-</main>
-<!--fin::Principal de la Aplicación-->
+            <!-- Sección de Widgets y Estadísticas Dinámicas -->
+            <div class="app-content mt-4">
+                <div class="container-fluid">
+                    
+                    <!-- Bloque de Bienvenida: UI Informativa -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                                <div class="card-body p-4 bg-white border-start border-success border-5">
+                                    <h3 class="fw-bold text-success mb-2">¡Bienvenido al Centro de Mando!</h3>
+                                    <p class="text-secondary mb-0">
+                                        Estado del sistema: <span class="badge bg-success-subtle text-success">Óptimo</span>. 
+                                        Utilice el menú lateral para gestionar fichas de emergencia y monitorizar el despacho en tiempo real.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-      <?php require __DIR__ . '/partials/footer.php'; ?>
+                    <!-- Visualizaciones de Datos: ApexCharts -->
+                    <div class="row g-4">
+                        <div class="col-xl-6 col-lg-8 col-12">
+                            <div class="card h-100 shadow-sm border-0 rounded-4">
+                                <div class="card-header bg-white border-bottom p-3">
+                                    <h3 class="card-title text-success fw-bold mb-0">
+                                        <i class="bi bi-pie-chart-fill me-2 text-warning"></i>Distribución de Personal por Rol
+                                    </h3>
+                                </div>
+                                <div class="card-body p-4 d-flex align-items-center justify-content-center">
+                                    <!-- Contenedor donde se dibuja la gráfica vía JS -->
+                                    <div id="usuariosChart" style="width: 100%; min-height: 350px;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Pie de página Institucional -->
+        <?php require __DIR__ . '/partials/footer.php'; ?>
 
     </div>
-    <!--fin::Contenedor de la Aplicación-->
 
-    <!-- Scripts -->
+    <!-- 5. CARGA DE ASSETS JAVASCRIPT -->
     <?php require __DIR__ . '/partials/scripts.php'; ?>
 
-    <!-- Módulo de Notificaciones (SSE) -->
+    <!-- Módulos de soporte: Notificaciones SSE y motor de gráficas -->
     <script src="public/js/comun/notificaciones.js"></script>
-
-    <!-- ApexCharts -->
     <script src="public/libs/apexcharts/apexcharts.min.js"></script>
     
-    <!-- Exportar Datos a JS -->
     <script>
-      window.VENT911_STATS = <?php echo json_encode($datos); ?>;
+        /**
+         * Inicialización de estadísticas globales.
+         * Se inyectan los datos desde el controlador para que ApexCharts los procese.
+         */
+        window.VENT911_STATS = <?php echo json_encode($datos ?? []); ?>;
     </script>
     
-    <!-- Script de la Gráfica de Usuarios -->
+    <!-- Script core del home: Renderizado de componentes visuales -->
     <script src="public/js/home/home_graficas.js"></script>
 
-    <!-- Agrega aquí los scripts específicos de tu página -->
-    <!--fin::Script-->
-  </body>
-  <!--fin::Cuerpo-->
+</body>
 </html>
+
+

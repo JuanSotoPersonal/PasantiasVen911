@@ -5,6 +5,17 @@ $(function () {
 
     const lang = window.Ven911DataTablesLang;
 
+    // Inicializar Select2 en los combos de configuración
+    $('.form-select').each(function () {
+        const $modal = $(this).closest('.modal');
+        $(this).select2({
+            theme: 'bootstrap-5',
+            dropdownParent: $modal.length ? $modal : $(document.body),
+            width: '100%',
+            language: 'es'
+        });
+    });
+
     // ================================================================
     // HELPERS Y FUNCIONES DE UTILIDAD
     // ================================================================
@@ -294,6 +305,11 @@ $(function () {
         new bootstrap.Modal(document.getElementById('modalParroquia')).show();
     });
 
+    $('#btnGuardarParroquia').on('click', () => {
+        const datos = Object.fromEntries(new FormData(document.getElementById('formParroquia')));
+        guardarCatalogo(datos, [dtParroquias, dtParroquiasInactivos], 'modalParroquia');
+    });
+
     // ================================================================
     // ORGANISMOS
     // ================================================================
@@ -349,17 +365,17 @@ $(function () {
             $('#cat_simple_valor').val(row.nombre);
             $('#cat_simple_descripcion').val(row.descripcion || '');
             $('#modalCatalogoSimpleTitulo').text(`Editar Tipo de Emergencia #${row.id}`);
-            new bootstrap.Modal(document.getElementById('modalCatalogoSimple')).show();
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('modalCatalogoSimple')).show();
 
         } else if (catalogo === 'caso') {
             // ... (caso ya tiene descripción)
             $('#caso_accion').val('editar');
             $('#caso_id').val(row.id);
-            $('#caso_tipo_id').val(row.tipo_emergencia_id);
+            $('#caso_tipo_id').val(row.tipo_emergencia_id).trigger('change.select2');
             $('#caso_nombre').val(row.nombre_caso);
             $('#caso_descripcion').val(row.descripcion || '');
             $('#modalCasoTitulo').text(`Editar Caso #${row.id}`);
-            new bootstrap.Modal(document.getElementById('modalCaso')).show();
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('modalCaso')).show();
 
         } else if (catalogo === 'municipio') {
             $('#cat_simple_catalogo').val('municipio');
@@ -369,16 +385,16 @@ $(function () {
             $('#cat_simple_valor').val(row.nombre_municipio);
             $('#cat_simple_descripcion').val(row.descripcion || '');
             $('#modalCatalogoSimpleTitulo').text(`Editar Municipio #${row.id}`);
-            new bootstrap.Modal(document.getElementById('modalCatalogoSimple')).show();
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('modalCatalogoSimple')).show();
 
         } else if (catalogo === 'parroquia') {
             $('#parroquia_accion').val('editar');
             $('#parroquia_id').val(row.id);
-            $('#parroquia_municipio_id').val(row.municipio_id);
+            $('#parroquia_municipio_id').val(row.municipio_id).trigger('change.select2');
             $('#parroquia_nombre').val(row.nombre_parroquia);
             $('#parroquia_descripcion').val(row.descripcion || '');
             $('#modalParroquiaTitulo').text(`Editar Parroquia #${row.id}`);
-            new bootstrap.Modal(document.getElementById('modalParroquia')).show();
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('modalParroquia')).show();
 
         } else if (catalogo === 'organismo') {
             $('#cat_simple_catalogo').val('organismo');
