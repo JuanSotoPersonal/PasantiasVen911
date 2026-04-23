@@ -1,7 +1,16 @@
+/**
+ * fichas_datatable.js - Gestión de Fichas de Emergencia (Operaciones)
+ * 
+ * Controla el ciclo de vida completo de las fichas: creación, edición, 
+ * visualización detallada y flujo de estados. Implementa procesamiento 
+ * en servidor, cascadas dinámicas para ubicación/casos y validación de RBAC.
+ */
 
 $(document).ready(function () {
 
-    // Inicializar Select2 estético (con buscador) en todos los selects del módulo
+    // 1. CONFIGURACIÓN INICIAL Y UI (SELECT2 & PERMISOS)
+    
+    // Inicialización de Select2 con soporte para modales (z-index fix)
     $('.form-select').each(function () {
         const $modal = $(this).closest('.modal');
         $(this).select2({
@@ -12,12 +21,14 @@ $(document).ready(function () {
         });
     });
 
-    const tablaEl = $('#tablaFichas');
+    const tablaEl      = $('#tablaFichas');
     const estadoFiltro = tablaEl.data('estado') || 'todos';
-    const puedeEditar =  window.VEN911_PERM_EDITAR  ?? false;
-    const puedeCambiarEstado = window.VEN911_PERM_CAMBIAR_ESTADO ?? false;
+    
+    // Inyección de banderas de permisos desde el scope global
+    const puedeEditar         = window.VEN911_PERM_EDITAR  ?? false;
+    const puedeCambiarEstado  = window.VEN911_PERM_CAMBIAR_ESTADO ?? false;
 
-    // Mapa de clases de badge por estado
+    // Diccionarios visuales para estados de fichas
     const badgeClases = {
         'Pendiente':  'badge-pendiente',
         'En Proceso': 'badge-en-proceso',
@@ -34,9 +45,7 @@ $(document).ready(function () {
         'Finalizado': 'bi-flag-fill',
     };
 
-    // ================================================================
-    // DataTable principal
-    // ================================================================
+    // 2. INICIALIZACIÓN DE DATATABLE DE FICHAS (SERVER-SIDE)
     const tablaFichas = tablaEl.DataTable({
         serverSide: true,
         processing: true,
@@ -49,6 +58,7 @@ $(document).ready(function () {
         },
         columns: [
             {
+                // Columna: Contador de registros
                 data: null,
                 width: '50px',
                 orderable: false,
@@ -56,22 +66,26 @@ $(document).ready(function () {
                 render: (d, type, row, meta) => `<span class="fw-bold text-secondary">${meta.row + meta.settings._iDisplayStart + 1}</span>`
             },
             {
+                // Columna: Solicitante (Sanitizado)
                 data: 'nombre_solicitante',
                 render: (d) => escapeHTML(d)
             },
             {
+                // Columna: Caso y Tipo de Emergencia
                 data: 'nombre_caso',
                 render: (d, type, row) => `
                     <div class="fw-semibold">${escapeHTML(d)}</div>
                     <small class="text-muted">${escapeHTML(row.tipo_emergencia)}</small>`
             },
             {
+                // Columna: Ubicación Geográfica (Parroquia/Municipio)
                 data: 'nombre_parroquia',
                 render: (d, type, row) => `
                     <div>${escapeHTML(d)}</div>
                     <small class="text-muted">${escapeHTML(row.nombre_municipio)}</small>`
             },
             {
+                // Columna: Estado Operativo (Badge dinámico)
                 data: 'estado_ficha',
                 render: (d) => {
                     const cls  = badgeClases[d]  || 'badge-finalizado';
@@ -80,10 +94,12 @@ $(document).ready(function () {
                 }
             },
             {
+                // Columna: Marca de tiempo de creación
                 data: 'fecha_creacion',
                 render: (d) => `<small class="text-muted">${d}</small>`
             },
             {
+                // Columna: Acciones (Control de permisos dinámico)
                 data: null,
                 orderable: false,
                 searchable: false,
@@ -94,6 +110,8 @@ $(document).ready(function () {
                                 data-id="${row.id}" title="Ver detalle" id="btnDetalle-${row.id}">
                             <i class="bi bi-eye-fill"></i>
                         </button>`;
+                    
+                    // Solo permitir edición en estados no terminales
                     if (puedeEditar && row.estado_ficha !== 'Cerrado' && row.estado_ficha !== 'Finalizado') {
                         btns += `
                         <button class="btn btn-ven-edit btn-accion btn-editar-ficha"
@@ -106,24 +124,45 @@ $(document).ready(function () {
             }
         ],
         language:   window.Ven911DataTablesLang,
-        order:      [[5, 'desc']],
+        order:      [[5, 'desc']], // Ordenar por fecha de creación (desc)
         responsive: true,
         pageLength: 15,
     });
 
-    // ================================================================
-    // Botón nueva ficha
-    // ================================================================
+    // 3. GESTIÓN DE FORMULARIOS (CREACIÓN)
     $('#btnNuevaFicha').on('click', function () {
         $('#formCrearFicha')[0].reset();
+        // Reset de cascadas
         $('#crear_parroquia_id').prop('disabled', true).html('<option value="">-- Primero seleccione municipio --</option>');
         $('#crear_caso_id').prop('disabled', true).html('<option value="">-- Primero seleccione tipo --</option>');
         new bootstrap.Modal(document.getElementById('modalCrearFicha')).show();
     });
 
-    // ================================================================
-    // Cascada Municipio → Parroquia (Crear)
-    // ================================================================
+    // Persistencia de nueva ficha (AJAX)
+    $('#btnGuardarFicha').on('click', function () {
+        const datos = new FormData(document.getElementById('formCrearFicha'));
+        $.ajax({
+            url:         'index.php?url=ficha/guardar',
+            method:      'POST',
+            data:         datos,
+            processData: false,
+            contentType: false,
+            success: function (res) {
+                if (res.success) {
+                    bootstrap.Modal.getOrCreateInstance(document.getElementById('modalCrearFicha')).hide();
+                    Swal.fire('¡Registrada!', res.message, 'success');
+                    tablaFichas.ajax.reload(null, false);
+                } else {
+                    Swal.fire('Error', res.message, 'error');
+                }
+            },
+            error: () => Swal.fire('Error', 'No se pudo conectar con el servidor.', 'error'),
+        });
+    });
+
+    // 4. LÓGICA DE CASCADAS DINÁMICAS (AJAX POLLING)
+
+    // Cascada: Municipios -> Parroquias (Soporta Crear/Editar)
     $('#crear_municipio_id').on('change', function () {
         const municipioId = $(this).val();
         const sel = $('#crear_parroquia_id');
@@ -149,9 +188,7 @@ $(document).ready(function () {
         }, 'json');
     }
 
-    // ================================================================
-    // Cascada Tipo Emergencia → Casos (Crear)
-    // ================================================================
+    // Cascada: Tipo Emergencia -> Casos (Soporta Crear/Editar)
     $('#crear_tipo_emergencia_id').on('change', function () {
         const tipoId = $(this).val();
         const sel = $('#crear_caso_id');
@@ -177,33 +214,9 @@ $(document).ready(function () {
         }, 'json');
     }
 
-    // ================================================================
-    // Guardar nueva ficha
-    // ================================================================
-    $('#btnGuardarFicha').on('click', function () {
-        const datos = new FormData(document.getElementById('formCrearFicha'));
-        $.ajax({
-            url:         'index.php?url=ficha/guardar',
-            method:      'POST',
-            data:         datos,
-            processData: false,
-            contentType: false,
-            success: function (res) {
-                if (res.success) {
-                    bootstrap.Modal.getOrCreateInstance(document.getElementById('modalCrearFicha')).hide();
-                    Swal.fire('¡Registrada!', res.message, 'success');
-                    tablaFichas.ajax.reload(null, false);
-                } else {
-                    Swal.fire('Error', res.message, 'error');
-                }
-            },
-            error: () => Swal.fire('Error', 'No se pudo conectar con el servidor.', 'error'),
-        });
-    });
+    // 5. VISUALIZACIÓN DE DETALLES Y GESTIÓN DE FLUJO (ESTADOS)
 
-    // ================================================================
-    // Ver detalle de ficha
-    // ================================================================
+    // Carga asíncrona de la "Ficha de Vida" del incidente
     $(document).on('click', '.btn-ver-detalle', function () {
         const fichaId = $(this).data('id');
         $('#detalleFichaIdLabel').text(`#${fichaId}`);
@@ -220,6 +233,7 @@ $(document).ready(function () {
             const f = res.data;
             const badgeCls = badgeClases[f.estado_ficha] || 'badge-finalizado';
 
+            // Renderizado de la cuadrícula de información detallada
             $('#contenidoDetalleFicha').html(`
                 <div class="mb-3">
                     <span class="badge-ficha-estado ${badgeCls} fs-6 mb-3 d-inline-block">
@@ -242,7 +256,7 @@ $(document).ready(function () {
                 </div>
             `);
 
-            // Botones de cambio de estado
+            // Generación dinámica de botones de transición de estado (Workflow)
             if (puedeCambiarEstado) {
                 const transiciones = {
                     'Pendiente':  [['En Proceso', 'btn-ven-primary', 'bi-arrow-repeat']],
@@ -263,16 +277,14 @@ $(document).ready(function () {
         }, 'json');
     });
 
-    // ================================================================
-    // Cambiar estado desde modal de detalle
-    // ================================================================
+    // Motor de cambio de estado (Con confirmación y persistencia)
     $(document).on('click', '.btn-cambiar-estado', function () {
         const fichaId     = $(this).data('id');
         const nuevoEstado = $(this).data('estado');
 
         Swal.fire({
             title: `¿Cambiar a "${nuevoEstado}"?`,
-            text:  'El cambio quedará registrado en el historial.',
+            text:  'El cambio quedará registrado en el historial de trazabilidad.',
             icon:  'question',
             showCancelButton:  true,
             confirmButtonText: 'Sí, cambiar',
@@ -291,9 +303,9 @@ $(document).ready(function () {
         });
     });
 
-    // ================================================================
-    // Abrir modal de edición
-    // ================================================================
+    // 6. GESTIÓN DE EDICIÓN
+
+    // Carga de datos para edición
     $(document).on('click', '.btn-editar-ficha', function () {
         const fichaId = $(this).data('id');
         $.get(`index.php?url=ficha/detalle&id=${fichaId}`, function (res) {
@@ -311,7 +323,7 @@ $(document).ready(function () {
             $('#editar_descripcion_caso').val(f.descripcion_caso);
             $('#editar_direccion_exacta').val(f.direccion_exacta);
 
-            // Cargar parroquias y casos en cascada
+            // Re-hidratación de cascadas en el modal de edición
             cargarParroquias(f.municipio_id, $('#editar_parroquia_id'), f.parroquia_id);
             cargarCasos(f.tipo_emergencia_id, $('#editar_caso_id'), f.caso_id);
 
@@ -319,9 +331,7 @@ $(document).ready(function () {
         }, 'json');
     });
 
-    // ================================================================
-    // Guardar edición
-    // ================================================================
+    // Persistencia de edición (AJAX)
     $('#btnGuardarEdicion').on('click', function () {
         const datos = new FormData(document.getElementById('formEditarFicha'));
         $.ajax({

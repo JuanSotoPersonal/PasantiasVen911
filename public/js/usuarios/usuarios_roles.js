@@ -1,18 +1,28 @@
-// usuarios/roles.js
-// Inicializa un DataTable individual por cada tabla de rol (data-rol-id)
+/**
+ * usuarios_roles.js - Gestión Segmentada de Usuarios por Rol
+ * 
+ * Este módulo automatiza la inicialización de múltiples DataTables basándose
+ * en el atributo 'data-rol-id' de las tablas presentes en la vista. Permite
+ * una visualización organizada por jerarquías (Administradores, Operadores, etc.)
+ * con procesamiento independiente en servidor.
+ */
 
 $(function () {
 
+  // 1. CONFIGURACIÓN GLOBAL
   const lang = window.Ven911DataTablesLang;
 
-  // Inicializar un DataTable por cada tabla con data-rol-id
+  // 2. INICIALIZACIÓN DINÁMICA DE TABLAS POR ROL
+  // Se itera sobre cada tabla que posea el atributo data-rol-id para instanciar su DataTable
   $('table[data-rol-id]').each(function () {
     const $tabla    = $(this);
     const rolId     = $tabla.data('rol-id');
     const rolNombre = $tabla.data('rol-nombre');
 
+    // Definición de estructura de columnas compartida
     const columnas = [
       {
+        // Columna: Índice correlativo
         data: null,
         width: '50px',
         orderable: false,
@@ -22,10 +32,12 @@ $(function () {
       { data: 'nombre_completo', render: (d) => escapeHTML(d) },
       { data: 'usuario',         render: (d) => escapeHTML(d) },
       {
+        // Columna: Cédula con formato institucional
         data: 'cedula',
         render: (d) => d ? `V-${escapeHTML(d)}` : '<span class="text-muted fst-italic small">Sin cédula</span>',
       },
       {
+        // Columna: Estado (Badge interactivo de Toggle)
         data: 'estado',
         render: (d, type, row) => {
           const activo     = d === 'activo';
@@ -46,6 +58,7 @@ $(function () {
         },
       },
       {
+        // Columna: Acciones (Edición y Seguridad)
         data: null,
         orderable: false,
         searchable: false,
@@ -76,11 +89,13 @@ $(function () {
       },
     ];
 
+    // 3. INSTANCIACIÓN DE DATATABLE (SERVER-SIDE)
     const dt = $tabla.DataTable({
       autoWidth:  false,
       serverSide: true,
       processing: true,
       ajax: {
+        // Ruteo dinámico basado en el ID del rol de la tabla actual
         url:  `index.php?url=usuario/obtenerDatosPorRol&rol_id=${rolId}&estado=activo`,
         type: 'POST',
         error: function () {
@@ -90,21 +105,20 @@ $(function () {
       columns:    columnas,
       language:   lang,
       responsive: true,
-      order:      [[1, 'asc']],
+      order:      [[1, 'asc']], // Ordenar por nombre completo
       pageLength: 10,
     });
 
-    // Actualizar badge usando recordsTotal del JSON server-side
+    // Sincronización de badges de conteo (Total de registros del servidor)
     $tabla.on('xhr.dt', function (e, settings, json) {
       const total = (json && json.recordsTotal !== undefined) ? json.recordsTotal : 0;
       $(`#badge-count-${rolId}`).text(`${total} usuario${total !== 1 ? 's' : ''}`);
     });
 
-    // Escuchar evento global de recarga
+    // Escucha del evento global de recarga del módulo de usuarios
     $(document).on('usuarios:reload', function () {
       dt.ajax.reload(null, false);
     });
   });
 
-}); // fin $(function)
-
+}); 

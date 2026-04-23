@@ -1,4 +1,9 @@
 <?php
+/**
+ * MODELO: RegistroModelo
+ * Propósito: Gestionar los procesos iniciales de registro de usuarios,
+ * validación de llaves de activación y catálogo de seguridad.
+ */
 
 namespace App\modelos;
 
@@ -9,8 +14,16 @@ use Exception;
 require_once 'app/Config/Database.php';
 
 class RegistroModelo {
+
+    // ///////////////////////////////////////////////////////////////////
+    // 1. ATRIBUTOS Y CONEXIÓN
+    // ///////////////////////////////////////////////////////////////////
+
     private $conexion;
 
+    /**
+     * Constructor: Establece el vínculo con el manejador de base de datos.
+     */
     public function __construct() {
         try {
             $database = new Database();
@@ -21,9 +34,13 @@ class RegistroModelo {
         }
     }
 
-    //--------------------------------------------------------------------
-    // Obtiene todas las preguntas de seguridad predefinidas.
-    //--------------------------------------------------------------------
+    // ///////////////////////////////////////////////////////////////////
+    // 2. MÉTODOS DE CONSULTA (LECTURA)
+    // ///////////////////////////////////////////////////////////////////
+
+    /**
+     * Obtiene todas las preguntas de seguridad predefinidas en el sistema.
+     */
     public function obtenerPreguntasSeguridad(): array {
         try {
             $query = "SELECT id, pregunta FROM preguntas_seguridad ORDER BY id ASC";
@@ -36,9 +53,13 @@ class RegistroModelo {
         }
     }
 
-    //--------------------------------------------------------------------
-    // Valida si la llave de activación es correcta.
-    //--------------------------------------------------------------------
+    // ///////////////////////////////////////////////////////////////////
+    // 3. MÉTODOS DE VALIDACIÓN Y SEGURIDAD
+    // ///////////////////////////////////////////////////////////////////
+
+    /**
+     * Valida si la llave de activación ingresada coincide con la del sistema.
+     */
     public function validarLlaveActivacion(string $key): bool {
         try {
             $query = "SELECT COUNT(*) FROM configuracion_sistema WHERE llave_activacion = :key";
@@ -52,9 +73,9 @@ class RegistroModelo {
         }
     }
 
-    //--------------------------------------------------------------------
-    // Obtiene la llave de activación (para debug o referencia, aunque debería ser secreta).
-    //--------------------------------------------------------------------
+    /**
+     * Retorna la llave de activación registrada (Uso administrativo/configuración).
+     */
     public function obtenerLlaveActivacion(): string {
         try {
             $query = "SELECT llave_activacion FROM configuracion_sistema LIMIT 1";
@@ -67,4 +88,3 @@ class RegistroModelo {
         }
     }
 }
-

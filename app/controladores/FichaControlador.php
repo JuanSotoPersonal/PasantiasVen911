@@ -1,4 +1,9 @@
 <?php
+/**
+ * CONTROLADOR: FichaControlador
+ * Propósito: Gestionar el flujo operativo de las Fichas de Emergencia.
+ * Maneja la recepción de incidentes, asignación de estados y administración de catálogos.
+ */
 
 require_once 'app/modelos/FichaModelo.php';
 require_once 'app/modelos/EventoModelo.php';
@@ -10,9 +15,16 @@ require_once 'app/Helpers/Validador.php';
 
 class FichaControlador {
 
+    // ///////////////////////////////////////////////////////////////////
+    // 1. ATRIBUTOS Y CONSTRUCTOR
+    // ///////////////////////////////////////////////////////////////////
+
     private FichaModelo  $modelo;
     private EventoModelo $modeloEvento;
 
+    /**
+     * Valida la sesión activa e instancia los modelos de operación y auditoría.
+     */
     public function __construct() {
         if (!isset($_SESSION['user_id'])) {
             header('Location: index.php?url=auth');
@@ -22,9 +34,13 @@ class FichaControlador {
         $this->modeloEvento = new EventoModelo();
     }
 
-    //--------------------------------------------------------------------
-    // GET Muestra la vista principal del módulo de fichas
-    //--------------------------------------------------------------------
+    // ///////////////////////////////////////////////////////////////////
+    // 2. RENDERIZADO DE VISTAS (INDEX)
+    // ///////////////////////////////////////////////////////////////////
+
+    /**
+     * Despliega la interfaz principal del módulo de fichas con datos precargados.
+     */
     public function index(): void {
         if (!tienePerm('fichas', 'ver')) {
             header('Location: index.php?url=home');
@@ -35,16 +51,21 @@ class FichaControlador {
         $usuarioId   = (int)$_SESSION['user_id'];
         $rolId       = (int)$_SESSION['user_rol_id'];
 
-        // Pre-cargar datos de configuración para los selectores en modales
+        // 2.1 Carga de catálogos para optimizar la experiencia en modales
         $municipios      = $this->modelo->obtenerMunicipios();
         $tiposEmergencia = $this->modelo->obtenerTiposEmergencia();
 
         require_once 'app/vista/fichas/index.php';
     }
 
-    //--------------------------------------------------------------------
-    // POST Retorna fichas paginadas en JSON para DataTables (server-side)
-    //--------------------------------------------------------------------
+    // ///////////////////////////////////////////////////////////////////
+    // 3. MÉTODOS DE CONSULTA (DATATABLES SERVER-SIDE)
+    // ///////////////////////////////////////////////////////////////////
+
+    /**
+     * Procesa las solicitudes de DataTables para el listado de emergencias.
+     * Soporta filtrado por estado y restricciones de visibilidad por rol.
+     */
     public function obtenerDatos(): void {
         header('Content-Type: application/json');
         try {
@@ -74,9 +95,14 @@ class FichaControlador {
         }
     }
 
-    //--------------------------------------------------------------------
-    // POST Crea una nueva ficha de emergencia
-    //--------------------------------------------------------------------
+    // ///////////////////////////////////////////////////////////////////
+    // 4. OPERACIONES CRUD (CREAR / EDITAR)
+    // ///////////////////////////////////////////////////////////////////
+
+    /**
+     * Valida y registra una nueva ficha de emergencia.
+     * Implementa blindaje contra campos vacíos y formatos inválidos.
+     */
     public function guardar(): void {
         header('Content-Type: application/json');
         try {
@@ -101,23 +127,20 @@ class FichaControlador {
                 'id_user'            => (int)$_SESSION['user_id'],
             ];
 
-            $valParroquia = Validador::validarId($datos['parroquia_id'], 'Parroquia');
-            if (!$valParroquia['valido']) { echo json_encode(['success' => false, 'message' => $valParroquia['mensaje']]); return; }
+            // 4.1 Pre-validación táctica de presencia de datos
+            if ($datos['nombre_solicitante'] === '') { echo json_encode(['success' => false, 'message' => 'El Nombre Completo es obligatorio.']); return; }
+            if ($datos['telefono1'] === '')          { echo json_encode(['success' => false, 'message' => 'El Teléfono de Contacto 1 es obligatorio.']); return; }
+            if ($datos['parroquia_id'] === 0)        { echo json_encode(['success' => false, 'message' => 'Debe seleccionar una Parroquia válida.']); return; }
+            if ($datos['direccion_exacta'] === '')   { echo json_encode(['success' => false, 'message' => 'La Dirección Exacta es obligatoria.']); return; }
+            if ($datos['caso_id'] === 0)             { echo json_encode(['success' => false, 'message' => 'Debe seleccionar un Caso Específico.']); return; }
+            if ($datos['descripcion_caso'] === '')   { echo json_encode(['success' => false, 'message' => 'La Descripción del Caso es obligatoria.']); return; }
 
-            $valCaso = Validador::validarId($datos['caso_id'], 'Caso');
-            if (!$valCaso['valido']) { echo json_encode(['success' => false, 'message' => $valCaso['mensaje']]); return; }
-
-            $valDireccion = Validador::validarTextoLibre($datos['direccion_exacta'], 'Dirección Exacta', 10, 500);
-            if (!$valDireccion['valido']) { echo json_encode(['success' => false, 'message' => $valDireccion['mensaje']]); return; }
-
-            $valDesc = Validador::validarTextoLibre($datos['descripcion_caso'], 'Descripción del Caso', 10, 1000);
-            if (!$valDesc['valido']) { echo json_encode(['success' => false, 'message' => $valDesc['mensaje']]); return; }
+            // 4.2 Validación de formatos delegada al Helper Validador
+            $valCedula = Validador::validarCedula($datos['cedula_solicitante'], false);
+            if (!$valCedula['valido']) { echo json_encode(['success' => false, 'message' => $valCedula['mensaje']]); return; }
 
             $valNombre = Validador::validarNombreCompleto($datos['nombre_solicitante']);
             if (!$valNombre['valido']) { echo json_encode(['success' => false, 'message' => $valNombre['mensaje']]); return; }
-
-            $valCedula = Validador::validarCedula($datos['cedula_solicitante'], false);
-            if (!$valCedula['valido']) { echo json_encode(['success' => false, 'message' => $valCedula['mensaje']]); return; }
 
             $valTel1 = Validador::validarTelefono($datos['telefono1']);
             if (!$valTel1['valido']) { echo json_encode(['success' => false, 'message' => $valTel1['mensaje']]); return; }
@@ -125,17 +148,31 @@ class FichaControlador {
             $valTel2 = Validador::validarTelefono($datos['telefono2'], false);
             if (!$valTel2['valido']) { echo json_encode(['success' => false, 'message' => $valTel2['mensaje']]); return; }
 
+            $valParroquia = Validador::validarId($datos['parroquia_id'], 'Parroquia');
+            if (!$valParroquia['valido']) { echo json_encode(['success' => false, 'message' => $valParroquia['mensaje']]); return; }
+
+            $valDireccion = Validador::validarTextoLibre($datos['direccion_exacta'], 'Dirección Exacta', 10, 500);
+            if (!$valDireccion['valido']) { echo json_encode(['success' => false, 'message' => $valDireccion['mensaje']]); return; }
+
+            $valCaso = Validador::validarId($datos['caso_id'], 'Caso Específico');
+            if (!$valCaso['valido']) { echo json_encode(['success' => false, 'message' => $valCaso['mensaje']]); return; }
+
+            $valDesc = Validador::validarTextoLibre($datos['descripcion_caso'], 'Resumen Técnico de la Situación', 10, 1000);
+            if (!$valDesc['valido']) { echo json_encode(['success' => false, 'message' => $valDesc['mensaje']]); return; }
+
+            // 4.3 Persistencia y Auditoría de creación
             $fichaId = $this->modelo->crear($datos);
             if (!$fichaId) {
                 echo json_encode(['success' => false, 'message' => 'No se pudo registrar la ficha.']);
                 return;
             }
 
-            $this->modeloEvento->registrarEvento(
-                (int)$_SESSION['user_id'],
-                'INSERT',
-                'fichas_emergencia',
+            $this->modeloEvento->registrarEventoFicha(
                 $fichaId,
+                (int)$_SESSION['user_id'],
+                'CREACION',
+                null,
+                'Pendiente',
                 null,
                 ['id' => $fichaId, 'caso' => $datos['caso_id'], 'estado' => 'Pendiente'],
                 "Ficha de emergencia #{$fichaId} creada."
@@ -147,9 +184,10 @@ class FichaControlador {
         }
     }
 
-    //--------------------------------------------------------------------
-    // POST Actualiza los datos de una ficha existente
-    //--------------------------------------------------------------------
+    /**
+     * Valida y actualiza una ficha existente. 
+     * Implementa restricción de inmutabilidad para fichas cerradas/finalizadas.
+     */
     public function actualizar(): void {
         header('Content-Type: application/json');
         try {
@@ -183,42 +221,48 @@ class FichaControlador {
                 return;
             }
             
-            // Regla de blindaje táctico: Cierre inmutable
+            // 4.4 Blindaje Inmutable: No se editan registros cerrados
             if (in_array($anterior['estado_ficha'], ['Cerrado', 'Finalizado'])) {
                 echo json_encode(['success' => false, 'message' => 'No se permite editar una emergencia que ya se encuentra Cerrada o Finalizada.']);
                 return;
             }
 
-            $valParroquia = Validador::validarId($datos['parroquia_id'], 'Parroquia');
-            if (!$valParroquia['valido']) { echo json_encode(['success' => false, 'message' => $valParroquia['mensaje']]); return; }
-
-            $valCaso = Validador::validarId($datos['caso_id'], 'Caso');
-            if (!$valCaso['valido']) { echo json_encode(['success' => false, 'message' => $valCaso['mensaje']]); return; }
-
-            $valDireccion = Validador::validarTextoLibre($datos['direccion_exacta'], 'Dirección Exacta', 10, 500);
-            if (!$valDireccion['valido']) { echo json_encode(['success' => false, 'message' => $valDireccion['mensaje']]); return; }
-
-            $valDesc = Validador::validarTextoLibre($datos['descripcion_caso'], 'Descripción del Caso', 10, 1000);
-            if (!$valDesc['valido']) { echo json_encode(['success' => false, 'message' => $valDesc['mensaje']]); return; }
-
-            $valNombre = Validador::validarNombreCompleto($datos['nombre_solicitante']);
-            if (!$valNombre['valido']) { echo json_encode(['success' => false, 'message' => $valNombre['mensaje']]); return; }
+            if ($datos['nombre_solicitante'] === '') { echo json_encode(['success' => false, 'message' => 'El Nombre Completo es obligatorio.']); return; }
+            if ($datos['telefono1'] === '')          { echo json_encode(['success' => false, 'message' => 'El Teléfono de Contacto 1 es obligatorio.']); return; }
+            if ($datos['parroquia_id'] === 0)        { echo json_encode(['success' => false, 'message' => 'Debe seleccionar una Parroquia válida.']); return; }
+            if ($datos['direccion_exacta'] === '')   { echo json_encode(['success' => false, 'message' => 'La Dirección Exacta es obligatoria.']); return; }
+            if ($datos['caso_id'] === 0)             { echo json_encode(['success' => false, 'message' => 'Debe seleccionar un Caso Específico.']); return; }
+            if ($datos['descripcion_caso'] === '')   { echo json_encode(['success' => false, 'message' => 'La Descripción del Caso es obligatoria.']); return; }
 
             $valCedula = Validador::validarCedula($datos['cedula_solicitante'], false);
             if (!$valCedula['valido']) { echo json_encode(['success' => false, 'message' => $valCedula['mensaje']]); return; }
-
+            $valNombre = Validador::validarNombreCompleto($datos['nombre_solicitante']);
+            if (!$valNombre['valido']) { echo json_encode(['success' => false, 'message' => $valNombre['mensaje']]); return; }
             $valTel1 = Validador::validarTelefono($datos['telefono1']);
             if (!$valTel1['valido']) { echo json_encode(['success' => false, 'message' => $valTel1['mensaje']]); return; }
-
             $valTel2 = Validador::validarTelefono($datos['telefono2'], false);
             if (!$valTel2['valido']) { echo json_encode(['success' => false, 'message' => $valTel2['mensaje']]); return; }
+            $valParroquia = Validador::validarId($datos['parroquia_id'], 'Parroquia');
+            if (!$valParroquia['valido']) { echo json_encode(['success' => false, 'message' => $valParroquia['mensaje']]); return; }
+            $valDireccion = Validador::validarTextoLibre($datos['direccion_exacta'], 'Dirección Exacta', 10, 500);
+            if (!$valDireccion['valido']) { echo json_encode(['success' => false, 'message' => $valDireccion['mensaje']]); return; }
+            $valCaso = Validador::validarId($datos['caso_id'], 'Caso Específico');
+            if (!$valCaso['valido']) { echo json_encode(['success' => false, 'message' => $valCaso['mensaje']]); return; }
+            $valDesc = Validador::validarTextoLibre($datos['descripcion_caso'], 'Resumen Técnico de la Situación', 10, 1000);
+            if (!$valDesc['valido']) { echo json_encode(['success' => false, 'message' => $valDesc['mensaje']]); return; }
 
             $exito = $this->modelo->actualizar($fichaId, $datos, (int)$_SESSION['user_id']);
 
             if ($exito) {
-                $this->modeloEvento->registrarEvento(
-                    (int)$_SESSION['user_id'], 'UPDATE', 'fichas_emergencia', $fichaId,
-                    $anterior, $datos, "Ficha #{$fichaId} actualizada."
+                $this->modeloEvento->registrarEventoFicha(
+                    $fichaId,
+                    (int)$_SESSION['user_id'],
+                    'MODIFICACION',
+                    $anterior['estado_ficha'],
+                    $anterior['estado_ficha'],
+                    $anterior,
+                    $datos,
+                    "Ficha #{$fichaId} actualizada."
                 );
                 echo json_encode(['success' => true, 'message' => "Ficha #{$fichaId} actualizada."]);
             } else {
@@ -229,9 +273,13 @@ class FichaControlador {
         }
     }
 
-    //--------------------------------------------------------------------
-    // POST Cambia el estado de una ficha
-    //--------------------------------------------------------------------
+    // ///////////////////////////////////////////////////////////////////
+    // 5. GESTIÓN DE ESTADOS Y DETALLES
+    // ///////////////////////////////////////////////////////////////////
+
+    /**
+     * Cambia el estado de una ficha (Pendiente -> En Proceso -> etc).
+     */
     public function cambiarEstado(): void {
         header('Content-Type: application/json');
         try {
@@ -258,7 +306,7 @@ class FichaControlador {
                 return;
             }
             
-            // Regla de blindaje táctico: Cierre inmutable para estados terminales
+            // Blindaje de estados terminales
             if (in_array($anterior['estado_ficha'], ['Cerrado', 'Finalizado'])) {
                 echo json_encode(['success' => false, 'message' => 'No se permite reabrir ni modificar el estado de una ficha que ya fue Cerrada o Finalizada.']);
                 return;
@@ -267,8 +315,12 @@ class FichaControlador {
             $exito = $this->modelo->cambiarEstado($fichaId, $nuevoEstado, (int)$_SESSION['user_id']);
 
             if ($exito) {
-                $this->modeloEvento->registrarEvento(
-                    (int)$_SESSION['user_id'], 'CAMBIO_ESTADO', 'fichas_emergencia', $fichaId,
+                $this->modeloEvento->registrarEventoFicha(
+                    $fichaId,
+                    (int)$_SESSION['user_id'],
+                    'CAMBIO_ESTADO',
+                    $anterior['estado_ficha'],
+                    $nuevoEstado,
                     ['estado' => $anterior['estado_ficha']],
                     ['estado' => $nuevoEstado],
                     "Ficha #{$fichaId} cambió de '{$anterior['estado_ficha']}' a '{$nuevoEstado}'."
@@ -282,13 +334,13 @@ class FichaControlador {
         }
     }
 
-    //--------------------------------------------------------------------
-    // GET Retorna los datos de una ficha en JSON (para el modal de detalle)
-    //--------------------------------------------------------------------
+    /**
+     * Retorna el detalle completo de una ficha para visualización en modal.
+     */
     public function detalle(): void {
         header('Content-Type: application/json');
         try {
-            $id   = (int)($_GET['id'] ?? 0);
+            $id = (int)($_GET['id'] ?? 0);
             if (!$id) { echo json_encode(['success' => false]); return; }
             $ficha = $this->modelo->obtenerPorId($id);
             echo json_encode(['success' => (bool)$ficha, 'data' => $ficha]);
@@ -297,22 +349,31 @@ class FichaControlador {
         }
     }
 
-    // ================================================================
-    // AJAX — Configuración (solo Admin)
-    // ================================================================
+    // ///////////////////////////////////////////////////////////////////
+    // 6. AJAX — CONFIGURACIÓN Y CATÁLOGOS (SOLO ADMIN)
+    // ///////////////////////////////////////////////////////////////////
 
+    /**
+     * Retorna parroquias filtradas por municipio para selectores dinámicos.
+     */
     public function obtenerParroquiasPorMunicipio(): void {
         header('Content-Type: application/json');
         $municipioId = (int)($_GET['municipio_id'] ?? 0);
         echo json_encode($this->modelo->obtenerParroquias($municipioId ?: null));
     }
 
+    /**
+     * Retorna casos específicos filtrados por tipo de emergencia.
+     */
     public function obtenerCasosPorTipo(): void {
         header('Content-Type: application/json');
         $tipoId = (int)($_GET['tipo_id'] ?? 0);
         echo json_encode($this->modelo->obtenerCasos($tipoId ?: null));
     }
 
+    /**
+     * Orquestador central para la gestión de catálogos (CRUD de Tipos, Casos, Municipios, etc).
+     */
     public function guardarCatalogo(): void {
         header('Content-Type: application/json');
         try {
@@ -340,16 +401,11 @@ class FichaControlador {
                         $tipoId = (int)($_POST['tipo_emergencia_id'] ?? 0);
                         $nombre = trim($_POST['nombre_caso'] ?? '');
                         $desc   = trim($_POST['descripcion'] ?? '');
-                        
                         $vId = Validador::validarId($tipoId, 'Tipo de Emergencia');
                         if (!$vId['valido']) return $vId;
-                        
                         $vNom = Validador::validarNombreCatalogo($nombre, 'Nombre del Caso');
                         if (!$vNom['valido']) return $vNom;
-                        
-                        return ($accion === 'crear') 
-                            ? $this->modelo->crearCaso($tipoId, $nombre, $desc) 
-                            : $this->modelo->actualizarCaso($id, $tipoId, $nombre, $desc);
+                        return ($accion === 'crear') ? $this->modelo->crearCaso($tipoId, $nombre, $desc) : $this->modelo->actualizarCaso($id, $tipoId, $nombre, $desc);
                     })(),
                     'eliminar' => $this->modelo->toggleEstadoCaso($id),
                     default    => false,
@@ -358,17 +414,10 @@ class FichaControlador {
                     'crear', 'editar' => (function() use ($id, $accion) {
                         $nombre = trim($_POST['nombre_municipio'] ?? $_POST['nombre'] ?? '');
                         $desc   = trim($_POST['descripcion'] ?? '');
-                        // Validación estricta para Municipios: max 30 caracteres, solo letras.
                         $v = Validador::validarNombreAlfabetico($nombre, 'Municipio', 30);
-                        if (!$v['valido']) {
-                            return ['valido' => false, 'mensaje' => $v['mensaje']];
-                        }
-                        // Validación de texto libre para la descripción
+                        if (!$v['valido']) return ['valido' => false, 'mensaje' => $v['mensaje']];
                         $vDesc = Validador::validarTextoLibre($desc, 'Descripción', 0, 256);
-                        if (!$vDesc['valido']) {
-                            return ['valido' => false, 'mensaje' => $vDesc['mensaje']];
-                        }
-
+                        if (!$vDesc['valido']) return ['valido' => false, 'mensaje' => $vDesc['mensaje']];
                         return ($accion === 'crear') ? $this->modelo->crearMunicipio($nombre, $desc) : $this->modelo->actualizarMunicipio($id, $nombre, $desc);
                     })(),
                     'eliminar' => $this->modelo->toggleEstadoMunicipio($id),
@@ -379,16 +428,11 @@ class FichaControlador {
                         $munId  = (int)($_POST['municipio_id'] ?? 0);
                         $nombre = trim($_POST['nombre_parroquia'] ?? $_POST['nombre'] ?? '');
                         $desc   = trim($_POST['descripcion'] ?? '');
-                        
                         $vId = Validador::validarId($munId, 'Municipio');
                         if (!$vId['valido']) return $vId;
-                        
                         $vNom = Validador::validarNombreCatalogo($nombre, 'Nombre de la Parroquia');
                         if (!$vNom['valido']) return $vNom;
-                        
-                        return ($accion === 'crear') 
-                            ? $this->modelo->crearParroquia($munId, $nombre, $desc) 
-                            : $this->modelo->actualizarParroquia($id, $munId, $nombre, $desc);
+                        return ($accion === 'crear') ? $this->modelo->crearParroquia($munId, $nombre, $desc) : $this->modelo->actualizarParroquia($id, $munId, $nombre, $desc);
                     })(),
                     'eliminar' => $this->modelo->toggleEstadoParroquia($id),
                     default    => false,
@@ -399,14 +443,10 @@ class FichaControlador {
                         $desc   = trim($_POST['descripcion'] ?? '');
                         $v = Validador::validarNombreCatalogo($nombre, 'Nombre del Organismo');
                         if (!$v['valido']) return $v;
-
                         if (!empty($desc)) {
                             $vDesc = Validador::validarTextoLibre($desc, 'Descripción', 0, 256);
-                            if (!$vDesc['valido']) {
-                                return ['valido' => false, 'mensaje' => $vDesc['mensaje']];
-                            }
+                            if (!$vDesc['valido']) return ['valido' => false, 'mensaje' => $vDesc['mensaje']];
                         }
-
                         return ($accion === 'crear') ? $this->modelo->crearOrganismo($nombre, $desc) : $this->modelo->actualizarOrganismo($id, $nombre, $desc);
                     })(),
                     'eliminar' => $this->modelo->toggleEstadoOrganismo($id),
@@ -429,9 +469,9 @@ class FichaControlador {
         }
     }
 
-    //--------------------------------------------------------------------
-    // GET Retorna los registros de configuración en JSON para DataTables
-    //--------------------------------------------------------------------
+    /**
+     * Retorna los datos crudos de cualquier catálogo para el renderizado de tablas administrativas.
+     */
     public function obtenerCatalogo(): void {
         header('Content-Type: application/json');
         try {

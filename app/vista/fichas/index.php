@@ -29,7 +29,7 @@ $estadoFiltro = match($tabActiva) {
     <!-- 2. CABECERA GLOBAL Y RECURSOS ESPECÍFICOS -->
     <?php require __DIR__ . '/../partials/head.php'; ?>
     
-    <link rel="stylesheet" href="public/css/fichas.css?v=1.1" />
+    <link rel="stylesheet" href="public/css/fichas.css?v=1.2" />
     <link rel="stylesheet" href="public/libs/datatables/dataTables.bootstrap5.min.css" />
 </head>
 

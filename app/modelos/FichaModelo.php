@@ -1,4 +1,9 @@
 <?php
+/**
+ * MODELO: FichaModelo
+ * Propósito: Gestionar el ciclo de vida completo de las Fichas de Emergencia,
+ * incluyendo la gestión de solicitantes, catálogos geográficos y organismos.
+ */
 
 namespace App\modelos;
 
@@ -10,17 +15,28 @@ require_once 'app/Config/Database.php';
 
 class FichaModelo {
 
+    // ///////////////////////////////////////////////////////////////////
+    // 1. ATRIBUTOS Y CONSTRUCTOR
+    // ///////////////////////////////////////////////////////////////////
+
     private $conexion;
 
+    /**
+     * Inicializa la conexión centralizada a la base de datos.
+     */
     public function __construct() {
         $database = new Database();
         $this->conexion = $database->obtenerConexion();
     }
 
-    // ================================================================
-    // FICHAS — Paginación Server-Side
-    // ================================================================
+    // ///////////////////////////////////////////////////////////////////
+    // 2. FICHAS — PAGINACIÓN (SERVER-SIDE)
+    // ///////////////////////////////////////////////////////////////////
 
+    /**
+     * Retorna fichas paginadas compatibles con DataTables.
+     * Implementa filtros por estado, búsqueda global y visibilidad por rol.
+     */
     public function obtenerPaginado(
         int    $inicio,
         int    $cantidad,
@@ -45,12 +61,13 @@ class FichaModelo {
         try {
             $busquedaLike = '%' . $busqueda . '%';
 
-            // Filtro por estado y por visibilidad de rol
+            // 2.1 Definición de condiciones dinámicas
             $condiciones = ['1=1'];
             if ($estado !== 'todos') {
                 $condiciones[] = 'f.estado_ficha = :estado';
             }
-            // Operador solo ve sus propias fichas
+            
+            // Regla de negocio: El operador (Rol 2) solo visualiza su propia gestión
             if ($rolId == 2 && $usuarioId > 0) {
                 $condiciones[] = 'f.id_user = :id_user';
             }
@@ -117,6 +134,9 @@ class FichaModelo {
         }
     }
 
+    /**
+     * Conteo total de fichas sin filtros de búsqueda (Total absoluto).
+     */
     public function contarTodos(string $estado = 'todos', int $usuarioId = 0, int $rolId = 0): int {
         try {
             $condiciones = ['1=1'];
@@ -145,6 +165,9 @@ class FichaModelo {
         }
     }
 
+    /**
+     * Conteo de fichas aplicando los filtros de búsqueda (Total filtrado).
+     */
     public function contarFiltrados(string $busqueda, string $estado = 'todos', int $usuarioId = 0, int $rolId = 0): int {
         try {
             $busquedaLike = '%' . $busqueda . '%';
@@ -186,10 +209,13 @@ class FichaModelo {
         }
     }
 
-    // ================================================================
-    // FICHAS — CRUD
-    // ================================================================
+    // ///////////////////////////////////////////////////////////////////
+    // 3. FICHAS — CRUD (LECTURA/ESCRITURA)
+    // ///////////////////////////////////////////////////////////////////
 
+    /**
+     * Obtiene el detalle completo de una ficha por su ID.
+     */
     public function obtenerPorId(int $id): array|false {
         try {
             $query = "SELECT f.*,
@@ -216,18 +242,20 @@ class FichaModelo {
         }
     }
 
+    /**
+     * Crea una nueva ficha. Implementa transaccionalidad para asegurar
+     * la integridad entre el solicitante y la ficha.
+     */
     public function crear(array $datos): int|false {
         try {
             $this->conexion->beginTransaction();
 
-            // 1. Upsert del solicitante por cédula
             $solicitanteId = $this->guardarSolicitante($datos);
             if (!$solicitanteId) {
                 $this->conexion->rollBack();
                 return false;
             }
 
-            // 2. Insertar la ficha
             $query = "INSERT INTO fichas_emergencia
                         (parroquia_id, direccion_exacta, caso_id, descripcion_caso, solicitante_id, id_user, estado_ficha)
                       VALUES
@@ -251,6 +279,9 @@ class FichaModelo {
         }
     }
 
+    /**
+     * Actualiza los datos de una ficha existente y registra quién realizó el cambio (id_owner).
+     */
     public function actualizar(int $id, array $datos, int $idOwner): bool {
         try {
             $this->conexion->beginTransaction();
@@ -288,6 +319,9 @@ class FichaModelo {
         }
     }
 
+    /**
+     * Gestiona la transición de estados de la ficha y registra la hora de cierre si aplica.
+     */
     public function cambiarEstado(int $id, string $nuevoEstado, int $idOwner): bool {
         $estadosValidos = ['Pendiente', 'En Proceso', 'Atendido', 'Cerrado', 'Finalizado'];
         if (!in_array($nuevoEstado, $estadosValidos, true)) return false;
@@ -308,16 +342,19 @@ class FichaModelo {
         }
     }
 
-    // ================================================================
-    // SOLICITANTES — Upsert por cédula
-    // ================================================================
+    // ///////////////////////////////////////////////////////////////////
+    // 4. GESTIÓN DE SOLICITANTES (UPSERT POR CÉDULA)
+    // ///////////////////////////////////////////////////////////////////
 
+    /**
+     * Busca o registra a un solicitante basándose en su cédula.
+     * Si existe, actualiza su información de contacto.
+     */
     private function guardarSolicitante(array $datos): int|false {
         try {
             $cedula = trim($datos['cedula_solicitante'] ?? '');
 
             if ($cedula !== '') {
-                // Buscar si ya existe por cédula
                 $stmt = $this->conexion->prepare(
                     "SELECT id FROM solicitantes WHERE cedula = :cedula LIMIT 1"
                 );
@@ -326,9 +363,9 @@ class FichaModelo {
                 $existente = $stmt->fetchColumn();
 
                 if ($existente) {
-                    // Actualizar datos
                     $update = $this->conexion->prepare(
-                        "UPDATE solicitantes SET nombre_solicitante = :nombre, telefono1 = :tel1, telefono2 = :tel2
+                        "UPDATE solicitantes SET nombre_solicitante = :nombre, 
+                                telefono1 = :tel1, telefono2 = :tel2
                          WHERE id = :id"
                     );
                     $update->bindValue(':nombre', $datos['nombre_solicitante'], PDO::PARAM_STR);
@@ -340,7 +377,6 @@ class FichaModelo {
                 }
             }
 
-            // Insertar nuevo solicitante
             $insert = $this->conexion->prepare(
                 "INSERT INTO solicitantes (cedula, nombre_solicitante, telefono1, telefono2)
                  VALUES (:cedula, :nombre, :tel1, :tel2)"
@@ -357,9 +393,9 @@ class FichaModelo {
         }
     }
 
-    // ================================================================
-    // CATÁLOGOS EMBEBIDOS (solo Admin)
-    // ================================================================
+    // ///////////////////////////////////////////////////////////////////
+    // 5. CATÁLOGOS: EMERGENCIAS Y CASOS
+    // ///////////////////////////////////////////////////////////////////
 
     // --- Tipos de Emergencia ---
     public function obtenerTiposEmergencia(int $estado = 1): array {
@@ -429,6 +465,10 @@ class FichaModelo {
         return $stmt->execute([':id' => $id]);
     }
 
+    // ///////////////////////////////////////////////////////////////////
+    // 6. CATÁLOGOS: GEOGRAFÍA (MUNICIPIOS / PARROQUIAS)
+    // ///////////////////////////////////////////////////////////////////
+
     // --- Municipios ---
     public function obtenerMunicipios(int $estado = 1): array {
         $stmt = $this->conexion->prepare("SELECT id, nombre_municipio, descripcion, estado FROM municipios WHERE estado = :estado ORDER BY nombre_municipio ASC");
@@ -497,7 +537,13 @@ class FichaModelo {
         return $stmt->execute([':id' => $id]);
     }
 
-    // --- Organismos ---
+    // ///////////////////////////////////////////////////////////////////
+    // 7. CATÁLOGOS: ORGANISMOS
+    // ///////////////////////////////////////////////////////////////////
+
+    /**
+     * Valida si un nombre ya existe en un catálogo específico para evitar duplicados.
+     */
     private function existeNombreCatalogo(string $tabla, string $columna, string $nombre, ?int $idActual = null): bool {
         $sql = "SELECT COUNT(*) FROM {$tabla} WHERE {$columna} = :nombre AND estado = 1";
         if ($idActual) $sql .= " AND id != :id";
@@ -541,4 +587,3 @@ class FichaModelo {
         return $stmt->execute([':id' => $id]);
     }
 }
-

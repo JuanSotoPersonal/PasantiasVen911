@@ -1,14 +1,25 @@
 <?php
+/**
+ * CONTROLADOR: NotificacionControlador
+ * Propósito: Gestionar la transmisión de notificaciones en tiempo real (SSE)
+ * y el control de estado de lectura de las alertas del sistema.
+ */
 
 require_once 'app/modelos/NotificacionModelo.php';
 use App\modelos\NotificacionModelo;
 
 class NotificacionControlador {
 
+    // ///////////////////////////////////////////////////////////////////
+    // 1. ATRIBUTOS Y CONSTRUCTOR
+    // ///////////////////////////////////////////////////////////////////
+
     private NotificacionModelo $modelo;
 
+    /**
+     * Constructor: Valida la sesión activa e inicializa el modelo.
+     */
     public function __construct() {
-        // Verificar sesión activa
         if (!isset($_SESSION['user_id'])) {
             header('Location: index.php?url=auth');
             exit;
@@ -16,46 +27,56 @@ class NotificacionControlador {
         $this->modelo = new NotificacionModelo();
     }
 
-    //--------------------------------------------------------------------
-    // SSE: Mantiene la conexión abierta y envía notificaciones no leídas
-    //--------------------------------------------------------------------
+    // ///////////////////////////////////////////////////////////////////
+    // 2. STREAMING (REAL-TIME SSE)
+    // ///////////////////////////////////////////////////////////////////
+
+    /**
+     * Mantiene una conexión persistente (Server-Sent Events) con el cliente
+     * para enviar notificaciones push sin recargar la página.
+     */
     public function stream(): void {
-        // Cabeceras para SSE
+        // 2.1 Cabeceras obligatorias para el protocolo SSE
         header('Content-Type: text/event-stream');
         header('Cache-Control: no-cache');
         header('Connection: keep-alive');
-        header('X-Accel-Buffering: no'); // Necesario en algunos entornos Nginx/Apache
+        header('X-Accel-Buffering: no'); 
 
-        // Leer datos de sesión necesarios y LIBERAR el lock de sesión
-        // CRÍTICO: sin esto, el bucle SSE bloquea todas las demás peticiones
-        // porque PHP mantiene el archivo de sesión bloqueado mientras el script vive.
+        // 2.2 MANEJO DE SESIÓN (CRÍTICO)
+        // PHP bloquea el archivo de sesión por defecto. Debemos leer el ID 
+        // y cerrar la escritura inmediatamente para no bloquear otras peticiones.
         $usuario_id = (int)$_SESSION['user_id'];
-        session_write_close(); // <-- Libera el lock; otras pestañas pueden cargar normalmente
+        session_write_close(); 
 
-        // Desactivar tiempo de ejecución máximo para conexiones persistentes
+        // 2.3 Desactivar el timeout del servidor para conexiones infinitas
         set_time_limit(0);
 
-        // Ciclo SSE: envía datos y espera
+        // 2.4 Ciclo de vida de la conexión
         while (true) {
-            // Verificar que el cliente sigue conectado
+            // Verificar si el navegador cerró la pestaña
             if (connection_aborted()) break;
 
             $notificaciones = $this->modelo->obtenerNoLeidas($usuario_id);
 
+            // Formato estándar SSE: "data: [JSON]\n\n"
             echo "data: " . json_encode($notificaciones) . "\n\n";
 
-            // Forzar envío inmediato al buffer de salida
+            // Forzar el vaciado del buffer de salida hacia el cliente
             if (ob_get_level() > 0) ob_flush();
             flush();
 
-            // Esperar 6 segundos antes del siguiente ciclo
+            // Intervalo de consulta: 6 segundos para equilibrio rendimiento/frecuencia
             sleep(6);
         }
     }
 
-    //--------------------------------------------------------------------
-    // POST: Marca una notificación individual como leída
-    //--------------------------------------------------------------------
+    // ///////////////////////////////////////////////////////////////////
+    // 3. GESTIÓN DE ESTADO (LECTURA)
+    // ///////////////////////////////////////////////////////////////////
+
+    /**
+     * Marca una notificación individual como leída vía AJAX.
+     */
     public function marcarLeida(): void {
         header('Content-Type: application/json');
 
@@ -76,9 +97,9 @@ class NotificacionControlador {
         echo json_encode(['success' => $resultado]);
     }
 
-    //--------------------------------------------------------------------
-    // POST: Marca TODAS las notificaciones del usuario como leídas
-    //--------------------------------------------------------------------
+    /**
+     * Marca todas las notificaciones pendientes del usuario como leídas.
+     */
     public function marcarTodas(): void {
         header('Content-Type: application/json');
 

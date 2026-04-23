@@ -277,10 +277,12 @@
                     <div class="mb-3">
                         <label id="cat_simple_label" for="cat_simple_valor" class="form-label fw-bold small text-secondary text-uppercase">Nombre del Registro</label>
                         <input type="text" class="form-control shadow-sm border-2" id="cat_simple_valor" name="nombre" autocomplete="off">
+                        <div class="form-text mt-1" style="font-size: 0.75rem;">Nombre único para el registro.</div>
                     </div>
                     <div class="mb-3">
                         <label for="cat_simple_descripcion" class="form-label fw-bold small text-secondary text-uppercase">Breve Descripción</label>
                         <textarea class="form-control shadow-sm border-2" id="cat_simple_descripcion" name="descripcion" rows="2" placeholder="Información adicional..."></textarea>
+                        <div class="form-text mt-1" style="font-size: 0.75rem;">Breve contexto sobre el uso de este registro.</div>
                     </div>
                 </form>
             </div>
@@ -315,14 +317,17 @@
                                 <option value="<?= $tipo['id'] ?>"><?= htmlspecialchars($tipo['nombre']) ?></option>
                             <?php endforeach; ?>
                         </select>
+                        <div class="form-text mt-1" style="font-size: 0.75rem;">El caso dependerá de esta categoría superior.</div>
                     </div>
                     <div class="mb-3">
                         <label for="caso_nombre" class="form-label fw-bold small text-secondary text-uppercase">Nombre del Caso <span class="text-danger">*</span></label>
                         <input type="text" class="form-control shadow-sm border-2" id="caso_nombre" name="nombre_caso" placeholder="Ej: Choque con heridos">
+                        <div class="form-text mt-1" style="font-size: 0.75rem;">Denominación técnica del evento.</div>
                     </div>
                     <div class="mb-3">
                         <label for="caso_descripcion" class="form-label fw-bold small text-secondary text-uppercase">Descripción del Escenario</label>
                         <textarea class="form-control shadow-sm border-2" id="caso_descripcion" name="descripcion" rows="2"></textarea>
+                        <div class="form-text mt-1" style="font-size: 0.75rem;">Detalle qué situaciones abarca este caso.</div>
                     </div>
                 </form>
             </div>
@@ -357,14 +362,17 @@
                                 <option value="<?= $municipio['id'] ?>"><?= htmlspecialchars($municipio['nombre_municipio']) ?></option>
                             <?php endforeach; ?>
                         </select>
+                        <div class="form-text mt-1" style="font-size: 0.75rem;">Vincular parroquia a su municipio correspondiente.</div>
                     </div>
                     <div class="mb-3">
                         <label for="parroquia_nombre" class="form-label fw-bold small text-secondary text-uppercase">Nombre de la Parroquia <span class="text-danger">*</span></label>
                         <input type="text" class="form-control shadow-sm border-2" id="parroquia_nombre" name="nombre_parroquia">
+                        <div class="form-text mt-1" style="font-size: 0.75rem;">Nombre oficial de la parroquia local.</div>
                     </div>
                     <div class="mb-3">
                         <label for="parroquia_descripcion" class="form-label fw-bold small text-secondary text-uppercase">Información Geográfica</label>
                         <textarea class="form-control shadow-sm border-2" id="parroquia_descripcion" name="descripcion" rows="2"></textarea>
+                        <div class="form-text mt-1" style="font-size: 0.75rem;">Notas sobre límites o sectores principales.</div>
                     </div>
                 </form>
             </div>

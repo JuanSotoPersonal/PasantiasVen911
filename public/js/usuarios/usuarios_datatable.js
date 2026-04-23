@@ -1,19 +1,27 @@
-// usuarios/datatable.js
-// Módulo Usuarios: DataTable, CRUD (crear, editar, contraseña, toggle estado)
+/**
+ * usuarios_datatable.js - Gestión Integral de Usuarios y RBAC
+ * 
+ * Centraliza la administración de cuentas, roles y seguridad. Implementa
+ * protección de nivel SuperAdmin, gestión de estados (Activo/Inactivo),
+ * control de preguntas de seguridad y ruteo de permisos dinámicos en la UI.
+ */
 
 $(function () {
 
-  // Configuración global de SweetAlert para evitar que modifique el padding y altura del body y achique la vista
+  // 1. CONFIGURACIÓN INICIAL Y MIXINS (SWEETALERT)
+  // Se pre-configura Swal para evitar saltos de layout en el body
   window.Swal = Swal.mixin({
     heightAuto: false,
     scrollbarPadding: false
   });
 
-  // ========================
-  // 1. Opciones comunes para DataTables
-  // ========================
+  // 2. DEFINICIÓN DE COLUMNAS Y RENDERERS (RBAC CORE)
   const configuracionColumnas = [
-    { data: null, width: '50px', orderable: false, searchable: false, render: (d, type, row, meta) => meta.row + meta.settings._iDisplayStart + 1 },
+    { 
+        // Columna: Índice correlativo
+        data: null, width: '50px', orderable: false, searchable: false, 
+        render: (d, type, row, meta) => meta.row + meta.settings._iDisplayStart + 1 
+    },
     { data: 'nombre_completo', render: (d) => escapeHTML(d) },
     { data: 'usuario', render: (d) => escapeHTML(d) },
     {
@@ -22,13 +30,14 @@ $(function () {
     },
     { data: 'nombre_rol', render: (d) => escapeHTML(d) },
     {
+      // Columna: Estado (Badge interactivo con protección de SuperAdmin)
       data: 'estado',
       render: (d, type, row) => {
         const isActivo = d === 'activo';
         const badgeClass = isActivo ? 'badge-activo' : 'badge-inactivo';
         const icon = isActivo ? 'bi-toggle-on' : 'bi-toggle-off';
 
-        // Si es SuperAdmin (id 1), el estado es estático por seguridad
+        // Bypass de seguridad: El SuperAdmin (Rol 1) es siempre activo y estático
         if (row.rol_id == 1) {
           return `
           <h3>
@@ -38,7 +47,7 @@ $(function () {
           </h3>`;
         }
 
-        // Si NO tiene permiso de edición, mostramos el badge estático (sin botón)
+        // Restricción por permisos de edición (Vista de lectura)
         if (!window.VEN911_PERM_EDITAR) {
           return `
           <h3>
@@ -48,15 +57,10 @@ $(function () {
           </h3>`;
         }
 
-        // Si tiene permiso, renderizamos el botón interactivo
+        // Renderizado del botón interactivo para cambio de estado
         return `
-          <button
-            type="button"
-            class="btn-toggle-estado"
-            data-id="${row.id}"
-            data-estado="${d}"
-            title="Clic para cambiar estado"
-          >
+          <button type="button" class="btn-toggle-estado" data-id="${row.id}" data-estado="${d}"
+            title="Clic para cambiar estado">
             <span class="badge badge-estado ${badgeClass}">
               <i class="bi ${icon} me-1"></i>${isActivo ? 'Activo' : 'Inactivo'}
             </span>
@@ -64,6 +68,7 @@ $(function () {
       },
     },
     {
+      // Columna: Acciones dinámicas según Rol y Permisos
       data: null,
       orderable: false,
       searchable: false,
@@ -71,9 +76,8 @@ $(function () {
       render: (d, type, row) => {
         const htmlActions = [];
 
-        // CASO A: La fila es un Administrador (Rol 1)
+        // CASO A: Fila es Administrador (Protección de identidad)
         if (row.rol_id == 1) {
-          // Icono estático de escudo
           htmlActions.push(`
             <span class="btn-ven-edit btn-accion me-1 d-inline-flex align-items-center justify-content-center"
                   style="cursor: help; opacity: 0.9;" title="Administrador Protegido">
@@ -81,16 +85,13 @@ $(function () {
             </span>
           `);
 
-          // Botón Password (Solo si el logueado es SuperAdmin O tiene permiso editar)
-          // Nota: Solo el SuperAdmin puede cambiar password de otro SuperAdmin usualmente
+          // Solo el SuperAdmin puede gestionar la seguridad de otro SuperAdmin
           if (window.USER_ROL_ID === 1) {
             htmlActions.push(`
               <button type="button" class="btn btn-ven-password btn-accion btn-password"
                 data-id="${row.id}" data-nombre="${escapeHTML(row.nombre_completo)}" title="Cambiar contraseña">
                 <i class="bi bi-key-fill"></i>
               </button>
-            `);
-            htmlActions.push(`
               <button type="button" class="btn btn-ven-primary btn-accion btn-config-seguridad"
                 data-id="${row.id}" data-nombre="${escapeHTML(row.nombre_completo)}" title="Configurar Preguntas de Seguridad">
                 <i class="bi bi-shield-check"></i>
@@ -98,7 +99,7 @@ $(function () {
             `);
           }
         } 
-        // CASO B: La fila es un usuario normal
+        // CASO B: Usuario estándar (Gestión operativa)
         else {
           if (window.VEN911_PERM_EDITAR) {
             htmlActions.push(`
@@ -116,7 +117,6 @@ $(function () {
           }
         }
 
-        // Si no se agregó nada (sin permisos), mostrar placeholder
         if (htmlActions.length === 0) {
           return '<span class="text-muted small italic"><i class="bi bi-lock-fill me-1"></i>Sin acceso</span>';
         }
@@ -128,9 +128,7 @@ $(function () {
 
   const configuracionLenguaje = window.Ven911DataTablesLang;
 
-  // ========================
-  // 2. INICIALIZAR DATATABLES
-  // ========================
+  // 3. INICIALIZACIÓN DE DATATABLES (SERVER-SIDE PROCESSING)
   const tabla = $('#tablaUsuarios').DataTable({
     autoWidth: false,
     serverSide: true,
@@ -139,7 +137,7 @@ $(function () {
       url: 'index.php?url=usuario/obtenerDatos&estado=activo',
       type: 'POST',
       error: function () {
-        Swal.fire('Error', 'No se pudieron cargar los datos de usuarios.', 'error');
+        Swal.fire('Error', 'No se pudieron cargar los datos de usuarios activos.', 'error');
       },
     },
     columns: configuracionColumnas,
@@ -167,29 +165,21 @@ $(function () {
     pageLength: 10,
   });
 
-  // Actualizar el badge del total cuando cargan los datos
+  // Gestión de contadores en tiempo real tras carga de datos
   tabla.on('xhr.dt', function (e, settings, json) {
     const total = (json && json.recordsTotal !== undefined) ? json.recordsTotal : 0;
     $('#badge-count-total').text(`${total} usuario${total !== 1 ? 's' : ''}`);
   });
 
-  // Actualizar badge de inactivos
   tablaInactivos.on('xhr.dt', function (e, settings, json) {
     const total = (json && json.recordsTotal !== undefined) ? json.recordsTotal : 0;
     $('#badge-count-inactivos').text(`${total} usuario${total !== 1 ? 's' : ''}`);
   });
 
-  // Escuchar evento global de recarga
-  $(document).on('usuarios:reload', function () {
+  // 4. HELPERS Y UTILIDADES
+  function recargarTabla() {
     tabla.ajax.reload(null, false);
     tablaInactivos.ajax.reload(null, false);
-  });
-
-  // ========================
-  // 3. HELPERS
-  // ========================
-  function recargarTabla() {
-    $(document).trigger('usuarios:reload');
   }
 
   function bloquearBtn($btn, texto = 'Procesando...') {
@@ -197,7 +187,7 @@ $(function () {
   }
   function desbloquearBtn($btn, html) { $btn.prop('disabled', false).html(html); }
 
-  // Toggle visibilidad de contraseña
+  // Toggle de visibilidad de contraseñas
   $(document).on('click', '.btn-eye', function () {
     const targetId = $(this).data('target');
     const $input = $('#' + targetId);
@@ -211,11 +201,7 @@ $(function () {
     }
   });
 
-  // ========================
-  // 4. CREAR USUARIO
-  // ========================
-
-  // Mostrar/ocultar campos de seguridad según el rol
+  // 5. MÓDULO: CREACIÓN DE USUARIOS
   $('#crear-rol').on('change', function () {
     const rolId = parseInt($(this).val());
     if (rolId === 1) {
@@ -224,6 +210,7 @@ $(function () {
       $('#seccion-seguridad-crear').slideUp();
     }
   });
+
   $('#formCrearUsuario').on('submit', function (e) {
     e.preventDefault();
     const $btn = $('#btn-guardar-crear');
@@ -254,14 +241,11 @@ $(function () {
       .always(function () { desbloquearBtn($btn, originalHtml); });
   });
 
-  // Limpiar form al cerrar modal
   $('#modalCrearUsuario').on('hidden.bs.modal', function () {
     $('#formCrearUsuario')[0].reset();
   });
 
-  // ========================
-  // 5. EDITAR USUARIO
-  // ========================
+  // 6. MÓDULO: EDICIÓN DE PERFILES
   $(document).on('click', '.btn-editar', function () {
     const $btn = $(this);
     $('#editar-id').val($btn.data('id'));
@@ -301,25 +285,20 @@ $(function () {
       .always(function () { desbloquearBtn($btn, originalHtml); });
   });
 
-  // ========================
-  // 6. CAMBIAR CONTRASEÑA
-  // ========================
+  // 7. MÓDULO: SEGURIDAD (PASSWORD & PREGUNTAS)
   $(document).on('click', '.btn-password', async function () {
     const $btn = $(this);
     const id = $btn.data('id');
 
     $('#pwd-id').val(id);
     $('#pwd-nombre-usuario').text($btn.data('nombre'));
-    $('#pwd-nueva').val('').attr('type', 'password');
-    $('#pwd-confirmar').val('').attr('type', 'password');
+    $('#pwd-nueva, #pwd-confirmar').val('').attr('type', 'password');
     $('#formCambiarPassword').find('.btn-eye i').removeClass('bi-eye-slash').addClass('bi-eye');
 
-    // Resetear sección de seguridad
     $('#seccion-validacion-seguridad').hide();
     $('#ans-1, #ans-2').val('').prop('required', false);
 
-    // Si es SuperAdmin (detectamos por el icono de escudo en la fila o simplemente intentamos cargar)
-    // En este caso, mejor preguntamos al servidor si tiene preguntas
+    // Verificación de preguntas de seguridad para cuentas protegidas
     try {
       const res = await $.getJSON(`index.php?url=usuario/obtenerPreguntasSeguridad&id=${id}`);
       if (res.success) {
@@ -328,7 +307,7 @@ $(function () {
         $('#ans-1, #ans-2').prop('required', true);
         $('#seccion-validacion-seguridad').slideDown();
       }
-    } catch (e) { console.log("Usuario sin preguntas de seguridad o error."); }
+    } catch (e) { /* Usuario sin preguntas */ }
 
     $('#modalCambiarPassword').modal('show');
   });
@@ -357,14 +336,49 @@ $(function () {
         }
       })
       .fail(function () {
-        Swal.fire({ icon: 'error', title: 'Error', text: 'Error de comunicación con el servidor.' });
+        Swal.fire({ icon: 'error', title: 'Error', text: 'Error de comunicación.' });
       })
       .always(function () { desbloquearBtn($btn, originalHtml); });
   });
 
-  // ========================
-  // 7. TOGGLE ESTADO
-  // ========================
+  // Configuración de preguntas de seguridad (Exclusivo SuperAdmin)
+  $(document).on('click', '.btn-config-seguridad', function () {
+    const $btn = $(this);
+    $('#seg-id').val($btn.data('id'));
+    $('#formConfigSeguridad')[0].reset();
+    $('#seg-id').val($btn.data('id'));
+    $('#modalConfigSeguridad').modal('show');
+  });
+
+  $('#formConfigSeguridad').on('submit', function (e) {
+    e.preventDefault();
+    const $btn = $(this).find('[type="submit"]');
+    const $form = $(this);
+    const originalHtml = $btn.html();
+
+    bloquearBtn($btn, 'Actualizando...');
+
+    $.ajax({
+      url: 'index.php?url=usuario/actualizarPreguntasSeguridad',
+      method: 'POST',
+      data: $form.serialize(),
+      dataType: 'json'
+    })
+      .done(function (res) {
+        if (res.success) {
+          Swal.fire({ icon: 'success', title: '¡Actualizado!', text: res.message, timer: 2000, showConfirmButton: false });
+          $('#modalConfigSeguridad').modal('hide');
+        } else {
+          Swal.fire({ icon: 'warning', title: 'Atención', text: res.message });
+        }
+      })
+      .fail(function () {
+        Swal.fire({ icon: 'error', title: 'Error', text: 'Error de comunicación.' });
+      })
+      .always(function () { desbloquearBtn($btn, originalHtml); });
+  });
+
+  // 8. MÓDULO: ESTADOS (TOGGLE ACTIVO/INACTIVO)
   $(document).on('click', '.btn-toggle-estado', function () {
     const id = $(this).data('id');
     const estado = $(this).data('estado');
@@ -397,52 +411,9 @@ $(function () {
           }
         })
         .fail(function () {
-          Swal.fire({ icon: 'error', title: 'Error', text: 'Error de comunicación con el servidor.' });
+          Swal.fire({ icon: 'error', title: 'Error', text: 'Error de comunicación.' });
         });
     });
   });
 
-  // ========================
-  // 8. CONFIGURAR SEGURIDAD (SUPERADMIN)
-  // ========================
-  $(document).on('click', '.btn-config-seguridad', function () {
-    const $btn = $(this);
-    $('#seg-id').val($btn.data('id'));
-    $('#seg-factory-code').val('');
-    $('#formConfigSeguridad')[0].reset();
-    // Re-establecer el ID oculto porque reset lo borra
-    $('#seg-id').val($btn.data('id'));
-    $('#modalConfigSeguridad').modal('show');
-  });
-
-  $('#formConfigSeguridad').on('submit', function (e) {
-    e.preventDefault();
-    const $btn = $(this).find('[type="submit"]');
-    const $form = $(this);
-    const originalHtml = $btn.html();
-
-    bloquearBtn($btn, 'Actualizando...');
-
-    $.ajax({
-      url: 'index.php?url=usuario/actualizarPreguntasSeguridad',
-      method: 'POST',
-      data: $form.serialize(),
-      dataType: 'json'
-    })
-      .done(function (res) {
-        if (res.success) {
-          Swal.fire({ icon: 'success', title: '¡Actualizado!', text: res.message, timer: 2000, showConfirmButton: false });
-          $('#modalConfigSeguridad').modal('hide');
-        } else {
-          Swal.fire({ icon: 'warning', title: 'Atención', text: res.message });
-        }
-      })
-      .fail(function () {
-        Swal.fire({ icon: 'error', title: 'Error', text: 'Error de comunicación.' });
-      })
-      .always(function () {
-        desbloquearBtn($btn, originalHtml);
-      });
-  });
-
-}); // fin $(function)
+});

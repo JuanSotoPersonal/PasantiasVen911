@@ -4,10 +4,10 @@
  * 
  * Este módulo gestiona el rastro de actividades (logs) de los usuarios y las fichas.
  * Permite visualizar quién, cuándo y qué acción se realizó en la plataforma, 
- * cumpliendo con los estándares de seguridad y trazabilidad.
+ * cumpliendo con los estándares de seguridad y trazabilidad institucional.
  */
 
-// 1. CONFIGURACIÓN DE CONTEXTO
+// 1. CONFIGURACIÓN DE CONTEXTO Y RUTEO INTERNO
 $pageName  = 'eventos';
 $tabActiva = $tabActiva ?? ($_GET['t'] ?? 'sistema');
 ?>
@@ -17,9 +17,10 @@ $tabActiva = $tabActiva ?? ($_GET['t'] ?? 'sistema');
 <head>
     <title>Ven911 | Historial de Sistema</title>
     
-    <!-- 2. RECURSOS DE CABECERA (CSS GLOBAL) -->
+    <!-- 2. RECURSOS DE CABECERA (Metadatos y Estilos) -->
     <?php require __DIR__ . '/../partials/head.php'; ?>
     
+    <!-- Estilos Específicos del Módulo -->
     <link rel="stylesheet" href="public/css/usuarios.css" />
     <link rel="stylesheet" href="public/css/eventos.css" />
     <link rel="stylesheet" href="public/libs/datatables/dataTables.bootstrap5.min.css" />
@@ -27,16 +28,17 @@ $tabActiva = $tabActiva ?? ($_GET['t'] ?? 'sistema');
 
 <body class="layout-fixed sidebar-expand-lg bg-body-tertiary">
 
-    <!-- 3. CONTENEDOR PRINCIPAL -->
+    <!-- 3. ESTRUCTURA DE CONTENEDOR (Layout Principal) -->
     <div class="app-wrapper">
 
-        <!-- Navegación y Menú Lateral -->
+        <!-- Navegación Superior y Barra Lateral -->
         <?php require __DIR__ . '/../partials/navbar.php'; ?>
         <?php require __DIR__ . '/../partials/sidebar.php'; ?>
 
+        <!-- 4. ÁREA DE CONTENIDO (Main Content) -->
         <main class="app-main">
             
-            <!-- Encabezado de Sección (Breadcrumbs) -->
+            <!-- Encabezado de Sección y Breadcrumbs -->
             <div class="app-content-header">
                 <div class="container-fluid">
                     <div class="row">
@@ -53,11 +55,11 @@ $tabActiva = $tabActiva ?? ($_GET['t'] ?? 'sistema');
                 </div>
             </div>
 
-            <!-- 4. CONTENIDO DINÁMICO (TABLAS DE AUDITORÍA) -->
+            <!-- 5. SECCIÓN DINÁMICA DE AUDITORÍA (DataTables) -->
             <div class="app-content">
                 <div class="container-fluid">
                     <?php
-                    // Carga condicional según el tipo de registro seleccionado (Fichas o Sistema)
+                    // Inyección de componentes según el contexto de auditoría (Fichas o Sistema)
                     if ($tabActiva === 'ficha') {
                         require __DIR__ . '/componentes/_tabla_fichas.php';
                     } else {
@@ -74,23 +76,25 @@ $tabActiva = $tabActiva ?? ($_GET['t'] ?? 'sistema');
 
     </div>
 
-    <!-- 5. CAPA DE DETALLES (MODALES) -->
+    <!-- 6. CAPA DE INTERACCIÓN (Modales y Detalles) -->
     <?php require __DIR__ . '/componentes/_modal_detalles.php'; ?>
 
 
-    <!-- 6. MOTOR JAVASCRIPT Y LÓGICA DE DATOS -->
+    <!-- 7. CARGA DE LÓGICA Y COMPORTAMIENTO (Scripts) -->
     <?php require __DIR__ . '/../partials/scripts.php'; ?>
 
-    <!-- Librerías de DataTables Core -->
+    <!-- Librerías de DataTables Core (Locales Offline) -->
     <script src="public/libs/datatables/dataTables.min.js"></script>
     <script src="public/libs/datatables/dataTables.bootstrap5.min.js"></script>
 
-    <!-- Configuración e Inicialización de Tablas -->
+    <!-- Inicialización Táctica de Auditoría -->
     <script src="public/js/comun/datatables_config.js"></script>
     
     <?php if ($tabActiva === 'ficha'): ?>
+        <!-- Script específico para trazabilidad de fichas operativas -->
         <script src="public/js/eventos/eventos_fichas_datatable.js?v=1.0"></script>
     <?php else: ?>
+        <!-- Script para auditoría de acciones administrativas del sistema -->
         <script src="public/js/eventos/eventos_datatable.js?v=1.1"></script>
     <?php endif; ?>
 

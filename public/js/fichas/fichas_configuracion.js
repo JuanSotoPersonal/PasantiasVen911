@@ -1,11 +1,17 @@
-// fichas_configuracion.js
-// Gestión ABMC de configuración del sistema: Tipos de Emergencia, Casos, Municipios, Parroquias
+/**
+ * fichas_configuracion.js - Gestión de Catálogos y Parámetros del Sistema
+ * 
+ * Centraliza las operaciones ABMC (Alta, Baja, Modificación y Consulta) de los
+ * componentes maestros: Tipos de Emergencia, Casos, Geografía (Municipios/Parroquias)
+ * y Organismos. Implementa lógica de "Papelera de Reciclaje" mediante estados.
+ */
 
 $(function () {
 
+    // 1. CONFIGURACIÓN INICIAL Y UI (SELECT2)
     const lang = window.Ven911DataTablesLang;
 
-    // Inicializar Select2 en los combos de configuración
+    // Inicialización dinámica de Select2 en modales para evitar conflictos de z-index
     $('.form-select').each(function () {
         const $modal = $(this).closest('.modal');
         $(this).select2({
@@ -16,10 +22,9 @@ $(function () {
         });
     });
 
-    // ================================================================
-    // HELPERS Y FUNCIONES DE UTILIDAD
-    // ================================================================
+    // 2. HELPERS Y UTILIDADES DE GESTIÓN (CRUD CORE)
     
+    // Sincronización de contadores de registros inactivos en las pestañas
     function actualizarContadoresInactivos() {
         let total = 0;
         $('.count-inactivo').each(function() {
@@ -27,6 +32,7 @@ $(function () {
         });
     }
 
+    // Hook para actualizar contadores tras cada recarga de DataTable
     function setupContadorDT(dt, elementId) {
         dt.on('xhr.dt', function(e, settings, json) {
             const count = (json && json.data) ? json.data.length : 0;
@@ -35,9 +41,10 @@ $(function () {
         });
     }
 
-    // ================================================================
-    // Función centralizada de guardado de registros de configuración
-    // ================================================================
+    /**
+     * Motor de persistencia centralizado para catálogos.
+     * Gestiona el envío asíncrono, cierre de modales y recarga de múltiples tablas.
+     */
     function guardarCatalogo(datos, tablasRef, modalId, callback) {
         $.post('index.php?url=ficha/guardarCatalogo', datos, function (res) {
             if (res.success) {
@@ -47,7 +54,7 @@ $(function () {
                 }
                 Swal.fire({ icon: 'success', title: '¡Operación Exitosa!', text: res.message, timer: 1500, showConfirmButton: false });
                 
-                // Recargar tablas (puede ser una o un array)
+                // Recarga atómica de tablas vinculadas
                 if (Array.isArray(tablasRef)) {
                     tablasRef.forEach(t => t.ajax.reload(null, false));
                 } else if (tablasRef) {
@@ -61,6 +68,7 @@ $(function () {
         }, 'json').fail(() => Swal.fire('Error', 'No se pudo conectar con el servidor.', 'error'));
     }
 
+    // Renderizador de badges de estado con soporte para Toggle interactivo
     function renderEstadoBadge(row, catalogo) {
         const isActivo = row.estado == 1;
         const badgeClass = isActivo ? 'badge-activo' : 'badge-inactivo';
@@ -77,6 +85,7 @@ $(function () {
             </button>`;
     }
 
+    // Gestión de diálogos de confirmación para cambios de estado (Baja Lógica)
     function confirmarEstado(id, catalogo, tablasRef, activando = false) {
         const title = activando ? '¿Reactivar registro?' : '¿Inhabilitar registro?';
         const text  = activando ? 'El registro volverá a estar disponible en el sistema.' : 'El registro se moverá a la papelera y no será visible en los selectores.';
@@ -94,11 +103,11 @@ $(function () {
         });
     }
 
+    // Generador dinámico de botones de acción según el estado del registro
     function btnsAccion(row, catalogo) {
         const isActivo = (row.estado == 1);
         
         if (!isActivo) {
-            // Botón de restaurar igual al ícono de Usuarios Inactivos
             return `
                 <button class="btn btn-ven-primary btn-accion btn-toggle-cat-estado"
                         data-id="${row.id}" data-cat="${catalogo}" data-estado="0"
@@ -114,9 +123,7 @@ $(function () {
             </button>`;
     }
 
-    // ================================================================
-    // TIPOS DE EMERGENCIA
-    // ================================================================
+    // 3. MÓDULO: TIPOS DE EMERGENCIA
     const dtTipos = $('#tablaTipos').DataTable({
         ajax: { url: 'index.php?url=ficha/obtenerCatalogo&cat=tipo_emergencia&estado=1', dataSrc: 'data' },
         columns: [
@@ -124,8 +131,7 @@ $(function () {
             { data: 'nombre', render: (d) => escapeHTML(d) },
             { data: 'descripcion', render: (d) => d ? `<small class="text-muted">${escapeHTML(d)}</small>` : '<em class="text-muted">—</em>' },
             { data: null, render: (d, t, r) => renderEstadoBadge(r, 'tipo_emergencia'), orderable: false, searchable: false },
-            { data: null, orderable: false, searchable: false, className: 'text-center',
-              render: (d, t, row) => btnsAccion(row, 'tipo_emergencia') },
+            { data: null, orderable: false, searchable: false, className: 'text-center', render: (d, t, row) => btnsAccion(row, 'tipo_emergencia') },
         ],
         language: lang, pageLength: 10, order: [[1, 'asc']],
     });
@@ -136,8 +142,7 @@ $(function () {
             { data: null, render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, orderable: false, searchable: false, width: '40px' },
             { data: 'nombre', render: (d) => escapeHTML(d) },
             { data: null, render: (d, t, r) => renderEstadoBadge(r, 'tipo_emergencia'), orderable: false, searchable: false },
-            { data: null, orderable: false, searchable: false, className: 'text-center',
-              render: (d, t, row) => btnsAccion(row, 'tipo_emergencia') },
+            { data: null, orderable: false, searchable: false, className: 'text-center', render: (d, t, row) => btnsAccion(row, 'tipo_emergencia') },
         ],
         language: lang, pageLength: 5, searching: false, lengthChange: false
     });
@@ -154,11 +159,12 @@ $(function () {
         new bootstrap.Modal(document.getElementById('modalCatalogoSimple')).show();
     });
 
+    // Acción unificada para catálogos simples (Nombre + Descripción)
     $('#btnGuardarCatSimple').on('click', () => {
         const datos = Object.fromEntries(new FormData(document.getElementById('formCatalogoSimple')));
         const catalogo = datos.catalogo;
         
-        // Mapeo manual para el controlador (aseguramos que las llaves específicas existan)
+        // Normalización de llaves para el backend
         if (catalogo === 'municipio') datos.nombre_municipio = datos.nombre;
         if (catalogo === 'organismo') datos.nombre_organismo = datos.nombre;
         
@@ -170,9 +176,7 @@ $(function () {
         guardarCatalogo(datos, tablas[catalogo], 'modalCatalogoSimple');
     });
 
-    // ================================================================
-    // CASOS
-    // ================================================================
+    // 4. MÓDULO: CASOS DE EMERGENCIA
     const dtCasos = $('#tablaCasos').DataTable({
         ajax: { url: 'index.php?url=ficha/obtenerCatalogo&cat=caso&estado=1', dataSrc: 'data' },
         columns: [
@@ -181,8 +185,7 @@ $(function () {
             { data: 'tipo_emergencia', render: (d) => `<span class="badge bg-secondary">${escapeHTML(d)}</span>` },
             { data: 'descripcion', render: (d) => d ? `<small class="text-muted">${escapeHTML(d)}</small>` : '<em class="text-muted">—</em>' },
             { data: null, render: (d, t, r) => renderEstadoBadge(r, 'caso'), orderable: false, searchable: false },
-            { data: null, orderable: false, searchable: false, className: 'text-center',
-              render: (d, t, row) => btnsAccion(row, 'caso') },
+            { data: null, orderable: false, searchable: false, className: 'text-center', render: (d, t, row) => btnsAccion(row, 'caso') },
         ],
         language: lang, pageLength: 10, order: [[1, 'asc']],
     });
@@ -194,14 +197,12 @@ $(function () {
             { data: 'nombre_caso', render: (d) => escapeHTML(d) },
             { data: 'tipo_emergencia', render: (d) => escapeHTML(d) },
             { data: null, render: (d, t, r) => renderEstadoBadge(r, 'caso'), orderable: false, searchable: false },
-            { data: null, orderable: false, searchable: false, className: 'text-center',
-              render: (d, t, row) => btnsAccion(row, 'caso') },
+            { data: null, orderable: false, searchable: false, className: 'text-center', render: (d, t, row) => btnsAccion(row, 'caso') },
         ],
         language: lang, pageLength: 5, searching: false, lengthChange: false
     });
     setupContadorDT(dtCasosInactivos, 'count-inactivos-casos');
 
-    // Filtro por tipo en la tabla de casos
     $('#filtroCasoTipo').on('change', function () {
         const tipoId = $(this).val();
         dtCasos.ajax.url(`index.php?url=ficha/obtenerCatalogo&cat=caso${tipoId ? '&tipo_id=' + tipoId : ''}`).load();
@@ -220,9 +221,7 @@ $(function () {
         guardarCatalogo(datos, [dtCasos, dtCasosInactivos], 'modalCaso');
     });
 
-    // ================================================================
-    // MUNICIPIOS
-    // ================================================================
+    // 5. MÓDULO: MUNICIPIOS
     const dtMunicipios = $('#tablaMunicipios').DataTable({
         ajax: { url: 'index.php?url=ficha/obtenerCatalogo&cat=municipio&estado=1', dataSrc: 'data' },
         columns: [
@@ -230,8 +229,7 @@ $(function () {
             { data: 'nombre_municipio', render: (d) => escapeHTML(d) },
             { data: 'descripcion', render: (d) => d ? `<small class="text-muted">${escapeHTML(d)}</small>` : '<em class="text-muted">—</em>' },
             { data: null, render: (d, t, r) => renderEstadoBadge(r, 'municipio'), orderable: false, searchable: false },
-            { data: null, orderable: false, searchable: false, className: 'text-center',
-              render: (d, t, row) => btnsAccion(row, 'municipio') },
+            { data: null, orderable: false, searchable: false, className: 'text-center', render: (d, t, row) => btnsAccion(row, 'municipio') },
         ],
         language: lang, pageLength: 10, order: [[1, 'asc']],
     });
@@ -242,8 +240,7 @@ $(function () {
             { data: null, render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, orderable: false, searchable: false, width: '40px' },
             { data: 'nombre_municipio', render: (d) => escapeHTML(d) },
             { data: null, render: (d, t, r) => renderEstadoBadge(r, 'municipio'), orderable: false, searchable: false },
-            { data: null, orderable: false, searchable: false, className: 'text-center',
-              render: (d, t, row) => btnsAccion(row, 'municipio') },
+            { data: null, orderable: false, searchable: false, className: 'text-center', render: (d, t, row) => btnsAccion(row, 'municipio') },
         ],
         language: lang, pageLength: 5, searching: false, lengthChange: false
     });
@@ -260,9 +257,7 @@ $(function () {
         new bootstrap.Modal(document.getElementById('modalCatalogoSimple')).show();
     });
 
-    // ================================================================
-    // PARROQUIAS
-    // ================================================================
+    // 6. MÓDULO: PARROQUIAS
     const dtParroquias = $('#tablaParroquias').DataTable({
         ajax: { url: 'index.php?url=ficha/obtenerCatalogo&cat=parroquia&estado=1', dataSrc: 'data' },
         columns: [
@@ -271,8 +266,7 @@ $(function () {
             { data: 'nombre_municipio', render: (d) => escapeHTML(d) },
             { data: 'descripcion', render: (d) => d ? `<small class="text-muted">${escapeHTML(d)}</small>` : '<em class="text-muted">—</em>' },
             { data: null, render: (d, t, r) => renderEstadoBadge(r, 'parroquia'), orderable: false, searchable: false },
-            { data: null, orderable: false, searchable: false, className: 'text-center',
-              render: (d, t, row) => btnsAccion(row, 'parroquia') },
+            { data: null, orderable: false, searchable: false, className: 'text-center', render: (d, t, row) => btnsAccion(row, 'parroquia') },
         ],
         language: lang, pageLength: 10, order: [[2, 'asc'], [1, 'asc']],
     });
@@ -284,14 +278,12 @@ $(function () {
             { data: 'nombre_parroquia', render: (d) => escapeHTML(d) },
             { data: 'nombre_municipio', render: (d) => escapeHTML(d) },
             { data: null, render: (d, t, r) => renderEstadoBadge(r, 'parroquia'), orderable: false, searchable: false },
-            { data: null, orderable: false, searchable: false, className: 'text-center',
-              render: (d, t, row) => btnsAccion(row, 'parroquia') },
+            { data: null, orderable: false, searchable: false, className: 'text-center', render: (d, t, row) => btnsAccion(row, 'parroquia') },
         ],
         language: lang, pageLength: 5, searching: false, lengthChange: false
     });
     setupContadorDT(dtParroquiasInactivos, 'count-inactivos-parroquias');
 
-    // Filtro por municipio en parroquias
     $('#filtroParroquiaMunicipio').on('change', function () {
         const municipioId = $(this).val();
         dtParroquias.ajax.url(`index.php?url=ficha/obtenerCatalogo&cat=parroquia${municipioId ? '&municipio_id=' + municipioId : ''}`).load();
@@ -310,9 +302,7 @@ $(function () {
         guardarCatalogo(datos, [dtParroquias, dtParroquiasInactivos], 'modalParroquia');
     });
 
-    // ================================================================
-    // ORGANISMOS
-    // ================================================================
+    // 7. MÓDULO: ORGANISMOS DE RESPUESTA
     const dtOrganismos = $('#tablaOrganismos').DataTable({
         ajax: { url: 'index.php?url=ficha/obtenerCatalogo&cat=organismo&estado=1', dataSrc: 'data' },
         columns: [
@@ -320,8 +310,7 @@ $(function () {
             { data: 'nombre_organismo', render: (d) => escapeHTML(d) },
             { data: 'descripcion', render: (d) => d ? `<small class="text-muted">${escapeHTML(d)}</small>` : '<em class="text-muted">—</em>' },
             { data: null, render: (d, t, r) => renderEstadoBadge(r, 'organismo'), orderable: false, searchable: false },
-            { data: null, orderable: false, searchable: false, className: 'text-center',
-              render: (d, t, row) => btnsAccion(row, 'organismo') },
+            { data: null, orderable: false, searchable: false, className: 'text-center', render: (d, t, row) => btnsAccion(row, 'organismo') },
         ],
         language: lang, pageLength: 10, order: [[1, 'asc']],
     });
@@ -332,8 +321,7 @@ $(function () {
             { data: null, render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, orderable: false, searchable: false, width: '40px' },
             { data: 'nombre_organismo', render: (d) => escapeHTML(d) },
             { data: null, render: (d, t, r) => renderEstadoBadge(r, 'organismo'), orderable: false, searchable: false },
-            { data: null, orderable: false, searchable: false, className: 'text-center',
-              render: (d, t, row) => btnsAccion(row, 'organismo') },
+            { data: null, orderable: false, searchable: false, className: 'text-center', render: (d, t, row) => btnsAccion(row, 'organismo') },
         ],
         language: lang, pageLength: 5, searching: false, lengthChange: false
     });
@@ -350,9 +338,9 @@ $(function () {
         new bootstrap.Modal(document.getElementById('modalCatalogoSimple')).show();
     });
 
-    // ================================================================
-    // EDITAR: delegación unificada para todos los catálogos
-    // ================================================================
+    // 8. GESTIÓN DE EDICIÓN Y ESTADOS (DELEGACIÓN GLOBAL)
+
+    // Carga dinámica de datos en modales según el tipo de catálogo
     $(document).on('click', '.btn-editar-cat', function () {
         const catalogo = $(this).data('cat');
         const row      = $(this).data('row');
@@ -368,7 +356,6 @@ $(function () {
             bootstrap.Modal.getOrCreateInstance(document.getElementById('modalCatalogoSimple')).show();
 
         } else if (catalogo === 'caso') {
-            // ... (caso ya tiene descripción)
             $('#caso_accion').val('editar');
             $('#caso_id').val(row.id);
             $('#caso_tipo_id').val(row.tipo_emergencia_id).trigger('change.select2');
@@ -404,13 +391,11 @@ $(function () {
             $('#cat_simple_valor').val(row.nombre_organismo);
             $('#cat_simple_descripcion').val(row.descripcion || '');
             $('#modalCatalogoSimpleTitulo').text(`Editar Organismo #${row.id}`);
-            new bootstrap.Modal(document.getElementById('modalCatalogoSimple')).show();
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('modalCatalogoSimple')).show();
         }
     });
 
-    // ================================================================
-    // ELIMINAR / RESTAURAR (TOGGLE) via Badge de Estado
-    // ================================================================
+    // Control unificado para el cambio de estado (Toggle Activo/Inactivo)
     $(document).on('click', '.btn-toggle-cat-estado', function () {
         const id       = $(this).data('id');
         const catalogo = $(this).data('cat');
@@ -427,7 +412,7 @@ $(function () {
         confirmarEstado(id, catalogo, tablas[catalogo], activando);
     });
 
-    // Eliminar delegaciones antiguas si existieran
+    // Limpieza de delegaciones legacy para evitar duplicidad de disparos
     $(document).off('click', '.btn-eliminar-cat');
     $(document).off('click', '.btn-restaurar-cat');
 

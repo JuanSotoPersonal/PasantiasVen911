@@ -1,4 +1,9 @@
 <?php
+/**
+ * MODELO: NotificacionModelo
+ * Propósito: Gestionar el sistema de alertas y notificaciones internas para los usuarios,
+ * permitiendo el seguimiento de eventos relevantes (ej. asignación de fichas).
+ */
 
 namespace App\modelos;
 
@@ -10,17 +15,28 @@ require_once 'app/Config/Database.php';
 
 class NotificacionModelo {
 
+    // ///////////////////////////////////////////////////////////////////
+    // 1. ATRIBUTOS Y CONEXIÓN
+    // ///////////////////////////////////////////////////////////////////
+
     private $conexion;
     private $tabla = 'notificaciones';
 
+    /**
+     * Constructor: Inicializa la comunicación con la base de datos.
+     */
     public function __construct() {
         $database = new Database();
         $this->conexion = $database->obtenerConexion();
     }
 
-    //--------------------------------------------------------------------
-    // Retorna las notificaciones no leídas de un usuario.
-    //--------------------------------------------------------------------
+    // ///////////////////////////////////////////////////////////////////
+    // 2. MÉTODOS DE CONSULTA (LECTURA)
+    // ///////////////////////////////////////////////////////////////////
+
+    /**
+     * Recupera las últimas 20 notificaciones pendientes de lectura para un usuario.
+     */
     public function obtenerNoLeidas(int $usuario_id): array {
         try {
             $sql = "SELECT id, tipo, mensaje, leido, fecha_creacion
@@ -39,9 +55,13 @@ class NotificacionModelo {
         }
     }
 
-    //--------------------------------------------------------------------
-    // Marca una sola notificación como leída.
-    //--------------------------------------------------------------------
+    // ///////////////////////////////////////////////////////////////////
+    // 3. MÉTODOS DE ACTUALIZACIÓN (ESTADO)
+    // ///////////////////////////////////////////////////////////////////
+
+    /**
+     * Cambia el estado de una notificación específica a 'leída'.
+     */
     public function marcarLeida(int $id_notif, int $usuario_id): bool {
         try {
             $sql = "UPDATE {$this->tabla}
@@ -58,9 +78,9 @@ class NotificacionModelo {
         }
     }
 
-    //--------------------------------------------------------------------
-    // Marca todas las notificaciones de un usuario como leídas.
-    //--------------------------------------------------------------------
+    /**
+     * Marca como leídas todas las notificaciones pendientes de un usuario específico.
+     */
     public function marcarTodasLeidas(int $usuario_id): bool {
         try {
             $sql = "UPDATE {$this->tabla} SET leido = 1 WHERE usuario_recibe_id = :uid AND leido = 0";
@@ -73,9 +93,13 @@ class NotificacionModelo {
         }
     }
 
-    //--------------------------------------------------------------------
-    // Crea una notificación dirigida a un usuario.
-    //--------------------------------------------------------------------
+    // ///////////////////////////////////////////////////////////////////
+    // 4. MÉTODOS DE ESCRITURA (CREACIÓN)
+    // ///////////////////////////////////////////////////////////////////
+
+    /**
+     * Genera una nueva notificación dirigida a un usuario, vinculada opcionalmente a una ficha.
+     */
     public function crear(int $usuario_recibe_id, string $tipo, string $mensaje, ?int $ficha_id = null): bool {
         try {
             $sql = "INSERT INTO {$this->tabla} (usuario_recibe_id, ficha_id, tipo, mensaje)
@@ -93,4 +117,3 @@ class NotificacionModelo {
         }
     }
 }
-

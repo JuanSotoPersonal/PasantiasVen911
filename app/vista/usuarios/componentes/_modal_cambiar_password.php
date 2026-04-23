@@ -42,10 +42,12 @@
                  <div class="mb-2">
                     <label id="label-pregunta-1" class="form-label small fw-bold mb-1"></label>
                     <input type="text" class="form-control form-control-sm" id="ans-1" name="ans_1" placeholder="Respuesta 1">
+                    <div class="form-text mt-1 text-dark" style="font-size: 0.7rem;">Ingrese la respuesta configurada en el setup.</div>
                  </div>
                  <div class="mb-0">
                     <label id="label-pregunta-2" class="form-label small fw-bold mb-1"></label>
                     <input type="text" class="form-control form-control-sm" id="ans-2" name="ans_2" placeholder="Respuesta 2">
+                    <div class="form-text mt-1 text-dark" style="font-size: 0.7rem;">Segunda validación de identidad obligatoria.</div>
                  </div>
               </div>
             </div>

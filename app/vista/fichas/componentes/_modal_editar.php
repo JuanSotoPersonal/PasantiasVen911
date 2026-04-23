@@ -34,18 +34,22 @@
                         <div class="col-md-3">
                             <label for="editar_cedula_solicitante" class="form-label fw-semibold small text-secondary">Cédula de Identidad</label>
                             <input type="text" class="form-control shadow-sm border-2" id="editar_cedula_solicitante" name="cedula_solicitante">
+                            <div class="form-text mt-1" style="font-size: 0.75rem;">Documento del reportante.</div>
                         </div>
                         <div class="col-md-9">
                             <label for="editar_nombre_solicitante" class="form-label fw-semibold small text-secondary">Nombre Completo <span class="text-danger">*</span></label>
                             <input type="text" class="form-control shadow-sm border-2" id="editar_nombre_solicitante" name="nombre_solicitante">
+                            <div class="form-text mt-1" style="font-size: 0.75rem;">Actualice el nombre si fue capturado incorrectamente.</div>
                         </div>
                         <div class="col-md-6">
                             <label for="editar_telefono1" class="form-label fw-semibold small text-secondary">Teléfono de Contacto 1 <span class="text-danger">*</span></label>
                             <input type="text" class="form-control shadow-sm border-2" id="editar_telefono1" name="telefono1">
+                            <div class="form-text mt-1" style="font-size: 0.75rem;">Teléfono principal (11 dígitos).</div>
                         </div>
                         <div class="col-md-6">
                             <label for="editar_telefono2" class="form-label fw-semibold small text-secondary">Teléfono de Contacto 2</label>
                             <input type="text" class="form-control shadow-sm border-2" id="editar_telefono2" name="telefono2">
+                            <div class="form-text mt-1" style="font-size: 0.75rem;">Teléfono secundario u opcional.</div>
                         </div>
                     </div>
 
@@ -65,16 +69,19 @@
                                     <option value="<?= $municipio['id'] ?>"><?= htmlspecialchars($municipio['nombre_municipio']) ?></option>
                                 <?php endforeach; ?>
                             </select>
+                            <div class="form-text mt-1" style="font-size: 0.75rem;">Ubicación administrativa del evento.</div>
                         </div>
                         <div class="col-md-6">
                             <label for="editar_parroquia_id" class="form-label fw-semibold small text-secondary">Parroquia <span class="text-danger">*</span></label>
                             <select class="form-select shadow-sm border-2" id="editar_parroquia_id" name="parroquia_id">
                                 <option value="">-- Seleccionar Parroquia --</option>
                             </select>
+                            <div class="form-text mt-1" style="font-size: 0.75rem;">Subdivisión territorial del municipio.</div>
                         </div>
                         <div class="col-12">
                             <label for="editar_direccion_exacta" class="form-label fw-semibold small text-secondary">Referencia o Dirección Exacta <span class="text-danger">*</span></label>
                             <textarea class="form-control shadow-sm border-2" id="editar_direccion_exacta" name="direccion_exacta" rows="2"></textarea>
+                            <div class="form-text mt-1" style="font-size: 0.75rem;">Detalles específicos de la locación.</div>
                         </div>
                     </div>
 
@@ -94,16 +101,19 @@
                                     <option value="<?= $tipo['id'] ?>"><?= htmlspecialchars($tipo['nombre']) ?></option>
                                 <?php endforeach; ?>
                             </select>
+                            <div class="form-text mt-1" style="font-size: 0.75rem;">Macro-categoría del incidente.</div>
                         </div>
                         <div class="col-md-7">
                             <label for="editar_caso_id" class="form-label fw-semibold small text-secondary">Caso Específico <span class="text-danger">*</span></label>
                             <select class="form-select shadow-sm border-2" id="editar_caso_id" name="caso_id">
                                 <option value="">-- Seleccionar Caso --</option>
                             </select>
+                            <div class="form-text mt-1" style="font-size: 0.75rem;">Tipificación final para el despacho.</div>
                         </div>
                         <div class="col-12">
                             <label for="editar_descripcion_caso" class="form-label fw-semibold small text-secondary">Resumen Técnico de la Situación <span class="text-danger">*</span></label>
                             <textarea class="form-control shadow-sm border-2" id="editar_descripcion_caso" name="descripcion_caso" rows="3"></textarea>
+                            <div class="form-text mt-1" style="font-size: 0.75rem;">Resumen de la situación y evolución del evento.</div>
                         </div>
                     </div>
 

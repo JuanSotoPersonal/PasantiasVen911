@@ -98,9 +98,9 @@ $pageName = 'setup';
                         </select>
                     </div>
                     <div class="col-md-12 mb-4">
-                        <label for="respuesta_1" class="form-label">Respuesta 1</label>
                         <input type="text" class="form-control" id="respuesta_1" name="respuesta_1" 
                                placeholder="Tu respuesta secreta">
+                        <div class="form-text mt-1 text-muted" style="font-size: 0.75rem;">Respuesta exacta para la recuperación de cuenta.</div>
                     </div>
 
                     <div class="col-md-12 mb-4">
@@ -113,9 +113,9 @@ $pageName = 'setup';
                         </select>
                     </div>
                     <div class="col-md-12 mb-4">
-                        <label for="respuesta_2" class="form-label">Respuesta 2</label>
                         <input type="text" class="form-control" id="respuesta_2" name="respuesta_2" 
                                placeholder="Tu segunda respuesta secreta">
+                        <div class="form-text mt-1 text-muted" style="font-size: 0.75rem;">Debe ser distinta a la respuesta 1.</div>
                     </div>
                 </div>
 

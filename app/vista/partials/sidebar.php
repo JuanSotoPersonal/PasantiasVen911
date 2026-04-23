@@ -163,7 +163,7 @@ $seccion   = explode('/', $urlActual)[0] ?? '';
                             </a>
                             <ul class="nav nav-treeview">
                                 <li class="nav-item">
-                                    <a href="index.php?url=evento&t=sistema" class="nav-link <?= ($seccion === 'evento' && $tabLog === 'sistema') ? 'active' : '' ?>">
+                                    <a href="index.php?url=evento&t=sistema" class="nav-link <?= ($seccion === 'evento' && ($tabLog === 'sistema' || empty($tabLog))) ? 'active' : '' ?>">
                                         <i class="nav-icon bi bi-activity"></i>
                                         <p>Logs del Sistema</p>
                                     </a>

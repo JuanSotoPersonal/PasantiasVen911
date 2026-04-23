@@ -1,4 +1,9 @@
 <?php
+/**
+ * MODELO: EventoModelo
+ * Propósito: Gestionar el registro y consulta de auditoría de todo el sistema.
+ * Registra eventos generales (configuración, usuarios) y eventos de fichas (operatividad).
+ */
 
 namespace App\modelos;
 
@@ -9,26 +14,30 @@ require_once 'app/Config/Database.php';
 
 class EventoModelo {
 
+    // ///////////////////////////////////////////////////////////////////
+    // 1. ATRIBUTOS Y CONSTRUCTOR
+    // ///////////////////////////////////////////////////////////////////
+
     private $conexion;
     private string $tabla_sistema = 'eventos_sistema';
     private string $tabla_fichas  = 'eventos_fichas';
 
+    /**
+     * Constructor: Inicializa la conexión centralizada.
+     */
     public function __construct() {
         $database = new Database();
         $this->conexion = $database->obtenerConexion();
     }
 
-    //--------------------------------------------------------------------
-    // Registra un evento general del sistema en eventos_sistema.
-    //
-    // @param int|null $usuario_id    NULL para acciones del sistema sin sesión activa
-    // @param string   $tipo_accion   INSERT | UPDATE | DELETE | LOGIN | LOGOUT | CAMBIO_ESTADO
-    // @param string   $tabla         Nombre de la tabla afectada 
-    // @param int|null $registro_id   ID del registro afectado
-    // @param array|null $anterior    Estado previo 
-    // @param array|null $nuevo       Estado nuevo 
-    // @param string|null $descripcion Nota legible por humanos
-    //--------------------------------------------------------------------
+    // ///////////////////////////////////////////////////////////////////
+    // 2. MÉTODOS DE REGISTRO (LOGGING)
+    // ///////////////////////////////////////////////////////////////////
+
+    /**
+     * Registra un evento general del sistema en la tabla eventos_sistema.
+     * Útil para auditar cambios en configuraciones, roles o perfiles de usuario.
+     */
     public function registrarEvento(
         ?int    $usuario_id,
         string  $tipo_accion,
@@ -58,19 +67,10 @@ class EventoModelo {
         }
     }
 
-    //--------------------------------------------------------------------
-    // Registra un evento del ciclo de vida de una ficha en eventos_fichas.
-    // Se llama en creación, modificación, cambio de estado, despacho y cierre.
-    //
-    // @param int      $ficha_id         Ficha afectada (requerido)
-    // @param int|null $usuario_id        Operador (NULL = acción automática del sistema)
-    // @param string   $tipo_evento       CREACION | MODIFICACION | CAMBIO_ESTADO | PLAN_ACCION | DESPACHO | CIERRE
-    // @param string|null $estado_anterior Estado previo de la ficha
-    // @param string|null $estado_nuevo    Estado nuevo de la ficha
-    // @param array|null  $anterior        Snapshot previo (JSON)
-    // @param array|null  $nuevo           Snapshot nuevo (JSON)
-    // @param string|null $descripcion     Nota legible
-    //--------------------------------------------------------------------
+    /**
+     * Registra un evento específico del ciclo de vida de una ficha.
+     * Captura transiciones de estado y snapshots de datos para reconstruir la historia de una emergencia.
+     */
     public function registrarEventoFicha(
         int     $ficha_id,
         ?int    $usuario_id      = null,
@@ -102,22 +102,17 @@ class EventoModelo {
         }
     }
 
-    //--------------------------------------------------------------------
-    // Retorna registros paginados de eventos_sistema compatible con DataTables.
-    //
-    // @param int    $inicio     Offset (primer registro de la página)
-    // @param int    $cantidad   Registros por página
-    // @param string $busqueda   Texto de búsqueda global
-    // @param int    $colOrden   Índice de columna (0-4)
-    // @param string $dirOrden   'asc' o 'desc'
-    //--------------------------------------------------------------------
+    // ///////////////////////////////////////////////////////////////////
+    // 3. AUDITORÍA DEL SISTEMA (DATATABLES)
+    // ///////////////////////////////////////////////////////////////////
+
+    /**
+     * Consulta paginada para la tabla de eventos globales del sistema.
+     */
     public function obtenerPaginado(int $inicio, int $cantidad, string $busqueda, int $colOrden, string $dirOrden): array {
         $columnas = [
-            0 => 'e.tipo_accion',
-            1 => 'e.tabla_afectada',
-            2 => 'e.registro_id',
-            3 => 'u.usuario',
-            4 => 'e.fecha',
+            0 => 'e.tipo_accion', 1 => 'e.tabla_afectada', 2 => 'e.registro_id', 
+            3 => 'u.usuario', 4 => 'e.fecha',
         ];
         $columnaOrden = $columnas[$colOrden] ?? 'e.fecha';
         $dirOrden     = strtolower($dirOrden) === 'asc' ? 'ASC' : 'DESC';
@@ -125,15 +120,8 @@ class EventoModelo {
         try {
             $busquedaLike = '%' . $busqueda . '%';
             $query = "SELECT 
-                        e.id, 
-                        e.usuario_id, 
-                        e.tipo_accion, 
-                        e.tabla_afectada, 
-                        e.registro_id, 
-                        e.valor_anterior, 
-                        e.valor_nuevo, 
-                        e.descripcion, 
-                        e.fecha, 
+                        e.id, e.usuario_id, e.tipo_accion, e.tabla_afectada, e.registro_id, 
+                        e.valor_anterior, e.valor_nuevo, e.descripcion, e.fecha, 
                         u.usuario AS nombre_admin
                       FROM {$this->tabla_sistema} e
                       LEFT JOIN usuarios u ON e.usuario_id = u.id
@@ -162,9 +150,9 @@ class EventoModelo {
         }
     }
 
-    //--------------------------------------------------------------------
-    // Retorna el total absoluto de registros en eventos_sistema.
-    //--------------------------------------------------------------------
+    /**
+     * Conteo total de registros de sistema.
+     */
     public function contarTodos(): int {
         try {
             $stmt = $this->conexion->prepare("SELECT COUNT(*) FROM {$this->tabla_sistema}");
@@ -176,9 +164,9 @@ class EventoModelo {
         }
     }
 
-    //--------------------------------------------------------------------
-    // Retorna el total de registros que coinciden con una búsqueda.
-    //--------------------------------------------------------------------
+    /**
+     * Conteo filtrado de registros de sistema.
+     */
     public function contarFiltrados(string $busqueda): int {
         try {
             $busquedaLike = '%' . $busqueda . '%';
@@ -205,10 +193,13 @@ class EventoModelo {
         }
     }
 
-    //--------------------------------------------------------------------
-    // Obtiene todos los eventos de una ficha en orden cronológico.
-    // Útil para mostrar el historial completo de una emergencia.
-    //--------------------------------------------------------------------
+    // ///////////////////////////////////////////////////////////////////
+    // 4. HISTORIAL DE FICHAS (DETALLES Y DATATABLES)
+    // ///////////////////////////////////////////////////////////////////
+
+    /**
+     * Obtiene el flujo cronológico completo de una sola ficha.
+     */
     public function obtenerEventosPorFicha(int $ficha_id): array {
         try {
             $query = "SELECT ef.*,
@@ -228,26 +219,20 @@ class EventoModelo {
         }
     }
 
-    //--------------------------------------------------------------------
-    // Retorna registros paginados de eventos_fichas compatible con DataTables.
-    //--------------------------------------------------------------------
+    /**
+     * Consulta paginada para la tabla general de eventos de fichas.
+     */
     public function obtenerPaginadoFichas(int $inicio, int $cantidad, string $busqueda, int $colOrden, string $dirOrden): array {
         $columnas = [
-            0 => 'ef.tipo_evento',
-            1 => 'ef.ficha_id',
-            2 => 'ef.estado_anterior',
-            3 => 'ef.estado_nuevo',
-            4 => 'u.usuario',
-            5 => 'ef.fecha',
+            0 => 'ef.tipo_evento', 1 => 'ef.ficha_id', 2 => 'ef.estado_anterior',
+            3 => 'ef.estado_nuevo', 4 => 'u.usuario', 5 => 'ef.fecha',
         ];
         $columnaOrden = $columnas[$colOrden] ?? 'ef.fecha';
         $dirOrden     = strtolower($dirOrden) === 'asc' ? 'ASC' : 'DESC';
 
         try {
             $busquedaLike = '%' . $busqueda . '%';
-            $query = "SELECT 
-                        ef.*, 
-                        u.usuario AS nombre_admin
+            $query = "SELECT ef.*, u.usuario AS nombre_admin
                       FROM {$this->tabla_fichas} ef
                       LEFT JOIN usuarios u ON ef.usuario_id = u.id
                       WHERE (:busqueda = ''
@@ -279,9 +264,9 @@ class EventoModelo {
         }
     }
 
-    //--------------------------------------------------------------------
-    // Retorna el total absoluto de registros en eventos_fichas.
-    //--------------------------------------------------------------------
+    /**
+     * Conteo total de registros en el historial de fichas.
+     */
     public function contarTodosFichas(): int {
         try {
             $stmt = $this->conexion->prepare("SELECT COUNT(*) FROM {$this->tabla_fichas}");
@@ -293,9 +278,9 @@ class EventoModelo {
         }
     }
 
-    //--------------------------------------------------------------------
-    // Retorna el total de registros que coinciden con una búsqueda en fichas.
-    //--------------------------------------------------------------------
+    /**
+     * Conteo filtrado de registros en el historial de fichas.
+     */
     public function contarFiltradosFichas(string $busqueda): int {
         try {
             $busquedaLike = '%' . $busqueda . '%';
@@ -326,10 +311,14 @@ class EventoModelo {
         }
     }
 
-    //--------------------------------------------------------------------
-    // Historial completo de un usuario: acciones de sistema + fichas.
-    // Retorna un array UNION ordenado por fecha descendente.
-    //--------------------------------------------------------------------
+    // ///////////////////////////////////////////////////////////////////
+    // 5. HISTORIAL INTEGRADO POR USUARIO
+    // ///////////////////////////////////////////////////////////////////
+
+    /**
+     * Retorna el historial combinado de un usuario (Acciones de Sistema + Fichas).
+     * Utiliza UNION ALL para consolidar la línea de tiempo del operador.
+     */
     public function obtenerEventosPorUsuario(int $usuario_id): array {
         try {
             $query = "SELECT
@@ -362,4 +351,3 @@ class EventoModelo {
         }
     }
 }
-
