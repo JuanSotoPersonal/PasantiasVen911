@@ -13,7 +13,7 @@ $(function () {
   // 1. Opciones comunes para DataTables
   // ========================
   const configuracionColumnas = [
-    { data: null, width: '50px', orderable: false, searchable: false, render: (d, type, row, meta) => meta.row + 1 },
+    { data: null, width: '50px', orderable: false, searchable: false, render: (d, type, row, meta) => meta.row + meta.settings._iDisplayStart + 1 },
     { data: 'nombre_completo', render: (d) => escapeHTML(d) },
     { data: 'usuario', render: (d) => escapeHTML(d) },
     {

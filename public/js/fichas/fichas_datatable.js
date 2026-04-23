@@ -53,7 +53,7 @@ $(document).ready(function () {
                 width: '50px',
                 orderable: false,
                 searchable: false,
-                render: (d, type, row, meta) => `<span class="fw-bold text-secondary">${meta.row + 1}</span>`
+                render: (d, type, row, meta) => `<span class="fw-bold text-secondary">${meta.row + meta.settings._iDisplayStart + 1}</span>`
             },
             {
                 data: 'nombre_solicitante',
