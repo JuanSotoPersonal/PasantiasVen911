@@ -67,11 +67,11 @@
 .btn-ven-edit:active { transform: translateY(0); }
 
 .btn-ven-detalle {
-    background: linear-gradient(135deg, #15803d 0%, #166534 100%);
+    background: linear-gradient(135deg, #15803d 0%, #166534 100%) !important;
     border: none; border-radius: 0.5rem; color: #fff; font-weight: 600;
     transition: all 0.25s ease; box-shadow: 0 3px 6px rgba(21, 128, 61, 0.35);
 }
-.btn-ven-detalle:hover { background: linear-gradient(135deg, #166534 0%, #14532d 100%); color: #fff; transform: translateY(-2px); }
+.btn-ven-detalle:hover { background: linear-gradient(135deg, #166534 0%, #14532d 100%) !important; color: #fff; transform: translateY(-2px); }
 .btn-ven-detalle:active { transform: translateY(0); }
 
 .btn-ven-cancel {

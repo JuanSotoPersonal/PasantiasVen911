@@ -13,7 +13,7 @@
     <!-- Cabecera de la Tabla: Contexto y Acciones -->
     <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
         <h3 class="card-title mb-0 fw-bold text-success">
-            <i class="bi bi-file-earmark-medical-fill me-2 text-warning"></i>
+            <i class="bi bi-file-earmark-medical-fill me-2 text-success"></i>
             <?php
             echo match($tabActiva) {
                 'todas'       => 'Todas las Fichas',

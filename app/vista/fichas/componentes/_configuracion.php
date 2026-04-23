@@ -60,9 +60,9 @@
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table id="tablaTipos" class="table table-hover align-middle w-100">
-                            <thead class="bg-light text-secondary small text-uppercase fw-bold">
-                                <tr><th width="60">ID</th><th>Nombre</th><th>Descripción</th><th width="100">Estado</th><th width="110" class="text-center text-dark">Acciones</th></tr>
+                        <table id="tablaTipos" class="table table-bordered table-striped table-hover align-middle w-100">
+                            <thead class="table-dark">
+                                <tr><th width="60">#</th><th>Nombre</th><th>Descripción</th><th width="100">Estado</th><th width="110" class="text-center">Acciones</th></tr>
                             </thead>
                             <tbody></tbody>
                         </table>
@@ -91,9 +91,9 @@
                         </select>
                     </div>
                     <div class="table-responsive">
-                        <table id="tablaCasos" class="table table-hover align-middle w-100">
-                            <thead class="bg-light text-secondary small text-uppercase fw-bold">
-                                <tr><th width="60">ID</th><th>Caso</th><th class="text-nowrap">Tipo de Emergencia</th><th>Descripción</th><th width="100">Estado</th><th width="110" class="text-center text-dark">Acciones</th></tr>
+                        <table id="tablaCasos" class="table table-bordered table-striped table-hover align-middle w-100">
+                            <thead class="table-dark">
+                                <tr><th width="60">#</th><th>Caso</th><th class="text-nowrap">Tipo de Emergencia</th><th>Descripción</th><th width="100">Estado</th><th width="110" class="text-center">Acciones</th></tr>
                             </thead>
                             <tbody></tbody>
                         </table>
@@ -144,9 +144,9 @@
                         </select>
                     </div>
                     <div class="table-responsive">
-                        <table id="tablaParroquias" class="table table-hover align-middle w-100">
-                            <thead class="bg-light text-secondary small text-uppercase fw-bold">
-                                <tr><th width="60">ID</th><th>Parroquia</th><th>Municipio</th><th>Descripción</th><th width="100">Estado</th><th width="110" class="text-center text-dark">Acciones</th></tr>
+                        <table id="tablaParroquias" class="table table-bordered table-striped table-hover align-middle w-100">
+                            <thead class="table-dark">
+                                <tr><th width="60">#</th><th>Parroquia</th><th>Municipio</th><th>Descripción</th><th width="100">Estado</th><th width="110" class="text-center text-white">Acciones</th></tr>
                             </thead>
                             <tbody></tbody>
                         </table>
@@ -166,9 +166,9 @@
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table id="tablaOrganismos" class="table table-hover align-middle w-100">
-                            <thead class="bg-light text-secondary small text-uppercase fw-bold">
-                                <tr><th width="60">ID</th><th class="text-nowrap">Nombre del Organismo</th><th>Descripción</th><th width="100">Estado</th><th width="110" class="text-center text-dark">Acciones</th></tr>
+                        <table id="tablaOrganismos" class="table table-bordered table-striped table-hover align-middle w-100">
+                            <thead class="table-dark">
+                                <tr><th width="60">#</th><th class="text-nowrap">Nombre del Organismo</th><th>Descripción</th><th width="100">Estado</th><th width="110" class="text-center text-white">Acciones</th></tr>
                             </thead>
                             <tbody></tbody>
                         </table>

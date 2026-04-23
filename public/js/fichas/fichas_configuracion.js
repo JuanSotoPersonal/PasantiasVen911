@@ -120,7 +120,7 @@ $(function () {
     const dtTipos = $('#tablaTipos').DataTable({
         ajax: { url: 'index.php?url=ficha/obtenerCatalogo&cat=tipo_emergencia&estado=1', dataSrc: 'data' },
         columns: [
-            { data: null, render: (d, t, r, m) => m.row + 1, orderable: false, searchable: false, width: '50px' },
+            { data: null, render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, orderable: false, searchable: false, width: '50px' },
             { data: 'nombre', render: (d) => escapeHTML(d) },
             { data: 'descripcion', render: (d) => d ? `<small class="text-muted">${escapeHTML(d)}</small>` : '<em class="text-muted">—</em>' },
             { data: null, render: (d, t, r) => renderEstadoBadge(r, 'tipo_emergencia'), orderable: false, searchable: false },
@@ -133,7 +133,7 @@ $(function () {
     const dtTiposInactivos = $('#tablaTiposInactivos').DataTable({
         ajax: { url: 'index.php?url=ficha/obtenerCatalogo&cat=tipo_emergencia&estado=0', dataSrc: 'data' },
         columns: [
-            { data: null, render: (d, t, r, m) => m.row + 1, orderable: false, searchable: false, width: '40px' },
+            { data: null, render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, orderable: false, searchable: false, width: '40px' },
             { data: 'nombre', render: (d) => escapeHTML(d) },
             { data: null, render: (d, t, r) => renderEstadoBadge(r, 'tipo_emergencia'), orderable: false, searchable: false },
             { data: null, orderable: false, searchable: false, className: 'text-center',
@@ -176,7 +176,7 @@ $(function () {
     const dtCasos = $('#tablaCasos').DataTable({
         ajax: { url: 'index.php?url=ficha/obtenerCatalogo&cat=caso&estado=1', dataSrc: 'data' },
         columns: [
-            { data: null, render: (d, t, r, m) => m.row + 1, orderable: false, searchable: false, width: '50px' },
+            { data: null, render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, orderable: false, searchable: false, width: '50px' },
             { data: 'nombre_caso', render: (d) => escapeHTML(d) },
             { data: 'tipo_emergencia', render: (d) => `<span class="badge bg-secondary">${escapeHTML(d)}</span>` },
             { data: 'descripcion', render: (d) => d ? `<small class="text-muted">${escapeHTML(d)}</small>` : '<em class="text-muted">—</em>' },
@@ -190,7 +190,7 @@ $(function () {
     const dtCasosInactivos = $('#tablaCasosInactivos').DataTable({
         ajax: { url: 'index.php?url=ficha/obtenerCatalogo&cat=caso&estado=0', dataSrc: 'data' },
         columns: [
-            { data: null, render: (d, t, r, m) => m.row + 1, orderable: false, searchable: false, width: '40px' },
+            { data: null, render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, orderable: false, searchable: false, width: '40px' },
             { data: 'nombre_caso', render: (d) => escapeHTML(d) },
             { data: 'tipo_emergencia', render: (d) => escapeHTML(d) },
             { data: null, render: (d, t, r) => renderEstadoBadge(r, 'caso'), orderable: false, searchable: false },
@@ -226,7 +226,7 @@ $(function () {
     const dtMunicipios = $('#tablaMunicipios').DataTable({
         ajax: { url: 'index.php?url=ficha/obtenerCatalogo&cat=municipio&estado=1', dataSrc: 'data' },
         columns: [
-            { data: null, render: (d, t, r, m) => m.row + 1, orderable: false, searchable: false, width: '50px' },
+            { data: null, render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, orderable: false, searchable: false, width: '50px' },
             { data: 'nombre_municipio', render: (d) => escapeHTML(d) },
             { data: 'descripcion', render: (d) => d ? `<small class="text-muted">${escapeHTML(d)}</small>` : '<em class="text-muted">—</em>' },
             { data: null, render: (d, t, r) => renderEstadoBadge(r, 'municipio'), orderable: false, searchable: false },
@@ -239,7 +239,7 @@ $(function () {
     const dtMunicipiosInactivos = $('#tablaMunicipiosInactivos').DataTable({
         ajax: { url: 'index.php?url=ficha/obtenerCatalogo&cat=municipio&estado=0', dataSrc: 'data' },
         columns: [
-            { data: null, render: (d, t, r, m) => m.row + 1, orderable: false, searchable: false, width: '40px' },
+            { data: null, render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, orderable: false, searchable: false, width: '40px' },
             { data: 'nombre_municipio', render: (d) => escapeHTML(d) },
             { data: null, render: (d, t, r) => renderEstadoBadge(r, 'municipio'), orderable: false, searchable: false },
             { data: null, orderable: false, searchable: false, className: 'text-center',
@@ -266,7 +266,7 @@ $(function () {
     const dtParroquias = $('#tablaParroquias').DataTable({
         ajax: { url: 'index.php?url=ficha/obtenerCatalogo&cat=parroquia&estado=1', dataSrc: 'data' },
         columns: [
-            { data: null, render: (d, t, r, m) => m.row + 1, orderable: false, searchable: false, width: '50px' },
+            { data: null, render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, orderable: false, searchable: false, width: '50px' },
             { data: 'nombre_parroquia', render: (d) => escapeHTML(d) },
             { data: 'nombre_municipio', render: (d) => escapeHTML(d) },
             { data: 'descripcion', render: (d) => d ? `<small class="text-muted">${escapeHTML(d)}</small>` : '<em class="text-muted">—</em>' },
@@ -280,7 +280,7 @@ $(function () {
     const dtParroquiasInactivos = $('#tablaParroquiasInactivos').DataTable({
         ajax: { url: 'index.php?url=ficha/obtenerCatalogo&cat=parroquia&estado=0', dataSrc: 'data' },
         columns: [
-            { data: null, render: (d, t, r, m) => m.row + 1, orderable: false, searchable: false, width: '40px' },
+            { data: null, render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, orderable: false, searchable: false, width: '40px' },
             { data: 'nombre_parroquia', render: (d) => escapeHTML(d) },
             { data: 'nombre_municipio', render: (d) => escapeHTML(d) },
             { data: null, render: (d, t, r) => renderEstadoBadge(r, 'parroquia'), orderable: false, searchable: false },
@@ -316,7 +316,7 @@ $(function () {
     const dtOrganismos = $('#tablaOrganismos').DataTable({
         ajax: { url: 'index.php?url=ficha/obtenerCatalogo&cat=organismo&estado=1', dataSrc: 'data' },
         columns: [
-            { data: null, render: (d, t, r, m) => m.row + 1, orderable: false, searchable: false, width: '50px' },
+            { data: null, render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, orderable: false, searchable: false, width: '50px' },
             { data: 'nombre_organismo', render: (d) => escapeHTML(d) },
             { data: 'descripcion', render: (d) => d ? `<small class="text-muted">${escapeHTML(d)}</small>` : '<em class="text-muted">—</em>' },
             { data: null, render: (d, t, r) => renderEstadoBadge(r, 'organismo'), orderable: false, searchable: false },
@@ -329,7 +329,7 @@ $(function () {
     const dtOrganismosInactivos = $('#tablaOrganismosInactivos').DataTable({
         ajax: { url: 'index.php?url=ficha/obtenerCatalogo&cat=organismo&estado=0', dataSrc: 'data' },
         columns: [
-            { data: null, render: (d, t, r, m) => m.row + 1, orderable: false, searchable: false, width: '40px' },
+            { data: null, render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, orderable: false, searchable: false, width: '40px' },
             { data: 'nombre_organismo', render: (d) => escapeHTML(d) },
             { data: null, render: (d, t, r) => renderEstadoBadge(r, 'organismo'), orderable: false, searchable: false },
             { data: null, orderable: false, searchable: false, className: 'text-center',
