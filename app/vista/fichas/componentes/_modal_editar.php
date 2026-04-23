@@ -33,7 +33,7 @@
                     <div class="row g-3 mb-4">
                         <div class="col-md-3">
                             <label for="editar_cedula_solicitante" class="form-label fw-semibold small text-secondary">Cédula de Identidad</label>
-                            <input type="text" class="form-control shadow-sm border-2" id="editar_cedula_solicitante" name="cedula_solicitante" maxlength="12">
+                            <input type="text" class="form-control shadow-sm border-2" id="editar_cedula_solicitante" name="cedula_solicitante">
                         </div>
                         <div class="col-md-9">
                             <label for="editar_nombre_solicitante" class="form-label fw-semibold small text-secondary">Nombre Completo <span class="text-danger">*</span></label>
