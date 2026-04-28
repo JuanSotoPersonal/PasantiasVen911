@@ -129,57 +129,64 @@ $(function () {
   const configuracionLenguaje = window.Ven911DataTablesLang;
 
   // 3. INICIALIZACIÓN DE DATATABLES (SERVER-SIDE PROCESSING)
-  const tabla = $('#tablaUsuarios').DataTable({
-    autoWidth: false,
-    serverSide: true,
-    processing: true,
-    ajax: {
-      url: 'index.php?url=usuario/obtenerDatos&estado=activo',
-      type: 'POST',
-      error: function () {
-        Swal.fire('Error', 'No se pudieron cargar los datos de usuarios activos.', 'error');
+  let tabla, tablaInactivos;
+
+  if ($('#tablaUsuarios').length) {
+    tabla = $('#tablaUsuarios').DataTable({
+      autoWidth: false,
+      serverSide: true,
+      processing: true,
+      ajax: {
+        url: 'index.php?url=usuario/obtenerDatos&estado=activo',
+        type: 'POST',
+        error: function () {
+          Swal.fire('Error', 'No se pudieron cargar los datos de usuarios activos.', 'error');
+        },
       },
-    },
-    columns: configuracionColumnas,
-    language: configuracionLenguaje,
-    responsive: true,
-    order: [[0, 'asc']],
-    pageLength: 10,
-  });
+      columns: configuracionColumnas,
+      language: configuracionLenguaje,
+      responsive: true,
+      order: [[0, 'asc']],
+      pageLength: 10,
+    });
 
-  const tablaInactivos = $('#tablaInactivos').DataTable({
-    autoWidth: false,
-    serverSide: true,
-    processing: true,
-    ajax: {
-      url: 'index.php?url=usuario/obtenerDatos&estado=inactivo',
-      type: 'POST',
-      error: function () {
-        Swal.fire('Error', 'No se pudieron cargar los datos inactivos.', 'error');
+    // Gestión de contadores en tiempo real tras carga de datos
+    tabla.on('xhr.dt', function (e, settings, json) {
+      const total = (json && json.recordsTotal !== undefined) ? json.recordsTotal : 0;
+      $('#badge-count-total').text(`${total} usuario${total !== 1 ? 's' : ''}`);
+    });
+  }
+
+  if ($('#tablaInactivos').length) {
+    tablaInactivos = $('#tablaInactivos').DataTable({
+      autoWidth: false,
+      serverSide: true,
+      processing: true,
+      ajax: {
+        url: 'index.php?url=usuario/obtenerDatos&estado=inactivo',
+        type: 'POST',
+        error: function () {
+          Swal.fire('Error', 'No se pudieron cargar los datos inactivos.', 'error');
+        },
       },
-    },
-    columns: configuracionColumnas,
-    language: { ...configuracionLenguaje, emptyTable: 'No hay usuarios inactivos.' },
-    responsive: true,
-    order: [[0, 'asc']],
-    pageLength: 10,
-  });
+      columns: configuracionColumnas,
+      language: { ...configuracionLenguaje, emptyTable: 'No hay usuarios inactivos.' },
+      responsive: true,
+      order: [[0, 'asc']],
+      pageLength: 10,
+    });
 
-  // Gestión de contadores en tiempo real tras carga de datos
-  tabla.on('xhr.dt', function (e, settings, json) {
-    const total = (json && json.recordsTotal !== undefined) ? json.recordsTotal : 0;
-    $('#badge-count-total').text(`${total} usuario${total !== 1 ? 's' : ''}`);
-  });
-
-  tablaInactivos.on('xhr.dt', function (e, settings, json) {
-    const total = (json && json.recordsTotal !== undefined) ? json.recordsTotal : 0;
-    $('#badge-count-inactivos').text(`${total} usuario${total !== 1 ? 's' : ''}`);
-  });
+    tablaInactivos.on('xhr.dt', function (e, settings, json) {
+      const total = (json && json.recordsTotal !== undefined) ? json.recordsTotal : 0;
+      $('#badge-count-inactivos').text(`${total} usuario${total !== 1 ? 's' : ''}`);
+    });
+  }
 
   // 4. HELPERS Y UTILIDADES
   function recargarTabla() {
-    tabla.ajax.reload(null, false);
-    tablaInactivos.ajax.reload(null, false);
+    if (tabla) tabla.ajax.reload(null, false);
+    if (tablaInactivos) tablaInactivos.ajax.reload(null, false);
+    $(document).trigger('usuarios:reload');
   }
 
   function bloquearBtn($btn, texto = 'Procesando...') {

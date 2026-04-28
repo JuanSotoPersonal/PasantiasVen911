@@ -221,9 +221,9 @@ class FichaControlador {
                 return;
             }
             
-            // 4.4 Blindaje Inmutable: No se editan registros cerrados
-            if (in_array($anterior['estado_ficha'], ['Cerrado', 'Finalizado'])) {
-                echo json_encode(['success' => false, 'message' => 'No se permite editar una emergencia que ya se encuentra Cerrada o Finalizada.']);
+            // 4.4 Blindaje Inmutable: No se editan registros cerrados o atendidos (estados terminales)
+            if (in_array($anterior['estado_ficha'], ['Cerrado', 'Atendido'])) {
+                echo json_encode(['success' => false, 'message' => 'No se puede editar una emergencia en estado terminal (Cerrado o Atendido).']);
                 return;
             }
 
@@ -292,12 +292,28 @@ class FichaControlador {
                 return;
             }
 
-            $fichaId     = (int)($_POST['ficha_id']     ?? 0);
-            $nuevoEstado = trim($_POST['nuevo_estado']  ?? '');
+            $fichaId      = (int)($_POST['ficha_id']     ?? 0);
+            $nuevoEstado  = trim($_POST['nuevo_estado']  ?? '');
+            $motivoCierre = trim($_POST['motivo_cierre'] ?? '');
 
             if (!$fichaId || $nuevoEstado === '') {
                 echo json_encode(['success' => false, 'message' => 'Datos incompletos.']);
                 return;
+            }
+
+            // Al cerrar una ficha, el motivo es obligatorio
+            if ($nuevoEstado === 'Cerrado' && $motivoCierre === '') {
+                echo json_encode(['success' => false, 'message' => 'Debe ingresar el motivo de cierre de la ficha.']);
+                return;
+            }
+
+            // Validar longitud del motivo si se proporciona
+            if ($motivoCierre !== '') {
+                $valMotivo = Validador::validarTextoLibre($motivoCierre, 'Motivo de Cierre', 5, 500);
+                if (!$valMotivo['valido']) {
+                    echo json_encode(['success' => false, 'message' => $valMotivo['mensaje']]);
+                    return;
+                }
             }
 
             $anterior = $this->modelo->obtenerPorId($fichaId);
@@ -305,16 +321,22 @@ class FichaControlador {
                 echo json_encode(['success' => false, 'message' => 'Ficha no encontrada.']);
                 return;
             }
-            
+
             // Blindaje de estados terminales
-            if (in_array($anterior['estado_ficha'], ['Cerrado', 'Finalizado'])) {
-                echo json_encode(['success' => false, 'message' => 'No se permite reabrir ni modificar el estado de una ficha que ya fue Cerrada o Finalizada.']);
+            if (in_array($anterior['estado_ficha'], ['Cerrado', 'Atendido'])) {
+                echo json_encode(['success' => false, 'message' => 'No se puede modificar el estado de una ficha en estado terminal.']);
                 return;
             }
 
-            $exito = $this->modelo->cambiarEstado($fichaId, $nuevoEstado, (int)$_SESSION['user_id']);
+            $exito = $this->modelo->cambiarEstado($fichaId, $nuevoEstado, (int)$_SESSION['user_id'], $motivoCierre);
 
             if ($exito) {
+                // Incluir el motivo de cierre en la descripción del evento de auditoría
+                $descripcionEvento = "Ficha #{$fichaId} cambió de '{$anterior['estado_ficha']}' a '{$nuevoEstado}'.";
+                if ($motivoCierre !== '') {
+                    $descripcionEvento .= " Motivo: {$motivoCierre}";
+                }
+
                 $this->modeloEvento->registrarEventoFicha(
                     $fichaId,
                     (int)$_SESSION['user_id'],
@@ -322,8 +344,8 @@ class FichaControlador {
                     $anterior['estado_ficha'],
                     $nuevoEstado,
                     ['estado' => $anterior['estado_ficha']],
-                    ['estado' => $nuevoEstado],
-                    "Ficha #{$fichaId} cambió de '{$anterior['estado_ficha']}' a '{$nuevoEstado}'."
+                    ['estado' => $nuevoEstado, 'motivo' => $motivoCierre],
+                    $descripcionEvento
                 );
                 echo json_encode(['success' => true, 'message' => "Estado actualizado a '{$nuevoEstado}'.", 'nuevo_estado' => $nuevoEstado]);
             } else {

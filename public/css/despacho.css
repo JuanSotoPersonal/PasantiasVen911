@@ -1,0 +1,379 @@
+/* =============================================
+   Centro de Despacho — Estilos VEN 911
+   Hereda variables del tema institucional verde
+   ============================================= */
+
+/* Reutilización de variables del tema global */
+:root {
+    --ven-green-primary: #16a34a;
+    --ven-green-dark:    #15803d;
+    --ven-green-darker:  #14532d;
+    --ven-green-deepest: #064e3b;
+    --ven-green-accent:  #22c55e;
+    --ven-green-light:   #f0fdf4;
+    --ven-green-border:  #bbf7d0;
+    --ven-green-shadow:  rgba(22, 163, 74, 0.4);
+    --ven-green-glow:    rgba(34, 197, 94, 0.2);
+}
+
+/* =============================================
+   BADGES DE ESTATUS DEL DESPACHO
+   Flujo: Asignado → En Camino → En Sitio → Liberado
+   ============================================= */
+
+.badge-despacho-estatus {
+    font-size: 0.78rem;
+    padding: 0.35em 0.85em;
+    border-radius: 50px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3em;
+}
+
+/* Asignado — Azul institucional (esperando movilización) */
+.badge-despacho-asignado {
+    background: #dbeafe;
+    color: #1e40af;
+    border: 1px solid #93c5fd;
+}
+
+/* En Camino — Ámbar operativo (movilizando) */
+.badge-despacho-en-camino {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fcd34d;
+}
+
+/* En Sitio — Verde institucional (activo en escena) */
+.badge-despacho-en-sitio {
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #6ee7b7;
+}
+
+/* Liberado — Gris neutro (misión completada, estado terminal) */
+.badge-despacho-liberado {
+    background: #f1f5f9;
+    color: #334155;
+    border: 1px solid #cbd5e1;
+}
+
+/* =============================================
+   BOTONES DE ACCIÓN (HEREDA DE fichas.css,
+   aquí se replican para autonomía del módulo)
+   ============================================= */
+
+.btn-ven-primary {
+    background: linear-gradient(135deg, var(--ven-green-primary) 0%, var(--ven-green-dark) 100%);
+    border: none; border-radius: 0.6rem; color: #fff; font-weight: 600;
+    letter-spacing: 0.3px; transition: all 0.25s ease;
+    box-shadow: 0 4px 6px -1px var(--ven-green-shadow);
+}
+.btn-ven-primary:hover, .btn-ven-primary:focus {
+    background: linear-gradient(135deg, var(--ven-green-dark) 0%, var(--ven-green-darker) 100%);
+    color: #fff; transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(22,163,74,0.55);
+}
+.btn-ven-primary:active { transform: translateY(0); }
+
+.btn-ven-edit {
+    background: linear-gradient(135deg, #166534 0%, #14532d 100%);
+    border: none; border-radius: 0.5rem; color: #fff; font-weight: 600;
+    transition: all 0.25s ease; box-shadow: 0 3px 6px rgba(22,101,52,0.4);
+}
+.btn-ven-edit:hover, .btn-ven-edit:focus {
+    background: linear-gradient(135deg, #14532d 0%, #064e3b 100%);
+    color: #fff; transform: translateY(-2px);
+}
+
+.btn-ven-detalle {
+    background: linear-gradient(135deg, #15803d 0%, #166534 100%) !important;
+    border: none; border-radius: 0.5rem; color: #fff; font-weight: 600;
+    transition: all 0.25s ease; box-shadow: 0 3px 6px rgba(21, 128, 61, 0.35);
+}
+.btn-ven-detalle:hover { background: linear-gradient(135deg, #166534 0%, #14532d 100%) !important; color: #fff; transform: translateY(-2px); }
+
+.btn-ven-cancel {
+    background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 0.6rem;
+    color: var(--ven-green-deepest); font-weight: 600; transition: all 0.2s ease;
+}
+.btn-ven-cancel:hover { background: #dcfce7; border-color: #86efac; color: var(--ven-green-deepest); transform: translateY(-1px); }
+
+.btn-accion {
+    width: 32px; height: 32px; padding: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 8px; transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.btn-accion:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+
+/* =============================================
+   CARDS DE DESPACHO (LISTA EN MODAL DE GESTIÓN)
+   Cada organismo despachado se muestra como una
+   card informativa con su estatus y botones de avance.
+   ============================================= */
+
+.despacho-card {
+    border-color: #e5e7eb !important;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.despacho-card:hover {
+    border-color: var(--ven-green-border) !important;
+    box-shadow: 0 2px 8px rgba(22, 163, 74, 0.12);
+}
+
+/* =============================================
+   MODAL
+   ============================================= */
+
+
+.modal-header-ven {
+    background: linear-gradient(135deg, var(--ven-green-primary) 0%, var(--ven-green-deepest) 100%);
+    color: #fff; border-bottom: none;
+    border-radius: calc(0.5rem - 1px) calc(0.5rem - 1px) 0 0;
+    padding: 1.1rem 1.5rem;
+}
+.modal-header-ven .btn-close { filter: brightness(0) invert(1); opacity: 0.8; transition: opacity 0.2s; }
+.modal-header-ven .btn-close:hover { opacity: 1; }
+.modal-header-ven .modal-title { color: #fff !important; font-weight: 700; font-size: 1.05rem; }
+
+.modal-backdrop { background-color: rgba(6, 78, 59, 0.18) !important; backdrop-filter: blur(4px) !important; }
+.modal-backdrop.show { opacity: 1 !important; }
+.modal-content {
+    border: 1px solid rgba(187, 247, 208, 0.5); border-radius: 1rem;
+    box-shadow: 0 25px 50px -12px rgba(6, 78, 59, 0.35); overflow: hidden;
+    backdrop-filter: blur(8px); background: rgba(255, 255, 255, 0.97);
+}
+
+.modal .form-control:focus, .modal .form-select:focus {
+    border-color: var(--ven-green-accent);
+    box-shadow: 0 0 0 0.25rem var(--ven-green-glow);
+}
+.modal .form-label { color: var(--ven-green-deepest); font-weight: 600; }
+.modal .form-control, .modal .form-select { font-size: 0.9rem; padding: 0.6rem 0.9rem; transition: border-color 0.2s, box-shadow 0.2s; }
+
+.modal.fade .modal-dialog { transform: scale(0.95) translateY(-20px); transition: transform 0.25s ease; }
+.modal.show .modal-dialog { transform: scale(1) translateY(0); }
+
+/* =============================================
+   SECTION TITLE
+   ============================================= */
+
+.section-title-container { position: relative; padding-left: 0.5rem; }
+.section-title-container h6 { letter-spacing: 0.05em; position: relative; z-index: 1; }
+.section-title-container::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 4px; background: var(--ven-green-primary); border-radius: 4px; opacity: 0.7;
+}
+
+/* =============================================
+   DETALLE DEL DESPACHO (GRID INFORMATIVO)
+   ============================================= */
+
+.despacho-detalle-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem 1.5rem;
+}
+
+.despacho-detalle-item label {
+    font-size: 0.78rem; font-weight: 700; color: #6b7280;
+    text-transform: uppercase; letter-spacing: 0.05em;
+    display: block; margin-bottom: 0.2rem;
+}
+
+.despacho-detalle-item span { font-size: 0.93rem; color: #1f2937; }
+
+@media (max-width: 576px) { .despacho-detalle-grid { grid-template-columns: 1fr; } }
+
+/* =============================================
+   DATATABLE
+   ============================================= */
+
+.page-item.active .page-link {
+    background-color: var(--ven-green-primary) !important;
+    border-color: var(--ven-green-primary) !important;
+    color: #fff !important;
+}
+.page-link { color: var(--ven-green-darker); border-radius: 6px; margin: 0 2px; transition: all 0.2s; }
+.page-link:hover { background-color: var(--ven-green-light); border-color: var(--ven-green-border); color: var(--ven-green-primary); }
+
+/* =============================================
+   SELECT2 CUSTOMIZATION
+   ============================================= */
+
+.select2-container--bootstrap-5 .select2-results__option--highlighted,
+.select2-results__option--highlighted {
+    background-color: var(--ven-green-primary) !important;
+    color: #ffffff !important;
+}
+
+.select2-container--bootstrap-5 .select2-results__option[aria-selected="true"] {
+    background-color: var(--ven-green-light) !important;
+    color: var(--ven-green-darker) !important;
+    font-weight: 700 !important;
+}
+
+.select2-container--bootstrap-5.select2-container--focus .select2-selection,
+.select2-container--bootstrap-5.select2-container--open .select2-selection {
+    border-color: var(--ven-green-primary) !important;
+    box-shadow: 0 0 0 0.25rem var(--ven-green-glow) !important;
+}
+
+/* =============================================
+   SWEETALERT2
+   ============================================= */
+
+div:where(.swal2-container) div:where(.swal2-popup) {
+    background: #ffffff !important; color: var(--ven-green-deepest) !important;
+    border-radius: 1rem !important; border: 1px solid var(--ven-green-border) !important;
+}
+.swal2-confirm { background: linear-gradient(135deg, var(--ven-green-primary) 0%, var(--ven-green-dark) 100%) !important; border: none !important; }
+.swal2-cancel  { background: #f0fdf4 !important; color: var(--ven-green-deepest) !important; border: 1px solid var(--ven-green-border) !important; }
+
+/* =============================================
+   STEPPER DE PROGRESIÓN DE ESTADOS (FICHA)
+   Muestra el flujo visual: Pendiente → En Proceso
+   → Atendido → Finalizado con indicadores de posición.
+   ============================================= */
+
+.ven-stepper {
+    display: flex;
+    align-items: flex-start;
+    width: 100%;
+    margin-bottom: 0.75rem;
+}
+
+/* Wrapper de cada paso (círculo + etiqueta, alineados verticalmente) */
+.ven-step-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    min-width: 0;
+}
+
+/* Línea conectora entre pasos */
+.ven-step-line {
+    flex: 1;
+    height: 2px;
+    margin-top: 15px; /* Centrado respecto al círculo (radio = 16px) */
+    transition: background 0.3s ease;
+}
+.ven-step-line.completada { background: var(--ven-green-primary); }
+.ven-step-line.pendiente  { background: #e5e7eb; }
+
+/* Círculo de estado */
+.ven-step-circle {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.78rem;
+    font-weight: 700;
+    border: 2px solid;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+/* Estados del círculo */
+.ven-step-circle.completado {
+    background: var(--ven-green-primary);
+    border-color: var(--ven-green-primary);
+    color: #fff;
+}
+.ven-step-circle.activo {
+    background: var(--ven-green-primary);
+    border-color: var(--ven-green-primary);
+    color: #fff;
+    box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.18);
+    animation: pulso-verde 2s infinite;
+}
+.ven-step-circle.futuro {
+    background: #fff;
+    border-color: #d1d5db;
+    color: #9ca3af;
+}
+
+@keyframes pulso-verde {
+    0%, 100% { box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.18); }
+    50%       { box-shadow: 0 0 0 7px rgba(22, 163, 74, 0.08); }
+}
+
+/* Etiqueta debajo del círculo */
+.ven-step-label {
+    font-size: 0.68rem;
+    margin-top: 5px;
+    text-align: center;
+    white-space: nowrap;
+    font-weight: 500;
+    line-height: 1.2;
+}
+.ven-step-label.completado { color: var(--ven-green-primary); font-weight: 700; }
+.ven-step-label.activo     { color: var(--ven-green-dark);    font-weight: 800; }
+.ven-step-label.futuro     { color: #9ca3af; }
+
+/* =============================================
+   MINI-STEPPER DE DESPACHO (ORGANISMOS)
+   Barra de progreso compacta dentro de cada card
+   de organismo: Asignado → En Camino → En Sitio → Liberado
+   ============================================= */
+
+.ven-mini-stepper {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-top: 0.5rem;
+}
+
+.ven-mini-step {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 1.5px solid;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+.ven-mini-step.completado { background: var(--ven-green-primary); border-color: var(--ven-green-primary); }
+.ven-mini-step.activo     { background: var(--ven-green-primary); border-color: var(--ven-green-primary); box-shadow: 0 0 0 2px rgba(22,163,74,0.25); }
+.ven-mini-step.futuro     { background: #fff;                    border-color: #d1d5db; }
+
+.ven-mini-line {
+    flex: 1;
+    height: 1.5px;
+    min-width: 8px;
+}
+.ven-mini-line.completada { background: var(--ven-green-primary); }
+.ven-mini-line.pendiente  { background: #e5e7eb; }
+
+.ven-mini-stepper-label {
+    font-size: 0.65rem;
+    color: #6b7280;
+    margin-top: 3px;
+}
+
+/* =============================================
+   BADGES DE ESTADO DE FICHA
+   ============================================= */
+
+.badge-ficha-estado {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 0.3em 0.9em;
+    border-radius: 50px;
+    letter-spacing: 0.03em;
+}
+
+.badge-pendiente  { background: #fef9c3; color: #713f12; border: 1px solid #fde68a; }
+.badge-en-proceso { background: #dbeafe; color: #1e3a8a; border: 1px solid #93c5fd; }
+.badge-atendido   { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+.badge-finalizado { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; }
+.badge-cerrado    { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+

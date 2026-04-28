@@ -320,21 +320,38 @@ class FichaModelo {
     }
 
     /**
-     * Gestiona la transición de estados de la ficha y registra la hora de cierre si aplica.
+     * Gestiona la transición de estados de la ficha.
+     * Al Cerrar una ficha requiere obligatoriamente un motivo_cierre.
+     * Estados terminales: Atendido (positivo) y Cerrado (con motivo).
      */
-    public function cambiarEstado(int $id, string $nuevoEstado, int $idOwner): bool {
-        $estadosValidos = ['Pendiente', 'En Proceso', 'Atendido', 'Cerrado', 'Finalizado'];
+    public function cambiarEstado(int $id, string $nuevoEstado, int $idOwner, string $motivoCierre = ''): bool {
+        $estadosValidos = ['Pendiente', 'En Proceso', 'Atendido', 'Cerrado'];
         if (!in_array($nuevoEstado, $estadosValidos, true)) return false;
 
         try {
-            $horaCierre = in_array($nuevoEstado, ['Cerrado', 'Finalizado']) ? 'hora_cierre = NOW(),' : '';
-            $query = "UPDATE fichas_emergencia
-                      SET estado_ficha = :estado, {$horaCierre} id_owner = :id_owner
-                      WHERE id = :id";
-            $stmt = $this->conexion->prepare($query);
-            $stmt->bindValue(':estado',   $nuevoEstado, PDO::PARAM_STR);
-            $stmt->bindValue(':id_owner', $idOwner,     PDO::PARAM_INT);
-            $stmt->bindValue(':id',       $id,          PDO::PARAM_INT);
+            // Solo se registra hora_cierre y motivo al pasar al estado Cerrado
+            if ($nuevoEstado === 'Cerrado') {
+                $query = "UPDATE fichas_emergencia
+                          SET estado_ficha = :estado,
+                              hora_cierre  = NOW(),
+                              motivo_cierre = :motivo,
+                              id_owner     = :id_owner
+                          WHERE id = :id";
+                $stmt = $this->conexion->prepare($query);
+                $stmt->bindValue(':estado',   $nuevoEstado,  PDO::PARAM_STR);
+                $stmt->bindValue(':motivo',   $motivoCierre, PDO::PARAM_STR);
+                $stmt->bindValue(':id_owner', $idOwner,      PDO::PARAM_INT);
+                $stmt->bindValue(':id',       $id,           PDO::PARAM_INT);
+            } else {
+                $query = "UPDATE fichas_emergencia
+                          SET estado_ficha = :estado,
+                              id_owner     = :id_owner
+                          WHERE id = :id";
+                $stmt = $this->conexion->prepare($query);
+                $stmt->bindValue(':estado',   $nuevoEstado, PDO::PARAM_STR);
+                $stmt->bindValue(':id_owner', $idOwner,     PDO::PARAM_INT);
+                $stmt->bindValue(':id',       $id,          PDO::PARAM_INT);
+            }
             return $stmt->execute();
         } catch (Exception $e) {
             error_log("[FichaModelo] Error en cambiarEstado: " . $e->getMessage());

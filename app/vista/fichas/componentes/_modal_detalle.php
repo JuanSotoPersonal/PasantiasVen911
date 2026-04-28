@@ -31,13 +31,12 @@
                 </div>
             </div>
 
-            <!-- 3. BLOQUE: GESTIÓN DE ESTADOS Y ACCIONES -->
-            <div class="modal-footer bg-light border-0 py-3 d-flex justify-content-between">
-                <div id="contenedorCambioEstado" class="d-flex gap-2">
-                    <!-- Los disparadores de estado se inyectan dinámicamente según RBAC y Status Logic -->
-                </div>
-                <button type="button" class="btn btn-ven-cancel px-4" data-bs-dismiss="modal">Finalizar Vista</button>
+            <!-- 3. BLOQUE: PIE DEL MODAL -->
+            <div class="modal-footer bg-light border-0 py-3">
+                <button type="button" class="btn btn-ven-cancel px-4" data-bs-dismiss="modal">Cerrar</button>
             </div>
+
+
 
         </div>
     </div>

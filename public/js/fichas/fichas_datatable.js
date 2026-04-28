@@ -24,9 +24,10 @@ $(document).ready(function () {
     const tablaEl      = $('#tablaFichas');
     const estadoFiltro = tablaEl.data('estado') || 'todos';
     
+
     // Inyección de banderas de permisos desde el scope global
-    const puedeEditar         = window.VEN911_PERM_EDITAR  ?? false;
-    const puedeCambiarEstado  = window.VEN911_PERM_CAMBIAR_ESTADO ?? false;
+    const puedeEditar = window.VEN911_PERM_EDITAR ?? false;
+
 
     // Diccionarios visuales para estados de fichas
     const badgeClases = {
@@ -34,7 +35,6 @@ $(document).ready(function () {
         'En Proceso': 'badge-en-proceso',
         'Atendido':   'badge-atendido',
         'Cerrado':    'badge-cerrado',
-        'Finalizado': 'badge-finalizado',
     };
 
     const iconosEstado = {
@@ -42,8 +42,8 @@ $(document).ready(function () {
         'En Proceso': 'bi-arrow-repeat',
         'Atendido':   'bi-check-circle-fill',
         'Cerrado':    'bi-lock-fill',
-        'Finalizado': 'bi-flag-fill',
     };
+
 
     // 2. INICIALIZACIÓN DE DATATABLE DE FICHAS (SERVER-SIDE)
     const tablaFichas = tablaEl.DataTable({
@@ -88,7 +88,8 @@ $(document).ready(function () {
                 // Columna: Estado Operativo (Badge dinámico)
                 data: 'estado_ficha',
                 render: (d) => {
-                    const cls  = badgeClases[d]  || 'badge-finalizado';
+                    const cls  = badgeClases[d]  || 'badge-cerrado';
+
                     const icon = iconosEstado[d] || 'bi-question-circle';
                     return `<span class="badge-ficha-estado ${cls}"><i class="bi ${icon}"></i>${escapeHTML(d)}</span>`;
                 }
@@ -112,7 +113,8 @@ $(document).ready(function () {
                         </button>`;
                     
                     // Solo permitir edición en estados no terminales
-                    if (puedeEditar && row.estado_ficha !== 'Cerrado' && row.estado_ficha !== 'Finalizado') {
+                    if (puedeEditar && row.estado_ficha !== 'Cerrado' && row.estado_ficha !== 'Atendido') {
+
                         btns += `
                         <button class="btn btn-ven-edit btn-accion btn-editar-ficha"
                                 data-id="${row.id}" title="Editar" id="btnEditar-${row.id}">
@@ -221,7 +223,7 @@ $(document).ready(function () {
         const fichaId = $(this).data('id');
         $('#detalleFichaIdLabel').text(`#${fichaId}`);
         $('#contenidoDetalleFicha').html('<div class="text-center py-4"><div class="spinner-border text-success"></div></div>');
-        $('#contenedorCambioEstado').empty();
+
 
         bootstrap.Modal.getOrCreateInstance(document.getElementById('modalDetalleFicha')).show();
 
@@ -231,7 +233,8 @@ $(document).ready(function () {
                 return;
             }
             const f = res.data;
-            const badgeCls = badgeClases[f.estado_ficha] || 'badge-finalizado';
+            const badgeCls = badgeClases[f.estado_ficha] || 'badge-cerrado';
+
 
             // Renderizado de la cuadrícula de información detallada
             $('#contenidoDetalleFicha').html(`
@@ -255,55 +258,14 @@ $(document).ready(function () {
                     <div class="ficha-detalle-item"><label>Creado por</label><span>${escapeHTML(f.nombre_creador || 'Sistema')}</span></div>
                 </div>
             `);
-
-            // Generación dinámica de botones de transición de estado (Workflow)
-            if (puedeCambiarEstado) {
-                const transiciones = {
-                    'Pendiente':  [['En Proceso', 'btn-ven-primary', 'bi-arrow-repeat']],
-                    'En Proceso': [['Atendido',   'btn-ven-primary', 'bi-check-circle'],
-                                   ['Cerrado',    'btn-ven-edit',    'bi-lock']],
-                    'Atendido':   [['Finalizado',  'btn-ven-edit',   'bi-flag-fill']],
-                };
-                const btnsEstado = transiciones[f.estado_ficha] || [];
-                let htmlBtns = '';
-                btnsEstado.forEach(([estado, cls, icon]) => {
-                    htmlBtns += `<button class="btn ${cls} btn-sm me-1 btn-cambiar-estado"
-                                          data-id="${fichaId}" data-estado="${estado}">
-                                    <i class="bi ${icon} me-1"></i>${estado}
-                                 </button>`;
-                });
-                $('#contenedorCambioEstado').html(htmlBtns);
-            }
         }, 'json');
     });
 
-    // Motor de cambio de estado (Con confirmación y persistencia)
-    $(document).on('click', '.btn-cambiar-estado', function () {
-        const fichaId     = $(this).data('id');
-        const nuevoEstado = $(this).data('estado');
 
-        Swal.fire({
-            title: `¿Cambiar a "${nuevoEstado}"?`,
-            text:  'El cambio quedará registrado en el historial de trazabilidad.',
-            icon:  'question',
-            showCancelButton:  true,
-            confirmButtonText: 'Sí, cambiar',
-            cancelButtonText:  'Cancelar',
-        }).then(result => {
-            if (!result.isConfirmed) return;
-            $.post('index.php?url=ficha/cambiarEstado', { ficha_id: fichaId, nuevo_estado: nuevoEstado }, function (res) {
-                if (res.success) {
-                    bootstrap.Modal.getOrCreateInstance(document.getElementById('modalDetalleFicha')).hide();
-                    Swal.fire('¡Actualizado!', res.message, 'success');
-                    tablaFichas.ajax.reload(null, false);
-                } else {
-                    Swal.fire('Error', res.message, 'error');
-                }
-            }, 'json');
-        });
-    });
 
     // 6. GESTIÓN DE EDICIÓN
+
+
 
     // Carga de datos para edición
     $(document).on('click', '.btn-editar-ficha', function () {

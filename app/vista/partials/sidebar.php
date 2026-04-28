@@ -76,13 +76,8 @@ $seccion   = explode('/', $urlActual)[0] ?? '';
                                         <p>Cerradas</p>
                                     </a>
                                 </li>
-                                <li class="nav-item">
-                                    <a href="index.php?url=ficha&t=finalizadas" class="nav-link <?= ($seccion === 'ficha' && $tabFicha === 'finalizadas') ? 'active' : '' ?>">
-                                        <i class="nav-icon bi bi-check-circle-fill"></i>
-                                        <p>Historial Finalizadas</p>
-                                    </a>
-                                </li>
                                 <?php if (tienePerm('configuracion', 'gestionar')): ?>
+
                                     <li class="nav-item">
                                         <a href="index.php?url=ficha&t=configuracion" class="nav-link <?= ($seccion === 'ficha' && $tabFicha === 'configuracion') ? 'active' : '' ?>">
                                             <i class="nav-icon bi bi-gear-fill"></i>
@@ -96,11 +91,26 @@ $seccion   = explode('/', $urlActual)[0] ?? '';
 
                     <!-- Módulo: Despacho y Operativa -->
                     <?php if (tienePerm('despachos', 'ver')): ?>
-                        <li class="nav-item">
-                            <a href="index.php?url=despacho" class="nav-link <?= $seccion === 'despacho' ? 'active' : '' ?>">
+                        <?php $tabDespacho = $_GET['t'] ?? 'general'; ?>
+                        <li class="nav-item <?= $seccion === 'despacho' ? 'menu-open' : '' ?>">
+                            <a href="#" class="nav-link <?= $seccion === 'despacho' ? 'active' : '' ?>">
                                 <i class="nav-icon bi bi-broadcast"></i>
-                                <p>Centro de Despacho</p>
+                                <p>Centro de Despacho<i class="nav-arrow bi bi-chevron-right"></i></p>
                             </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="index.php?url=despacho&t=general" class="nav-link <?= ($seccion === 'despacho' && $tabDespacho === 'general') ? 'active' : '' ?>">
+                                        <i class="nav-icon bi <?= ($seccion === 'despacho' && $tabDespacho === 'general') ? 'bi-globe2' : 'bi-globe2' ?>"></i>
+                                        <p>Cola General</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="index.php?url=despacho&t=propias" class="nav-link <?= ($seccion === 'despacho' && $tabDespacho === 'propias') ? 'active' : '' ?>">
+                                        <i class="nav-icon bi <?= ($seccion === 'despacho' && $tabDespacho === 'propias') ? 'bi-person-check-fill' : 'bi-person-check' ?>"></i>
+                                        <p>Mis Fichas</p>
+                                    </a>
+                                </li>
+                            </ul>
                         </li>
                     <?php endif; ?>
 
@@ -189,7 +199,7 @@ $seccion   = explode('/', $urlActual)[0] ?? '';
                     <li class="nav-item">
                         <a href="#" class="nav-link">
                             <i class="nav-icon bi bi-info-circle"></i>
-                            <p>Soporte Técnico</p>
+                            <p>Preguntas Frecuentes</p>
                         </a>
                     </li>
                 </ul>

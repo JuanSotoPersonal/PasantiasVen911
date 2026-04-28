@@ -120,18 +120,18 @@ if ($autenticado && $nombreBase === 'Auth' && !in_array($metodo, ['logout', 'aut
 
 if ($autenticado) {
     // Lazy Loading: Recargar permisos si la sesión los perdió por tiempo o actualización
-    if (!isset($_SESSION['permisos'])) {
-        require_once 'app/modelos/UsuarioModelo.php';
-        $modeloUser = new \App\modelos\UsuarioModelo();
-        $_SESSION['permisos'] = $modeloUser->obtenerPermisosDeRol((int)$_SESSION['user_rol_id']);
-    }
+    // Recargar permisos en cada petición para reflejar cambios inmediatos (Inercia Cero)
+    require_once 'app/modelos/UsuarioModelo.php';
+    $modeloUser = new \App\modelos\UsuarioModelo();
+    $_SESSION['permisos'] = $modeloUser->obtenerPermisosDeRol((int)$_SESSION['user_rol_id']);
 
     // Listado de rutas protegidas y sus permisos mínimos requeridos
     $reglasRutas = [
-        'usuario'      => ['usuarios',  'ver'],
-        'evento'       => ['historial', 'ver'],
-        'notificacion' => ['fichas',    'ver'],
-        'ficha'        => ['fichas',    'ver'],
+        'usuario'   => ['usuarios',  'ver'],
+        'evento'    => ['historial', 'ver'],
+        'notificacion' => ['fichas', 'ver'],
+        'ficha'     => ['fichas',    'ver'],
+        'despacho'  => ['despachos', 'ver'],
     ];
 
     $slugRuta = strtolower($nombreBase);
