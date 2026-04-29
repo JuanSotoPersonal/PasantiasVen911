@@ -431,7 +431,6 @@ class DespachoModelo {
                         d.hora_despacho,
                         d.estatus_despacho,
                         d.motivo_cancelacion,
-                        d.tipo_motivo_cancelacion,
                         o.nombre_organismo,
                         u.nombre_completo AS nombre_despachador
                       FROM despachos_organismos d
@@ -518,30 +517,53 @@ class DespachoModelo {
 
     /**
      * Avanza el estatus de un despacho: Asignado → En Camino → En Sitio → Liberado.
-     * Valida que el valor sea uno de los cuatro estatus permitidos por el enum.
+     * Valida que el valor sea uno de los estatus permitidos por el enum.
      */
-    public function cambiarEstado(int $id, string $nuevoEstado, string $motivo = null, string $tipoMotivo = null): bool {
-        $estatusValidos = ['Asignado', 'En Camino', 'En Sitio', 'Liberado', 'Cancelado'];
+    public function cambiarEstado(int $id, string $nuevoEstado): bool {
+        $estatusValidos = ['Asignado', 'En Camino', 'En Sitio', 'Liberado'];
         if (!in_array($nuevoEstado, $estatusValidos, true)) {
             return false;
         }
         try {
-            $query = "UPDATE despachos_organismos SET estatus_despacho = :estado";
-            if ($nuevoEstado === 'Cancelado') {
-                $query .= ", motivo_cancelacion = :motivo, tipo_motivo_cancelacion = :tipo";
-            }
-            $query .= " WHERE id = :id";
-
-            $stmt = $this->conexion->prepare($query);
+            $stmt = $this->conexion->prepare(
+                "UPDATE despachos_organismos SET estatus_despacho = :estado WHERE id = :id"
+            );
             $stmt->bindValue(':estado', $nuevoEstado, PDO::PARAM_STR);
-            if ($nuevoEstado === 'Cancelado') {
-                $stmt->bindValue(':motivo', $motivo, PDO::PARAM_STR);
-                $stmt->bindValue(':tipo',   $tipoMotivo, PDO::PARAM_STR);
-            }
             $stmt->bindValue(':id',     $id,          PDO::PARAM_INT);
             return $stmt->execute();
         } catch (Exception $e) {
             error_log("[DespachoModelo] Error en cambiarEstado: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Cancela un despacho de organismo activo (no Liberado ni ya Cancelado).
+     * Persiste el estado 'Cancelado' y registra el motivo de cancelación.
+     *
+     * @param int    $id               ID del despacho a cancelar.
+     * @param string $motivoCancelacion Motivo estructurado del catálogo.
+     * @param string $descripcion      Descripción libre opcional del operador.
+     */
+    public function cancelar(int $id, string $motivoCancelacion, string $descripcion = ''): bool {
+        try {
+            $motivoCompleto = $descripcion !== ''
+                ? "{$motivoCancelacion}: {$descripcion}"
+                : $motivoCancelacion;
+
+            $stmt = $this->conexion->prepare(
+                "UPDATE despachos_organismos
+                 SET estatus_despacho    = 'Cancelado',
+                     motivo_cancelacion  = :motivo
+                 WHERE id = :id
+                   AND estatus_despacho NOT IN ('Liberado', 'Cancelado')"
+            );
+            $stmt->bindValue(':motivo', $motivoCompleto, PDO::PARAM_STR);
+            $stmt->bindValue(':id',     $id,             PDO::PARAM_INT);
+            $stmt->execute();
+            return $stmt->rowCount() > 0;
+        } catch (Exception $e) {
+            error_log("[DespachoModelo] Error en cancelar: " . $e->getMessage());
             return false;
         }
     }

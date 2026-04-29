@@ -334,41 +334,10 @@ class DespachoControlador {
 
             $despachoId  = (int)($_POST['despacho_id'] ?? 0);
             $nuevoEstado = trim($_POST['nuevo_estado'] ?? '');
-            $motivo      = trim($_POST['motivo'] ?? '');
-            $tipoMotivo  = trim($_POST['tipo_motivo'] ?? '');
 
-            $valDespacho = Validador::validarId($despachoId, 'ID de Despacho');
-            if (!$valDespacho['valido']) {
-                echo json_encode(['success' => false, 'message' => $valDespacho['mensaje']]);
+            if (!$despachoId || $nuevoEstado === '') {
+                echo json_encode(['success' => false, 'message' => 'Datos incompletos.']);
                 return;
-            }
-
-            $estadosValidos = ['Asignado', 'En Camino', 'En Sitio', 'Liberado', 'Cancelado'];
-            if (!in_array($nuevoEstado, $estadosValidos, true)) {
-                echo json_encode(['success' => false, 'message' => 'El estado especificado no es válido.']);
-                return;
-            }
-
-            // Al cancelar, el motivo y el tipo son requeridos
-            if ($nuevoEstado === 'Cancelado' && ($motivo === '' || $tipoMotivo === '')) {
-                echo json_encode(['success' => false, 'message' => 'Debe ingresar el tipo y el motivo de cancelación.']);
-                return;
-            }
-
-            if ($motivo !== '') {
-                $valMotivo = Validador::validarTextoLibre($motivo, 'Motivo de Cancelación', 5, 500);
-                if (!$valMotivo['valido']) {
-                    echo json_encode(['success' => false, 'message' => $valMotivo['mensaje']]);
-                    return;
-                }
-            }
-
-            if ($tipoMotivo !== '') {
-                $valTipo = Validador::validarNombreCatalogo($tipoMotivo, 'Tipo de Motivo');
-                if (!$valTipo['valido']) {
-                    echo json_encode(['success' => false, 'message' => $valTipo['mensaje']]);
-                    return;
-                }
             }
 
             $anterior = $this->modelo->obtenerPorId($despachoId);
@@ -376,20 +345,13 @@ class DespachoControlador {
                 echo json_encode(['success' => false, 'message' => 'Despacho no encontrado.']);
                 return;
             }
-            
-            // Ambos son estados terminales para el organismo
-            if (in_array($anterior['estatus_despacho'], ['Liberado', 'Cancelado'], true)) {
-                echo json_encode(['success' => false, 'message' => 'Este despacho ya se encuentra en estado terminal y no puede ser modificado.']);
+            if ($anterior['estatus_despacho'] === 'Liberado') {
+                echo json_encode(['success' => false, 'message' => 'Este despacho ya fue Liberado y no puede ser modificado.']);
                 return;
             }
 
-            $exito = $this->modelo->cambiarEstado($despachoId, $nuevoEstado, $motivo ?: null, $tipoMotivo ?: null);
+            $exito = $this->modelo->cambiarEstado($despachoId, $nuevoEstado);
             if ($exito) {
-                $descripcionEvento = "Despacho #{$despachoId}: '{$anterior['estatus_despacho']}' → '{$nuevoEstado}'.";
-                if ($nuevoEstado === 'Cancelado') {
-                    $descripcionEvento .= " Motivo: [{$tipoMotivo}] {$motivo}";
-                }
-
                 $this->modeloEvento->registrarEventoFicha(
                     (int)$anterior['ficha_id'],
                     (int)$_SESSION['user_id'],
@@ -397,12 +359,94 @@ class DespachoControlador {
                     $anterior['estatus_despacho'],
                     $nuevoEstado,
                     ['estatus' => $anterior['estatus_despacho']],
-                    ['estatus' => $nuevoEstado, 'motivo' => $motivo, 'tipo' => $tipoMotivo],
-                    $descripcionEvento
+                    ['estatus' => $nuevoEstado],
+                    "Despacho #{$despachoId}: '{$anterior['estatus_despacho']}' → '{$nuevoEstado}'."
                 );
                 echo json_encode(['success' => true, 'message' => "Estatus actualizado a '{$nuevoEstado}'.", 'nuevo_estado' => $nuevoEstado]);
             } else {
                 echo json_encode(['success' => false, 'message' => 'No se pudo cambiar el estatus.']);
+            }
+        } catch (\Exception $e) {
+            echo json_encode(['success' => false, 'message' => 'Error inesperado: ' . $e->getMessage()]);
+        }
+    }
+
+    // ///////////////////////////////////////////////////////////////////
+    // 7b. CANCELAR DESPACHO DE ORGANISMO
+    //     Cancela un organismo despachado que aún no ha sido Liberado.
+    //     Requiere un motivo seleccionado del catálogo y descripción libre.
+    // ///////////////////////////////////////////////////////////////////
+
+    /**
+     * Cancela un organismo despachado activo.
+     * Solo se permite si el estatus actual es Asignado, En Camino o En Sitio.
+     * El motivo proviene del catálogo de Motivos de Cierre (reutilizado).
+     */
+    public function cancelarDespacho(): void {
+        header('Content-Type: application/json');
+        try {
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                echo json_encode(['success' => false, 'message' => 'Método no permitido.']);
+                return;
+            }
+            if (!tienePerm('despachos', 'cambiar_estado')) {
+                echo json_encode(['success' => false, 'message' => 'Sin permisos para cancelar despachos.']);
+                return;
+            }
+
+            $despachoId  = (int)($_POST['despacho_id']  ?? 0);
+            $tipoMotivo  = trim($_POST['tipo_motivo']   ?? '');
+            $descripcion = trim($_POST['descripcion']   ?? '');
+
+            // Validación formal de campos obligatorios
+            $valId = Validador::validarId($despachoId, 'Despacho');
+            if (!$valId['valido']) {
+                echo json_encode(['success' => false, 'message' => $valId['mensaje']]);
+                return;
+            }
+
+            $valTipo = Validador::validarNombreCatalogo($tipoMotivo, 'Tipo de Motivo');
+            if (!$valTipo['valido']) {
+                echo json_encode(['success' => false, 'message' => $valTipo['mensaje']]);
+                return;
+            }
+
+            if ($descripcion !== '') {
+                $valDesc = Validador::validarTextoLibre($descripcion, 'Descripción', 3, 500);
+                if (!$valDesc['valido']) {
+                    echo json_encode(['success' => false, 'message' => $valDesc['mensaje']]);
+                    return;
+                }
+            }
+
+            // Verificar que el despacho exista y sea cancelable
+            $despacho = $this->modelo->obtenerPorId($despachoId);
+            if (!$despacho) {
+                echo json_encode(['success' => false, 'message' => 'Despacho no encontrado.']);
+                return;
+            }
+            if (in_array($despacho['estatus_despacho'], ['Liberado', 'Cancelado'], true)) {
+                echo json_encode(['success' => false, 'message' => "El despacho ya está en estado terminal ('{$despacho['estatus_despacho']}') y no puede cancelarse."]);
+                return;
+            }
+
+            $exito = $this->modelo->cancelar($despachoId, $tipoMotivo, $descripcion);
+
+            if ($exito) {
+                // Auditoría del evento de cancelación
+                $this->modeloEvento->registrarEventoFicha(
+                    (int)$despacho['ficha_id'],
+                    (int)$_SESSION['user_id'],
+                    'DESPACHO',
+                    $despacho['estatus_despacho'],
+                    'Cancelado',
+                    ['estatus' => $despacho['estatus_despacho']],
+                    ['estatus' => 'Cancelado', 'motivo' => "{$tipoMotivo}: {$descripcion}"],
+                    "Despacho #{$despachoId} ({$despacho['nombre_organismo']}) cancelado. Motivo: {$tipoMotivo}."
+                );
+                echo json_encode(['success' => true, 'message' => "Despacho de '{$despacho['nombre_organismo']}' cancelado correctamente."]);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'No se pudo cancelar el despacho.']);
             }
         } catch (\Exception $e) {
             echo json_encode(['success' => false, 'message' => 'Error inesperado: ' . $e->getMessage()]);
