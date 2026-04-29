@@ -610,27 +610,47 @@ class FichaModelo {
     // 8. CATÁLOGOS: MOTIVOS DE CIERRE
     // ///////////////////////////////////////////////////////////////////
 
-    public function obtenerMotivosCierre(int $estado = 1): array {
-        $stmt = $this->conexion->prepare("SELECT id, nombre, descripcion, estado FROM motivos_cierre WHERE estado = :estado ORDER BY nombre ASC");
-        $stmt->execute([':estado' => $estado]);
+    public function obtenerMotivosCierre(int $estado = 1, string $contexto = 'ficha'): array {
+        $stmt = $this->conexion->prepare(
+            "SELECT id, nombre, descripcion, estado, contexto 
+             FROM motivos_cierre 
+             WHERE estado = :estado AND contexto = :contexto 
+             ORDER BY nombre ASC"
+        );
+        $stmt->execute([':estado' => $estado, ':contexto' => $contexto]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function crearMotivoCierre(string $nombre, string $descripcion = ''): bool {
-        if ($this->existeNombreCatalogo('motivos_cierre', 'nombre', $nombre)) {
-            throw new \Exception("El motivo '{$nombre}' ya está registrado y activo.");
+    public function crearMotivoCierre(string $nombre, string $descripcion = '', string $contexto = 'ficha'): bool {
+        // Verificar unicidad dentro del mismo contexto
+        $stmt = $this->conexion->prepare(
+            "SELECT COUNT(*) FROM motivos_cierre WHERE nombre = :nombre AND contexto = :contexto AND estado = 1"
+        );
+        $stmt->execute([':nombre' => $nombre, ':contexto' => $contexto]);
+        if ((int)$stmt->fetchColumn() > 0) {
+            throw new \Exception("El motivo '{$nombre}' ya está registrado y activo en este contexto.");
         }
-        $stmt = $this->conexion->prepare("INSERT INTO motivos_cierre (nombre, descripcion, estado) VALUES (:nombre, :descripcion, 1)");
+        $stmt = $this->conexion->prepare(
+            "INSERT INTO motivos_cierre (nombre, descripcion, contexto, estado) VALUES (:nombre, :descripcion, :contexto, 1)"
+        );
         $stmt->bindValue(':nombre',      $nombre,      PDO::PARAM_STR);
         $stmt->bindValue(':descripcion', $descripcion, PDO::PARAM_STR);
+        $stmt->bindValue(':contexto',    $contexto,    PDO::PARAM_STR);
         return $stmt->execute();
     }
 
     public function actualizarMotivoCierre(int $id, string $nombre, string $descripcion = ''): bool {
-        if ($this->existeNombreCatalogo('motivos_cierre', 'nombre', $nombre, $id)) {
+        // Verificar unicidad excluyendo el registro actual
+        $stmt = $this->conexion->prepare(
+            "SELECT COUNT(*) FROM motivos_cierre WHERE nombre = :nombre AND id != :id AND estado = 1"
+        );
+        $stmt->execute([':nombre' => $nombre, ':id' => $id]);
+        if ((int)$stmt->fetchColumn() > 0) {
             throw new \Exception("Ya existe otro motivo activo con el nombre '{$nombre}'.");
         }
-        $stmt = $this->conexion->prepare("UPDATE motivos_cierre SET nombre = :nombre, descripcion = :descripcion WHERE id = :id");
+        $stmt = $this->conexion->prepare(
+            "UPDATE motivos_cierre SET nombre = :nombre, descripcion = :descripcion WHERE id = :id"
+        );
         $stmt->bindValue(':nombre',      $nombre,      PDO::PARAM_STR);
         $stmt->bindValue(':descripcion', $descripcion, PDO::PARAM_STR);
         $stmt->bindValue(':id',          $id,          PDO::PARAM_INT);

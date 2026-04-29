@@ -339,9 +339,9 @@ $(function () {
         new bootstrap.Modal(document.getElementById('modalCatalogoSimple')).show();
     });
 
-    // 8. MÓDULO: MOTIVOS DE CIERRE
+    // 8. MÓDULO: MOTIVOS DE CIERRE DE FICHA (contexto = ficha)
     const dtMotivos = $('#tablaMotivos').DataTable({
-        ajax: { url: 'index.php?url=ficha/obtenerCatalogo&cat=motivo_cierre&estado=1', dataSrc: 'data' },
+        ajax: { url: 'index.php?url=ficha/obtenerCatalogo&cat=motivo_cierre&estado=1&contexto=ficha', dataSrc: 'data' },
         columns: [
             { data: null, render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, orderable: false, searchable: false, width: '50px' },
             { data: 'nombre', render: (d) => escapeHTML(d) },
@@ -353,7 +353,7 @@ $(function () {
     });
 
     const dtMotivosInactivos = $('#tablaMotivosInactivos').DataTable({
-        ajax: { url: 'index.php?url=ficha/obtenerCatalogo&cat=motivo_cierre&estado=0', dataSrc: 'data' },
+        ajax: { url: 'index.php?url=ficha/obtenerCatalogo&cat=motivo_cierre&estado=0&contexto=ficha', dataSrc: 'data' },
         columns: [
             { data: null, render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, orderable: false, searchable: false, width: '40px' },
             { data: 'nombre', render: (d) => escapeHTML(d) },
@@ -366,12 +366,50 @@ $(function () {
 
     $('#btnNuevoMotivo').on('click', () => {
         $('#cat_simple_catalogo').val('motivo_cierre');
+        $('#cat_simple_contexto').val('ficha');           // Contexto: cierre de ficha
         $('#cat_simple_accion').val('crear');
         $('#cat_simple_id').val('0');
         $('#cat_simple_label').text('Nombre del Motivo');
         $('#cat_simple_valor').val('');
         $('#cat_simple_descripcion').val(''); 
-        $('#modalCatalogoSimpleTitulo').text('Nuevo Motivo de Cierre');
+        $('#modalCatalogoSimpleTitulo').text('Nuevo Motivo de Cierre de Ficha');
+        new bootstrap.Modal(document.getElementById('modalCatalogoSimple')).show();
+    });
+
+    // 8b. MÓDULO: MOTIVOS DE CANCELACIÓN DE ORGANISMO (contexto = organismo)
+    const dtMotivosOrg = $('#tablaMotivosOrganismo').length ? $('#tablaMotivosOrganismo').DataTable({
+        ajax: { url: 'index.php?url=ficha/obtenerCatalogo&cat=motivo_cierre&estado=1&contexto=organismo', dataSrc: 'data' },
+        columns: [
+            { data: null, render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, orderable: false, searchable: false, width: '50px' },
+            { data: 'nombre', render: (d) => escapeHTML(d) },
+            { data: 'descripcion', render: (d) => d ? `<small class="text-muted">${escapeHTML(d)}</small>` : '<em class="text-muted">—</em>' },
+            { data: null, render: (d, t, r) => renderEstadoBadge(r, 'motivo_cierre'), orderable: false, searchable: false },
+            { data: null, orderable: false, searchable: false, className: 'text-center', render: (d, t, row) => btnsAccion(row, 'motivo_cierre') },
+        ],
+        language: lang, pageLength: 10, order: [[1, 'asc']],
+    }) : null;
+
+    const dtMotivosOrgInactivos = $('#tablaMotivosOrganismoInactivos').length ? $('#tablaMotivosOrganismoInactivos').DataTable({
+        ajax: { url: 'index.php?url=ficha/obtenerCatalogo&cat=motivo_cierre&estado=0&contexto=organismo', dataSrc: 'data' },
+        columns: [
+            { data: null, render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, orderable: false, searchable: false, width: '40px' },
+            { data: 'nombre', render: (d) => escapeHTML(d) },
+            { data: null, render: (d, t, r) => renderEstadoBadge(r, 'motivo_cierre'), orderable: false, searchable: false },
+            { data: null, orderable: false, searchable: false, className: 'text-center', render: (d, t, row) => btnsAccion(row, 'motivo_cierre') },
+        ],
+        language: lang, pageLength: 5, searching: false, lengthChange: false
+    }) : null;
+    if (dtMotivosOrgInactivos) setupContadorDT(dtMotivosOrgInactivos, 'count-inactivos-motivos-org');
+
+    $('#btnNuevoMotivoOrganismo').on('click', () => {
+        $('#cat_simple_catalogo').val('motivo_cierre');
+        $('#cat_simple_contexto').val('organismo');       // Contexto: cancelación de organismo
+        $('#cat_simple_accion').val('crear');
+        $('#cat_simple_id').val('0');
+        $('#cat_simple_label').text('Nombre del Motivo');
+        $('#cat_simple_valor').val('');
+        $('#cat_simple_descripcion').val(''); 
+        $('#modalCatalogoSimpleTitulo').text('Nuevo Motivo de Cancelación de Organismo');
         new bootstrap.Modal(document.getElementById('modalCatalogoSimple')).show();
     });
 
@@ -434,10 +472,15 @@ $(function () {
             $('#cat_simple_catalogo').val('motivo_cierre');
             $('#cat_simple_accion').val('editar');
             $('#cat_simple_id').val(row.id);
+            // Preservar el contexto original del registro al editar
+            $('#cat_simple_contexto').val(row.contexto || 'ficha');
             $('#cat_simple_label').text('Nombre del Motivo');
             $('#cat_simple_valor').val(row.nombre);
             $('#cat_simple_descripcion').val(row.descripcion || '');
-            $('#modalCatalogoSimpleTitulo').text(`Editar Motivo de Cierre #${row.id}`);
+            const titulo = row.contexto === 'organismo'
+                ? `Editar Motivo de Cancelación #${row.id}`
+                : `Editar Motivo de Cierre #${row.id}`;
+            $('#modalCatalogoSimpleTitulo').text(titulo);
             bootstrap.Modal.getOrCreateInstance(document.getElementById('modalCatalogoSimple')).show();
         }
     });
@@ -455,7 +498,12 @@ $(function () {
             municipio: [dtMunicipios, dtMunicipiosInactivos], 
             parroquia: [dtParroquias, dtParroquiasInactivos],
             organismo: [dtOrganismos, dtOrganismosInactivos],
-            motivo_cierre: [dtMotivos, dtMotivosInactivos] 
+            motivo_cierre: [
+                // Incluye las cuatro tablas (ficha + organismo) para recargar ambas al hacer toggle
+                dtMotivos, dtMotivosInactivos,
+                ...(dtMotivosOrg ? [dtMotivosOrg] : []),
+                ...(dtMotivosOrgInactivos ? [dtMotivosOrgInactivos] : []),
+            ],
         };
         confirmarEstado(id, catalogo, tablas[catalogo], activando);
     });

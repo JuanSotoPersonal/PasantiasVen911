@@ -568,7 +568,7 @@ $(document).ready(function () {
         const fichaId       = parseInt($('#detalleDespachoIdLabel').text().replace('#', ''));
 
         // Paso 1: Cargar motivos del catálogo y pedir confirmación
-        $.get('index.php?url=ficha/obtenerCatalogo&cat=motivo_cierre&estado=1', function (res) {
+        $.get('index.php?url=ficha/obtenerCatalogo&cat=motivo_cierre&estado=1&contexto=organismo', function (res) {
 
             let opcionesMotivo = '<option value="">-- Seleccione un motivo --</option>';
             if (res && res.data && res.data.length > 0) {
@@ -789,7 +789,7 @@ $(document).ready(function () {
             modalDetalle.hide();
 
             // Cargar motivos estructurados desde el servidor
-            $.get('index.php?url=ficha/obtenerCatalogo&cat=motivo_cierre&estado=1', function(res) {
+            $.get('index.php?url=ficha/obtenerCatalogo&cat=motivo_cierre&estado=1&contexto=ficha', function(res) {
                 let optionsHtml = '<option value="">-- Seleccione un tipo --</option>';
                 if (res && res.data && res.data.length > 0) {
                     res.data.forEach(m => {

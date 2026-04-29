@@ -484,10 +484,22 @@ class FichaControlador {
                 },
                 'motivo_cierre' => match ($accion) {
                     'crear', 'editar' => (function() use ($id, $accion) {
-                        $nombre = trim($_POST['nombre'] ?? '');
-                        $desc   = trim($_POST['descripcion'] ?? '');
-                        if (empty($nombre)) return ['valido' => false, 'mensaje' => 'El nombre del motivo no puede estar vacío.'];
-                        return ($accion === 'crear') ? $this->modelo->crearMotivoCierre($nombre, $desc) : $this->modelo->actualizarMotivoCierre($id, $nombre, $desc);
+                        $nombre   = trim($_POST['nombre']    ?? '');
+                        $desc     = trim($_POST['descripcion'] ?? '');
+                        // Contexto validado contra whitelist — 'ficha' por defecto
+                        $contexto = in_array($_POST['contexto'] ?? '', ['ficha', 'organismo'])
+                            ? $_POST['contexto']
+                            : 'ficha';
+
+                        $vNom = Validador::validarNombreCatalogo($nombre, 'Nombre del Motivo');
+                        if (!$vNom['valido']) return $vNom;
+                        if (!empty($desc)) {
+                            $vDesc = Validador::validarTextoLibre($desc, 'Descripción', 0, 300);
+                            if (!$vDesc['valido']) return $vDesc;
+                        }
+                        return ($accion === 'crear')
+                            ? $this->modelo->crearMotivoCierre($nombre, $desc, $contexto)
+                            : $this->modelo->actualizarMotivoCierre($id, $nombre, $desc);
                     })(),
                     'eliminar' => $this->modelo->toggleEstadoMotivoCierre($id),
                     default    => false,
@@ -523,6 +535,8 @@ class FichaControlador {
             $tipoId      = (int)($_GET['tipo_id']      ?? 0);
             $municipioId = (int)($_GET['municipio_id'] ?? 0);
             $estado      = (int)($_GET['estado'] ?? 1);
+            // Contexto diferenciador para motivos de cierre: 'ficha' o 'organismo'
+            $contexto    = in_array($_GET['contexto'] ?? '', ['ficha', 'organismo']) ? $_GET['contexto'] : 'ficha';
 
             $datos = match ($catalogo) {
                 'tipo_emergencia' => $this->modelo->obtenerTiposEmergencia($estado),
@@ -530,7 +544,7 @@ class FichaControlador {
                 'municipio'       => $this->modelo->obtenerMunicipios($estado),
                 'parroquia'       => $this->modelo->obtenerParroquias($municipioId ?: null, $estado),
                 'organismo'       => $this->modelo->obtenerOrganismos($estado),
-                'motivo_cierre'   => $this->modelo->obtenerMotivosCierre($estado),
+                'motivo_cierre'   => $this->modelo->obtenerMotivosCierre($estado, $contexto),
                 default           => [],
             };
 

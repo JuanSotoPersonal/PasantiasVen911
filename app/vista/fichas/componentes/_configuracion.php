@@ -44,6 +44,11 @@
                 </button>
             </li>
             <li class="nav-item">
+                <button class="nav-link" id="tab-motivos-organismo-btn" data-bs-toggle="tab" data-bs-target="#tab-motivos-organismo" type="button">
+                    <i class="bi bi-slash-circle-fill me-1"></i>Motivos de Cancelación
+                </button>
+            </li>
+            <li class="nav-item">
                 <button class="nav-link" id="tab-inactivos-btn" data-bs-toggle="tab" data-bs-target="#tab-inactivos" type="button">
                     <i class="bi bi-trash-fill me-1 text-danger"></i>Inhabilitados
                 </button>
@@ -192,11 +197,14 @@
             </div>
         </div>
 
-        <!-- TAB: MOTIVOS DE CIERRE -->
+        <!-- TAB: MOTIVOS DE CIERRE (FICHA) -->
         <div class="tab-pane fade" id="tab-motivos" role="tabpanel">
             <div class="card shadow-sm border-0 rounded-bottom">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
-                    <h5 class="card-title mb-0 fw-bold text-success"><i class="bi bi-x-circle-fill me-2"></i>Motivos de Cierre</h5>
+                    <h5 class="card-title mb-0 fw-bold text-success">
+                        <i class="bi bi-x-circle-fill me-2"></i>Motivos de Cierre
+                        <span class="badge bg-success-subtle text-success ms-2" style="font-size:0.65rem;">FICHA</span>
+                    </h5>
                     <div class="card-tools ms-auto">
                         <button class="btn btn-ven-primary btn-sm rounded-pill px-3" id="btnNuevoMotivo">
                             <i class="bi bi-plus-circle-fill me-1"></i>Nuevo Motivo
@@ -206,6 +214,33 @@
                 <div class="card-body">
                     <div class="table-responsive">
                         <table id="tablaMotivos" class="table table-bordered table-striped table-hover align-middle w-100">
+                            <thead class="table-dark">
+                                <tr><th width="60">#</th><th class="text-nowrap">Nombre del Motivo</th><th>Descripción</th><th width="100">Estado</th><th width="110" class="text-center text-white">Acciones</th></tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: MOTIVOS DE CANCELACIÓN (ORGANISMO) -->
+        <div class="tab-pane fade" id="tab-motivos-organismo" role="tabpanel">
+            <div class="card shadow-sm border-0 rounded-bottom">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                    <h5 class="card-title mb-0 fw-bold text-danger">
+                        <i class="bi bi-slash-circle-fill me-2"></i>Motivos de Cancelación de Organismo
+                        <span class="badge bg-danger-subtle text-danger ms-2" style="font-size:0.65rem;">ORGANISMO</span>
+                    </h5>
+                    <div class="card-tools ms-auto">
+                        <button class="btn btn-outline-danger btn-sm rounded-pill px-3" id="btnNuevoMotivoOrganismo">
+                            <i class="bi bi-plus-circle-fill me-1"></i>Nuevo Motivo
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table id="tablaMotivosOrganismo" class="table table-bordered table-striped table-hover align-middle w-100">
                             <thead class="table-dark">
                                 <tr><th width="60">#</th><th class="text-nowrap">Nombre del Motivo</th><th>Descripción</th><th width="100">Estado</th><th width="110" class="text-center text-white">Acciones</th></tr>
                             </thead>
@@ -254,7 +289,12 @@
                         </li>
                         <li class="nav-item">
                             <button class="nav-link py-2 p-3 shadow-sm d-flex align-items-center" data-bs-toggle="pill" data-bs-target="#inactivos-motivos">
-                                Motivos <span class="badge bg-white text-dark ms-2 shadow-sm" id="count-inactivos-motivos">0</span>
+                                Motivos Ficha <span class="badge bg-white text-dark ms-2 shadow-sm" id="count-inactivos-motivos">0</span>
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link py-2 p-3 shadow-sm d-flex align-items-center" data-bs-toggle="pill" data-bs-target="#inactivos-motivos-org">
+                                Motivos Organismo <span class="badge bg-white text-dark ms-2 shadow-sm" id="count-inactivos-motivos-org">0</span>
                             </button>
                         </li>
                     </ul>
@@ -287,7 +327,12 @@
                         </div>
                         <div class="tab-pane fade" id="inactivos-motivos">
                             <table id="tablaMotivosInactivos" class="table table-sm table-bordered table-striped table-hover w-100">
-                                <thead class="table-dark"><tr><th>#</th><th>Motivo</th><th>Estado</th><th>Acciones</th></tr></thead>
+                                <thead class="table-dark"><tr><th>#</th><th>Motivo (Cierre Ficha)</th><th>Estado</th><th>Acciones</th></tr></thead>
+                            </table>
+                        </div>
+                        <div class="tab-pane fade" id="inactivos-motivos-org">
+                            <table id="tablaMotivosOrganismoInactivos" class="table table-sm table-bordered table-striped table-hover w-100">
+                                <thead class="table-dark"><tr><th>#</th><th>Motivo (Cancelación Org.)</th><th>Estado</th><th>Acciones</th></tr></thead>
                             </table>
                         </div>
                     </div>
@@ -313,6 +358,7 @@
                     <input type="hidden" id="cat_simple_catalogo" name="catalogo">
                     <input type="hidden" id="cat_simple_accion"   name="accion">
                     <input type="hidden" id="cat_simple_id"       name="id">
+                    <input type="hidden" id="cat_simple_contexto" name="contexto" value="ficha">
                     <div class="mb-3">
                         <label id="cat_simple_label" for="cat_simple_valor" class="form-label fw-bold small text-secondary text-uppercase">Nombre del Registro</label>
                         <input type="text" class="form-control shadow-sm border-2" id="cat_simple_valor" name="nombre" autocomplete="off">
