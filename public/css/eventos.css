@@ -48,3 +48,36 @@
 .badge.bg-dark {
     background-color: #212529 !important;
 }
+
+/* =============================================
+   DATATABLE — PAGINACIÓN VERDE
+   ============================================= */
+.card-ven .page-item.active .page-link {
+    background-color: var(--ven-green-primary) !important;
+    border-color: var(--ven-green-primary) !important;
+    color: #fff !important;
+    box-shadow: 0 2px 4px var(--ven-green-shadow);
+}
+
+.card-ven .page-link {
+    color: var(--ven-green-darker);
+    border-radius: 6px;
+    margin: 0 2px;
+    transition: all 0.2s;
+}
+
+.card-ven .page-link:hover {
+    background-color: var(--ven-green-light);
+    border-color: var(--ven-green-border);
+    color: var(--ven-green-primary);
+}
+
+.card-ven .page-link:focus {
+    box-shadow: 0 0 0 0.2rem var(--ven-green-glow);
+}
+
+.dataTables_wrapper .page-item.disabled .page-link {
+    background-color: #f9fafb;
+    color: #9ca3af;
+}
+

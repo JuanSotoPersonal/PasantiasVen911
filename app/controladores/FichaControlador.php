@@ -474,6 +474,16 @@ class FichaControlador {
                     'eliminar' => $this->modelo->toggleEstadoOrganismo($id),
                     default    => false,
                 },
+                'motivo_cierre' => match ($accion) {
+                    'crear', 'editar' => (function() use ($id, $accion) {
+                        $nombre = trim($_POST['nombre'] ?? '');
+                        $desc   = trim($_POST['descripcion'] ?? '');
+                        if (empty($nombre)) return ['valido' => false, 'mensaje' => 'El nombre del motivo no puede estar vacío.'];
+                        return ($accion === 'crear') ? $this->modelo->crearMotivoCierre($nombre, $desc) : $this->modelo->actualizarMotivoCierre($id, $nombre, $desc);
+                    })(),
+                    'eliminar' => $this->modelo->toggleEstadoMotivoCierre($id),
+                    default    => false,
+                },
                 default => false,
             };
 
@@ -512,6 +522,7 @@ class FichaControlador {
                 'municipio'       => $this->modelo->obtenerMunicipios($estado),
                 'parroquia'       => $this->modelo->obtenerParroquias($municipioId ?: null, $estado),
                 'organismo'       => $this->modelo->obtenerOrganismos($estado),
+                'motivo_cierre'   => $this->modelo->obtenerMotivosCierre($estado),
                 default           => [],
             };
 

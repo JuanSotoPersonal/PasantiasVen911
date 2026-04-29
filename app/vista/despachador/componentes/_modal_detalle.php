@@ -12,7 +12,7 @@
  */
 ?>
 
-<div class="modal fade" id="modalDetalleDespacho" tabindex="-1"
+<div class="modal fade" id="modalDetalleDespacho"
      aria-labelledby="modalDetalleDespachoLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content border-0 shadow-lg rounded-4">

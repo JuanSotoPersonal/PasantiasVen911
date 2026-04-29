@@ -39,6 +39,11 @@
                 </button>
             </li>
             <li class="nav-item">
+                <button class="nav-link" id="tab-motivos-btn" data-bs-toggle="tab" data-bs-target="#tab-motivos" type="button">
+                    <i class="bi bi-x-circle-fill me-1"></i>Motivos de Cierre
+                </button>
+            </li>
+            <li class="nav-item">
                 <button class="nav-link" id="tab-inactivos-btn" data-bs-toggle="tab" data-bs-target="#tab-inactivos" type="button">
                     <i class="bi bi-trash-fill me-1 text-danger"></i>Inhabilitados
                 </button>
@@ -187,6 +192,30 @@
             </div>
         </div>
 
+        <!-- TAB: MOTIVOS DE CIERRE -->
+        <div class="tab-pane fade" id="tab-motivos" role="tabpanel">
+            <div class="card shadow-sm border-0 rounded-bottom">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                    <h5 class="card-title mb-0 fw-bold text-success"><i class="bi bi-x-circle-fill me-2"></i>Motivos de Cierre</h5>
+                    <div class="card-tools ms-auto">
+                        <button class="btn btn-ven-primary btn-sm rounded-pill px-3" id="btnNuevoMotivo">
+                            <i class="bi bi-plus-circle-fill me-1"></i>Nuevo Motivo
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table id="tablaMotivos" class="table table-bordered table-striped table-hover align-middle w-100">
+                            <thead class="table-dark">
+                                <tr><th width="60">#</th><th class="text-nowrap">Nombre del Motivo</th><th>Descripción</th><th width="100">Estado</th><th width="110" class="text-center text-white">Acciones</th></tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- 3. BLOQUE: EL COFRE DE INACTIVOS (PAPELERA TÉCNICA) -->
         <div class="tab-pane fade" id="tab-inactivos" role="tabpanel">
             <div class="card shadow-sm border-0 rounded-bottom overflow-hidden">
@@ -223,6 +252,11 @@
                                 Organismos <span class="badge bg-white text-dark ms-2 shadow-sm" id="count-inactivos-organismos">0</span>
                             </button>
                         </li>
+                        <li class="nav-item">
+                            <button class="nav-link py-2 p-3 shadow-sm d-flex align-items-center" data-bs-toggle="pill" data-bs-target="#inactivos-motivos">
+                                Motivos <span class="badge bg-white text-dark ms-2 shadow-sm" id="count-inactivos-motivos">0</span>
+                            </button>
+                        </li>
                     </ul>
 
                     <div class="tab-content" id="pills-inactivos-contenido">
@@ -249,6 +283,11 @@
                         <div class="tab-pane fade" id="inactivos-organismos">
                             <table id="tablaOrganismosInactivos" class="table table-sm table-bordered table-striped table-hover w-100">
                                 <thead class="table-dark"><tr><th>#</th><th>Organismo</th><th>Estado</th><th>Acciones</th></tr></thead>
+                            </table>
+                        </div>
+                        <div class="tab-pane fade" id="inactivos-motivos">
+                            <table id="tablaMotivosInactivos" class="table table-sm table-bordered table-striped table-hover w-100">
+                                <thead class="table-dark"><tr><th>#</th><th>Motivo</th><th>Estado</th><th>Acciones</th></tr></thead>
                             </table>
                         </div>
                     </div>

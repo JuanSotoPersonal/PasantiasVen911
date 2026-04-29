@@ -168,10 +168,11 @@ $(function () {
         if (catalogo === 'municipio') datos.nombre_municipio = datos.nombre;
         if (catalogo === 'organismo') datos.nombre_organismo = datos.nombre;
         
-        const tablas = { 
+        const tablas = {
             tipo_emergencia: [dtTipos, dtTiposInactivos], 
             municipio: [dtMunicipios, dtMunicipiosInactivos], 
-            organismo: [dtOrganismos, dtOrganismosInactivos] 
+            organismo: [dtOrganismos, dtOrganismosInactivos],
+            motivo_cierre: [dtMotivos, dtMotivosInactivos]
         };
         guardarCatalogo(datos, tablas[catalogo], 'modalCatalogoSimple');
     });
@@ -338,7 +339,43 @@ $(function () {
         new bootstrap.Modal(document.getElementById('modalCatalogoSimple')).show();
     });
 
-    // 8. GESTIÓN DE EDICIÓN Y ESTADOS (DELEGACIÓN GLOBAL)
+    // 8. MÓDULO: MOTIVOS DE CIERRE
+    const dtMotivos = $('#tablaMotivos').DataTable({
+        ajax: { url: 'index.php?url=ficha/obtenerCatalogo&cat=motivo_cierre&estado=1', dataSrc: 'data' },
+        columns: [
+            { data: null, render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, orderable: false, searchable: false, width: '50px' },
+            { data: 'nombre', render: (d) => escapeHTML(d) },
+            { data: 'descripcion', render: (d) => d ? `<small class="text-muted">${escapeHTML(d)}</small>` : '<em class="text-muted">—</em>' },
+            { data: null, render: (d, t, r) => renderEstadoBadge(r, 'motivo_cierre'), orderable: false, searchable: false },
+            { data: null, orderable: false, searchable: false, className: 'text-center', render: (d, t, row) => btnsAccion(row, 'motivo_cierre') },
+        ],
+        language: lang, pageLength: 10, order: [[1, 'asc']],
+    });
+
+    const dtMotivosInactivos = $('#tablaMotivosInactivos').DataTable({
+        ajax: { url: 'index.php?url=ficha/obtenerCatalogo&cat=motivo_cierre&estado=0', dataSrc: 'data' },
+        columns: [
+            { data: null, render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, orderable: false, searchable: false, width: '40px' },
+            { data: 'nombre', render: (d) => escapeHTML(d) },
+            { data: null, render: (d, t, r) => renderEstadoBadge(r, 'motivo_cierre'), orderable: false, searchable: false },
+            { data: null, orderable: false, searchable: false, className: 'text-center', render: (d, t, row) => btnsAccion(row, 'motivo_cierre') },
+        ],
+        language: lang, pageLength: 5, searching: false, lengthChange: false
+    });
+    setupContadorDT(dtMotivosInactivos, 'count-inactivos-motivos');
+
+    $('#btnNuevoMotivo').on('click', () => {
+        $('#cat_simple_catalogo').val('motivo_cierre');
+        $('#cat_simple_accion').val('crear');
+        $('#cat_simple_id').val('0');
+        $('#cat_simple_label').text('Nombre del Motivo');
+        $('#cat_simple_valor').val('');
+        $('#cat_simple_descripcion').val(''); 
+        $('#modalCatalogoSimpleTitulo').text('Nuevo Motivo de Cierre');
+        new bootstrap.Modal(document.getElementById('modalCatalogoSimple')).show();
+    });
+
+    // 9. GESTIÓN DE EDICIÓN Y ESTADOS (DELEGACIÓN GLOBAL)
 
     // Carga dinámica de datos en modales según el tipo de catálogo
     $(document).on('click', '.btn-editar-cat', function () {
@@ -392,6 +429,16 @@ $(function () {
             $('#cat_simple_descripcion').val(row.descripcion || '');
             $('#modalCatalogoSimpleTitulo').text(`Editar Organismo #${row.id}`);
             bootstrap.Modal.getOrCreateInstance(document.getElementById('modalCatalogoSimple')).show();
+
+        } else if (catalogo === 'motivo_cierre') {
+            $('#cat_simple_catalogo').val('motivo_cierre');
+            $('#cat_simple_accion').val('editar');
+            $('#cat_simple_id').val(row.id);
+            $('#cat_simple_label').text('Nombre del Motivo');
+            $('#cat_simple_valor').val(row.nombre);
+            $('#cat_simple_descripcion').val(row.descripcion || '');
+            $('#modalCatalogoSimpleTitulo').text(`Editar Motivo de Cierre #${row.id}`);
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('modalCatalogoSimple')).show();
         }
     });
 
@@ -407,7 +454,8 @@ $(function () {
             caso: [dtCasos, dtCasosInactivos], 
             municipio: [dtMunicipios, dtMunicipiosInactivos], 
             parroquia: [dtParroquias, dtParroquiasInactivos],
-            organismo: [dtOrganismos, dtOrganismosInactivos] 
+            organismo: [dtOrganismos, dtOrganismosInactivos],
+            motivo_cierre: [dtMotivos, dtMotivosInactivos] 
         };
         confirmarEstado(id, catalogo, tablas[catalogo], activando);
     });

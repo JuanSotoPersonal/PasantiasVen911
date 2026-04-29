@@ -256,6 +256,14 @@ $(document).ready(function () {
                     <div class="ficha-detalle-item" style="grid-column:1/-1"><label>Descripción</label><span>${escapeHTML(f.descripcion_caso)}</span></div>
                     <div class="ficha-detalle-item"><label>Fecha Creación</label><span>${escapeHTML(f.fecha_creacion)}</span></div>
                     <div class="ficha-detalle-item"><label>Creado por</label><span>${escapeHTML(f.nombre_creador || 'Sistema')}</span></div>
+                    ${f.motivo_cierre || f.tipo_motivo_cierre ? `
+                    <div class="ficha-detalle-item" style="grid-column:1/-1; background-color: var(--ven-green-light, #f0fdf4); border-left: 4px solid #dc2626; border-radius: 4px;">
+                        <label class="text-danger"><i class="bi bi-exclamation-octagon-fill me-1"></i>Motivo del Cierre</label>
+                        <span class="text-dark fw-bold">
+                            ${f.tipo_motivo_cierre ? `<span class="badge bg-danger me-2">${escapeHTML(f.tipo_motivo_cierre)}</span>` : ''}
+                            ${escapeHTML(f.motivo_cierre || '')}
+                        </span>
+                    </div>` : ''}
                 </div>
             `);
         }, 'json');

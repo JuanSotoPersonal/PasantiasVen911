@@ -685,25 +685,73 @@ $(document).ready(function () {
 
         // Al cerrar una ficha, se exige el motivo (igual que en el módulo de fichas)
         if (nuevoEstado === 'Cerrado') {
-            Swal.fire({
-                title:             'Cerrar Ficha',
-                html:              `<p class="text-muted small mb-2">Indique el motivo del cierre de la ficha.
-                                    Este dato quedará registrado en el historial.</p>`,
-                input:             'textarea',
-                inputPlaceholder:  'Ej: Llamada falsa, duplicado, error de registro…',
-                inputAttributes:   { rows: 3, maxlength: 500 },
-                icon:              'warning',
-                showCancelButton:  true,
-                confirmButtonText: '<i class="bi bi-lock-fill me-1"></i>Cerrar Ficha',
-                cancelButtonText:  'Cancelar',
-                inputValidator:    (valor) => {
-                    if (!valor || valor.trim().length < 5) {
-                        return 'El motivo debe tener al menos 5 caracteres.';
+            const modalDetalle = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalDetalleDespacho'));
+            modalDetalle.hide();
+
+            // Cargar motivos estructurados desde el servidor
+            $.get('index.php?url=ficha/obtenerCatalogo&cat=motivo_cierre&estado=1', function(res) {
+                let optionsHtml = '<option value="">-- Seleccione un tipo --</option>';
+                if (res && res.data && res.data.length > 0) {
+                    res.data.forEach(m => {
+                        optionsHtml += `<option value="${escapeHTML(m.nombre)}">${escapeHTML(m.nombre)}</option>`;
+                    });
+                } else {
+                    optionsHtml += `
+                        <option value="Llamada Falsa / Sabotaje">Llamada Falsa / Sabotaje</option>
+                        <option value="Registro Duplicado">Registro Duplicado</option>
+                        <option value="Error de Datos / Prueba">Error de Datos / Prueba</option>
+                        <option value="Ficha Atendida / Exitosa">Ficha Atendida / Exitosa</option>
+                        <option value="Falta de Recursos / Unidades">Falta de Recursos / Unidades</option>
+                        <option value="Otro">Otro Motivo</option>
+                    `;
+                }
+
+                Swal.fire({
+                    title: 'Cerrar Ficha',
+                    html: `
+                        <p class="text-muted small mb-3">Indique el motivo estructurado del cierre de la ficha.</p>
+                        <div class="mb-3 text-start">
+                            <label class="form-label fw-bold text-success small mb-1">Tipo de Motivo</label>
+                            <select id="swal_tipo_motivo" class="form-select shadow-sm">
+                                ${optionsHtml}
+                            </select>
+                        </div>
+                        <div class="mb-2 text-start">
+                            <label class="form-label fw-bold text-success small mb-1">Descripción del Cierre</label>
+                            <textarea id="swal_desc_motivo" class="form-control shadow-sm" rows="3" placeholder="Detalles operativos sobre el cierre..."></textarea>
+                        </div>
+                    `,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: '<i class="bi bi-lock-fill me-1"></i>Cerrar Ficha',
+                    cancelButtonText: 'Cancelar',
+                    preConfirm: () => {
+                        const tipo = document.getElementById('swal_tipo_motivo').value;
+                        const desc = document.getElementById('swal_desc_motivo').value.trim();
+
+                        if (!tipo) {
+                            Swal.showValidationMessage('Debe seleccionar un Tipo de Motivo.');
+                            return false;
+                        }
+                        if (desc.length < 5) {
+                            Swal.showValidationMessage('La descripción debe tener al menos 5 caracteres.');
+                            return false;
+                        }
+
+                        return { tipo: tipo, desc: desc };
                     }
-                },
-            }).then(result => {
-                if (!result.isConfirmed) return;
-                enviarCambioEstadoFicha(fichaId, nuevoEstado, result.value.trim());
+                }).then(result => {
+                    if (!result.isConfirmed) {
+                        modalDetalle.show();
+                        return;
+                    }
+                    enviarCambioEstadoFicha(fichaId, nuevoEstado, result.value.desc, result.value.tipo);
+                });
+            }, 'json').fail(() => {
+                // Fallback si falla el AJAX
+                Swal.fire('Error', 'No se pudieron cargar los motivos del sistema.', 'error').then(() => {
+                    modalDetalle.show();
+                });
             });
             return;
         }
@@ -726,21 +774,27 @@ $(document).ready(function () {
      * Envía el cambio de estado de ficha desde el módulo de despacho.
      * Usa el endpoint centralizado del FichaControlador para consistencia.
      */
-    function enviarCambioEstadoFicha(fichaId, nuevoEstado, motivoCierre) {
+    function enviarCambioEstadoFicha(fichaId, nuevoEstado, motivoCierre, tipoMotivo = '') {
         $.post(
             'index.php?url=despacho/cambiarEstadoFicha',
-            { ficha_id: fichaId, nuevo_estado: nuevoEstado, motivo_cierre: motivoCierre },
+            { ficha_id: fichaId, nuevo_estado: nuevoEstado, motivo_cierre: motivoCierre, tipo_motivo: tipoMotivo },
             function (res) {
                 if (res.success) {
                     Swal.fire({ title: '¡Estado actualizado!', text: res.message, icon: 'success', timer: 1800, showConfirmButton: false });
                     setTimeout(() => abrirModalGestion(fichaId), 1900);
                     recargarTablas();
                 } else {
-                    Swal.fire('Error', res.message, 'error');
+                    Swal.fire('Error', res.message, 'error').then(() => {
+                        bootstrap.Modal.getOrCreateInstance(document.getElementById('modalDetalleDespacho')).show();
+                    });
                 }
             },
             'json'
-        );
+        ).fail(() => {
+            Swal.fire('Error', 'No se pudo conectar con el servidor.', 'error').then(() => {
+                bootstrap.Modal.getOrCreateInstance(document.getElementById('modalDetalleDespacho')).show();
+            });
+        });
     }
 
 

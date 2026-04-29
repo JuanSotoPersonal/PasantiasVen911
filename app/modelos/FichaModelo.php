@@ -324,7 +324,7 @@ class FichaModelo {
      * Al Cerrar una ficha requiere obligatoriamente un motivo_cierre.
      * Estados terminales: Atendido (positivo) y Cerrado (con motivo).
      */
-    public function cambiarEstado(int $id, string $nuevoEstado, int $idOwner, string $motivoCierre = ''): bool {
+    public function cambiarEstado(int $id, string $nuevoEstado, int $idOwner, string $motivoCierre = '', string $tipoMotivo = ''): bool {
         $estadosValidos = ['Pendiente', 'En Proceso', 'Atendido', 'Cerrado'];
         if (!in_array($nuevoEstado, $estadosValidos, true)) return false;
 
@@ -335,13 +335,15 @@ class FichaModelo {
                           SET estado_ficha = :estado,
                               hora_cierre  = NOW(),
                               motivo_cierre = :motivo,
+                              tipo_motivo_cierre = :tipo_motivo,
                               id_owner     = :id_owner
                           WHERE id = :id";
                 $stmt = $this->conexion->prepare($query);
-                $stmt->bindValue(':estado',   $nuevoEstado,  PDO::PARAM_STR);
-                $stmt->bindValue(':motivo',   $motivoCierre, PDO::PARAM_STR);
-                $stmt->bindValue(':id_owner', $idOwner,      PDO::PARAM_INT);
-                $stmt->bindValue(':id',       $id,           PDO::PARAM_INT);
+                $stmt->bindValue(':estado',      $nuevoEstado,  PDO::PARAM_STR);
+                $stmt->bindValue(':motivo',      $motivoCierre, PDO::PARAM_STR);
+                $stmt->bindValue(':tipo_motivo', $tipoMotivo,   PDO::PARAM_STR);
+                $stmt->bindValue(':id_owner',    $idOwner,      PDO::PARAM_INT);
+                $stmt->bindValue(':id',          $id,           PDO::PARAM_INT);
             } else {
                 $query = "UPDATE fichas_emergencia
                           SET estado_ficha = :estado,
@@ -601,6 +603,42 @@ class FichaModelo {
 
     public function toggleEstadoOrganismo(int $id): bool {
         $stmt = $this->conexion->prepare("UPDATE organismos SET estado = 1 - estado WHERE id = :id");
+        return $stmt->execute([':id' => $id]);
+    }
+
+    // ///////////////////////////////////////////////////////////////////
+    // 8. CATÁLOGOS: MOTIVOS DE CIERRE
+    // ///////////////////////////////////////////////////////////////////
+
+    public function obtenerMotivosCierre(int $estado = 1): array {
+        $stmt = $this->conexion->prepare("SELECT id, nombre, descripcion, estado FROM motivos_cierre WHERE estado = :estado ORDER BY nombre ASC");
+        $stmt->execute([':estado' => $estado]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function crearMotivoCierre(string $nombre, string $descripcion = ''): bool {
+        if ($this->existeNombreCatalogo('motivos_cierre', 'nombre', $nombre)) {
+            throw new \Exception("El motivo '{$nombre}' ya está registrado y activo.");
+        }
+        $stmt = $this->conexion->prepare("INSERT INTO motivos_cierre (nombre, descripcion, estado) VALUES (:nombre, :descripcion, 1)");
+        $stmt->bindValue(':nombre',      $nombre,      PDO::PARAM_STR);
+        $stmt->bindValue(':descripcion', $descripcion, PDO::PARAM_STR);
+        return $stmt->execute();
+    }
+
+    public function actualizarMotivoCierre(int $id, string $nombre, string $descripcion = ''): bool {
+        if ($this->existeNombreCatalogo('motivos_cierre', 'nombre', $nombre, $id)) {
+            throw new \Exception("Ya existe otro motivo activo con el nombre '{$nombre}'.");
+        }
+        $stmt = $this->conexion->prepare("UPDATE motivos_cierre SET nombre = :nombre, descripcion = :descripcion WHERE id = :id");
+        $stmt->bindValue(':nombre',      $nombre,      PDO::PARAM_STR);
+        $stmt->bindValue(':descripcion', $descripcion, PDO::PARAM_STR);
+        $stmt->bindValue(':id',          $id,          PDO::PARAM_INT);
+        return $stmt->execute();
+    }
+
+    public function toggleEstadoMotivoCierre(int $id): bool {
+        $stmt = $this->conexion->prepare("UPDATE motivos_cierre SET estado = 1 - estado WHERE id = :id");
         return $stmt->execute([':id' => $id]);
     }
 }

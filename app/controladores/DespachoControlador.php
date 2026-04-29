@@ -469,15 +469,16 @@ class DespachoControlador {
             $fichaId      = (int)($_POST['ficha_id']     ?? 0);
             $nuevoEstado  = trim($_POST['nuevo_estado']  ?? '');
             $motivoCierre = trim($_POST['motivo_cierre'] ?? '');
+            $tipoMotivo   = trim($_POST['tipo_motivo'] ?? '');
 
             if (!$fichaId || $nuevoEstado === '') {
                 echo json_encode(['success' => false, 'message' => 'Datos incompletos.']);
                 return;
             }
 
-            // Al cerrar una ficha, el motivo es obligatorio
-            if ($nuevoEstado === 'Cerrado' && $motivoCierre === '') {
-                echo json_encode(['success' => false, 'message' => 'Debe ingresar el motivo de cierre de la ficha.']);
+            // Al cerrar una ficha, el motivo y el tipo son obligatorios
+            if ($nuevoEstado === 'Cerrado' && ($motivoCierre === '' || $tipoMotivo === '')) {
+                echo json_encode(['success' => false, 'message' => 'Debe ingresar el tipo y el motivo de cierre de la ficha.']);
                 return;
             }
 
@@ -496,9 +497,9 @@ class DespachoControlador {
             $usuarioId      = (int)$_SESSION['user_id'];
             $estadoAnterior = $infoFicha['estado_ficha'];
 
-            // Delegar al FichaModelo centralizado (gestiona hora_cierre y motivo_cierre)
+            // Delegar al FichaModelo centralizado (gestiona hora_cierre, motivo_cierre y tipo_motivo_cierre)
             $modeloFicha = new FichaModelo();
-            $exito = $modeloFicha->cambiarEstado($fichaId, $nuevoEstado, $usuarioId, $motivoCierre);
+            $exito = $modeloFicha->cambiarEstado($fichaId, $nuevoEstado, $usuarioId, $motivoCierre, $tipoMotivo);
 
             if ($exito) {
                 $descripcion = "Estado cambiado desde Centro de Despacho: '{$estadoAnterior}' → '{$nuevoEstado}'.";
