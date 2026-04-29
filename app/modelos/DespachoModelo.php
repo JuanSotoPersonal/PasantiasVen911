@@ -430,6 +430,8 @@ class DespachoModelo {
                         d.persona_atiende,
                         d.hora_despacho,
                         d.estatus_despacho,
+                        d.motivo_cancelacion,
+                        d.tipo_motivo_cancelacion,
                         o.nombre_organismo,
                         u.nombre_completo AS nombre_despachador
                       FROM despachos_organismos d
@@ -518,16 +520,24 @@ class DespachoModelo {
      * Avanza el estatus de un despacho: Asignado → En Camino → En Sitio → Liberado.
      * Valida que el valor sea uno de los cuatro estatus permitidos por el enum.
      */
-    public function cambiarEstado(int $id, string $nuevoEstado): bool {
-        $estatusValidos = ['Asignado', 'En Camino', 'En Sitio', 'Liberado'];
+    public function cambiarEstado(int $id, string $nuevoEstado, string $motivo = null, string $tipoMotivo = null): bool {
+        $estatusValidos = ['Asignado', 'En Camino', 'En Sitio', 'Liberado', 'Cancelado'];
         if (!in_array($nuevoEstado, $estatusValidos, true)) {
             return false;
         }
         try {
-            $stmt = $this->conexion->prepare(
-                "UPDATE despachos_organismos SET estatus_despacho = :estado WHERE id = :id"
-            );
+            $query = "UPDATE despachos_organismos SET estatus_despacho = :estado";
+            if ($nuevoEstado === 'Cancelado') {
+                $query .= ", motivo_cancelacion = :motivo, tipo_motivo_cancelacion = :tipo";
+            }
+            $query .= " WHERE id = :id";
+
+            $stmt = $this->conexion->prepare($query);
             $stmt->bindValue(':estado', $nuevoEstado, PDO::PARAM_STR);
+            if ($nuevoEstado === 'Cancelado') {
+                $stmt->bindValue(':motivo', $motivo, PDO::PARAM_STR);
+                $stmt->bindValue(':tipo',   $tipoMotivo, PDO::PARAM_STR);
+            }
             $stmt->bindValue(':id',     $id,          PDO::PARAM_INT);
             return $stmt->execute();
         } catch (Exception $e) {

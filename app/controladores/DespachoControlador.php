@@ -334,10 +334,41 @@ class DespachoControlador {
 
             $despachoId  = (int)($_POST['despacho_id'] ?? 0);
             $nuevoEstado = trim($_POST['nuevo_estado'] ?? '');
+            $motivo      = trim($_POST['motivo'] ?? '');
+            $tipoMotivo  = trim($_POST['tipo_motivo'] ?? '');
 
-            if (!$despachoId || $nuevoEstado === '') {
-                echo json_encode(['success' => false, 'message' => 'Datos incompletos.']);
+            $valDespacho = Validador::validarId($despachoId, 'ID de Despacho');
+            if (!$valDespacho['valido']) {
+                echo json_encode(['success' => false, 'message' => $valDespacho['mensaje']]);
                 return;
+            }
+
+            $estadosValidos = ['Asignado', 'En Camino', 'En Sitio', 'Liberado', 'Cancelado'];
+            if (!in_array($nuevoEstado, $estadosValidos, true)) {
+                echo json_encode(['success' => false, 'message' => 'El estado especificado no es válido.']);
+                return;
+            }
+
+            // Al cancelar, el motivo y el tipo son requeridos
+            if ($nuevoEstado === 'Cancelado' && ($motivo === '' || $tipoMotivo === '')) {
+                echo json_encode(['success' => false, 'message' => 'Debe ingresar el tipo y el motivo de cancelación.']);
+                return;
+            }
+
+            if ($motivo !== '') {
+                $valMotivo = Validador::validarTextoLibre($motivo, 'Motivo de Cancelación', 5, 500);
+                if (!$valMotivo['valido']) {
+                    echo json_encode(['success' => false, 'message' => $valMotivo['mensaje']]);
+                    return;
+                }
+            }
+
+            if ($tipoMotivo !== '') {
+                $valTipo = Validador::validarNombreCatalogo($tipoMotivo, 'Tipo de Motivo');
+                if (!$valTipo['valido']) {
+                    echo json_encode(['success' => false, 'message' => $valTipo['mensaje']]);
+                    return;
+                }
             }
 
             $anterior = $this->modelo->obtenerPorId($despachoId);
@@ -345,13 +376,20 @@ class DespachoControlador {
                 echo json_encode(['success' => false, 'message' => 'Despacho no encontrado.']);
                 return;
             }
-            if ($anterior['estatus_despacho'] === 'Liberado') {
-                echo json_encode(['success' => false, 'message' => 'Este despacho ya fue Liberado y no puede ser modificado.']);
+            
+            // Ambos son estados terminales para el organismo
+            if (in_array($anterior['estatus_despacho'], ['Liberado', 'Cancelado'], true)) {
+                echo json_encode(['success' => false, 'message' => 'Este despacho ya se encuentra en estado terminal y no puede ser modificado.']);
                 return;
             }
 
-            $exito = $this->modelo->cambiarEstado($despachoId, $nuevoEstado);
+            $exito = $this->modelo->cambiarEstado($despachoId, $nuevoEstado, $motivo ?: null, $tipoMotivo ?: null);
             if ($exito) {
+                $descripcionEvento = "Despacho #{$despachoId}: '{$anterior['estatus_despacho']}' → '{$nuevoEstado}'.";
+                if ($nuevoEstado === 'Cancelado') {
+                    $descripcionEvento .= " Motivo: [{$tipoMotivo}] {$motivo}";
+                }
+
                 $this->modeloEvento->registrarEventoFicha(
                     (int)$anterior['ficha_id'],
                     (int)$_SESSION['user_id'],
@@ -359,8 +397,8 @@ class DespachoControlador {
                     $anterior['estatus_despacho'],
                     $nuevoEstado,
                     ['estatus' => $anterior['estatus_despacho']],
-                    ['estatus' => $nuevoEstado],
-                    "Despacho #{$despachoId}: '{$anterior['estatus_despacho']}' → '{$nuevoEstado}'."
+                    ['estatus' => $nuevoEstado, 'motivo' => $motivo, 'tipo' => $tipoMotivo],
+                    $descripcionEvento
                 );
                 echo json_encode(['success' => true, 'message' => "Estatus actualizado a '{$nuevoEstado}'.", 'nuevo_estado' => $nuevoEstado]);
             } else {

@@ -35,20 +35,31 @@ $(document).ready(function () {
         'En Camino': 'badge-despacho-en-camino',
         'En Sitio':  'badge-despacho-en-sitio',
         'Liberado':  'badge-despacho-liberado',
+        'Cancelado': 'badge-despacho-cancelado',
     };
     const iconosDespacho = {
         'Asignado':  'bi-broadcast',
         'En Camino': 'bi-car-front-fill',
         'En Sitio':  'bi-geo-alt-fill',
         'Liberado':  'bi-check-circle-fill',
+        'Cancelado': 'bi-x-circle-fill',
     };
 
     // Flujo de transiciones válidas por estatus actual del despacho
     const transicionesDespacho = {
-        'Asignado':  [['En Camino', 'btn-warning',    'bi-car-front-fill']],
-        'En Camino': [['En Sitio',  'btn-success',    'bi-geo-alt-fill']],
-        'En Sitio':  [['Liberado',  'btn-secondary',  'bi-check-circle-fill']],
-        // 'Liberado' es terminal: sin transiciones
+        'Asignado':  [
+            ['En Camino', 'btn-warning',    'bi-car-front-fill'],
+            ['Cancelado', 'btn-danger',     'bi-x-circle-fill']
+        ],
+        'En Camino': [
+            ['En Sitio',  'btn-success',    'bi-geo-alt-fill'],
+            ['Cancelado', 'btn-danger',     'bi-x-circle-fill']
+        ],
+        'En Sitio':  [
+            ['Liberado',  'btn-secondary',  'bi-check-circle-fill'],
+            ['Cancelado', 'btn-danger',     'bi-x-circle-fill']
+        ],
+        // 'Liberado' y 'Cancelado' son terminales: sin transiciones
     };
 
     // ///////////////////////////////////////////////////////////////////
@@ -472,7 +483,11 @@ $(document).ready(function () {
                                 <i class="bi bi-clock me-1"></i>${escapeHTML(d.hora_despacho)}
                                 ${d.nombre_despachador ? `&nbsp;·&nbsp;<i class="bi bi-person-check-fill me-1 text-success"></i>${escapeHTML(d.nombre_despachador)}` : ''}
                             </div>
-                            ${miniStepper}
+                            ${d.estatus_despacho === 'Cancelado' && d.motivo_cancelacion ? `
+                                <div class="mt-2 p-2 rounded bg-danger-subtle text-danger-emphasis small border border-danger-subtle">
+                                    <i class="bi bi-x-circle-fill me-1"></i><strong>Motivo (${escapeHTML(d.tipo_motivo_cancelacion || 'N/A')}):</strong> ${escapeHTML(d.motivo_cancelacion)}
+                                </div>
+                            ` : miniStepper}
                         </div>
                         <div class="d-flex align-items-center flex-wrap gap-1">
                             <span class="badge-despacho-estatus ${cls}">
@@ -496,6 +511,84 @@ $(document).ready(function () {
         const nuevoEstado = $(this).data('estado');
         const fichaId     = parseInt($('#detalleDespachoIdLabel').text().replace('#', ''));
 
+        if (nuevoEstado === 'Cancelado') {
+            // Cargar motivos estructurados desde el servidor para cancelación
+            $.get('index.php?url=ficha/obtenerCatalogo&cat=motivo_cierre&estado=1', function(res) {
+                let optionsHtml = '<option value="">-- Seleccione un tipo --</option>';
+                if (res && res.data && res.data.length > 0) {
+                    res.data.forEach(m => {
+                        optionsHtml += `<option value="${escapeHTML(m.nombre)}">${escapeHTML(m.nombre)}</option>`;
+                    });
+                } else {
+                    optionsHtml += `
+                        <option value="Llamada Falsa / Sabotaje">Llamada Falsa / Sabotaje</option>
+                        <option value="Unidad no disponible">Unidad no disponible</option>
+                        <option value="Error de Despacho">Error de Despacho</option>
+                        <option value="Otro">Otro Motivo</option>
+                    `;
+                }
+
+                Swal.fire({
+                    title: 'Cancelar Despacho',
+                    html: `
+                        <p class="text-muted small mb-3">Indique el motivo de cancelación de la llamada/despacho.</p>
+                        <div class="mb-3 text-start">
+                            <label class="form-label fw-bold text-danger small mb-1">Tipo de Motivo</label>
+                            <select id="swal_cancel_tipo" class="form-select shadow-sm">
+                                ${optionsHtml}
+                            </select>
+                        </div>
+                        <div class="mb-2 text-start">
+                            <label class="form-label fw-bold text-danger small mb-1">Descripción de Cancelación</label>
+                            <textarea id="swal_cancel_desc" class="form-control shadow-sm" rows="3" placeholder="Detalles de por qué se cancela..."></textarea>
+                        </div>
+                    `,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: '<i class="bi bi-x-circle-fill me-1"></i>Cancelar Llamada',
+                    cancelButtonText: 'No, regresar',
+                    confirmButtonColor: '#dc3545',
+                    preConfirm: () => {
+                        const tipo = document.getElementById('swal_cancel_tipo').value;
+                        const desc = document.getElementById('swal_cancel_desc').value.trim();
+
+                        if (!tipo) {
+                            Swal.showValidationMessage('Debe seleccionar un Tipo de Motivo.');
+                            return false;
+                        }
+                        if (desc.length < 5) {
+                            Swal.showValidationMessage('La descripción debe tener al menos 5 caracteres.');
+                            return false;
+                        }
+                        return { tipo: tipo, desc: desc };
+                    }
+                }).then(result => {
+                    if (!result.isConfirmed) return;
+
+                    $.post(
+                        'index.php?url=despacho/cambiarEstado',
+                        { 
+                            despacho_id: despachoId, 
+                            nuevo_estado: nuevoEstado,
+                            tipo_motivo: result.value.tipo,
+                            motivo: result.value.desc
+                        },
+                        function (res) {
+                            if (res.success) {
+                                Swal.fire({ title: '¡Cancelado!', text: res.message, icon: 'success', timer: 1500, showConfirmButton: false });
+                                recargarDespachosDeFicha(fichaId);
+                                if (tablaDespachos) tablaDespachos.ajax.reload(null, false);
+                            } else {
+                                Swal.fire('Error', res.message, 'error');
+                            }
+                        },
+                        'json'
+                    );
+                });
+            }, 'json');
+            return;
+        }
+
         Swal.fire({
             title: `¿Avanzar a "${nuevoEstado}"?`,
             text:  'Este cambio quedará registrado en el historial de trazabilidad.',
@@ -512,10 +605,8 @@ $(document).ready(function () {
                 function (res) {
                     if (res.success) {
                         Swal.fire({ title: '¡Actualizado!', text: res.message, icon: 'success', timer: 1500, showConfirmButton: false });
-                        // Recargar solo la lista de despachos dentro del modal
                         recargarDespachosDeFicha(fichaId);
-                        // Refrescar la tabla principal silenciosamente
-                        tablaDespachos.ajax.reload(null, false);
+                        if (tablaDespachos) tablaDespachos.ajax.reload(null, false);
                     } else {
                         Swal.fire('Error', res.message, 'error');
                     }
