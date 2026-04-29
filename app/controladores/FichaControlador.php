@@ -296,8 +296,16 @@ class FichaControlador {
             $nuevoEstado  = trim($_POST['nuevo_estado']  ?? '');
             $motivoCierre = trim($_POST['motivo_cierre'] ?? '');
 
-            if (!$fichaId || $nuevoEstado === '') {
-                echo json_encode(['success' => false, 'message' => 'Datos incompletos.']);
+            // Hallazgo 1 — Validación formal del ID y whitelist de estados permitidos
+            $valFichaId = Validador::validarId($fichaId, 'ID de Ficha');
+            if (!$valFichaId['valido']) {
+                echo json_encode(['success' => false, 'message' => $valFichaId['mensaje']]);
+                return;
+            }
+
+            $estadosPermitidos = ['Pendiente', 'En Proceso', 'Atendido', 'Cerrado'];
+            if (!in_array($nuevoEstado, $estadosPermitidos, true)) {
+                echo json_encode(['success' => false, 'message' => 'El estado especificado no es válido.']);
                 return;
             }
 
@@ -307,7 +315,7 @@ class FichaControlador {
                 return;
             }
 
-            // Validar longitud del motivo si se proporciona
+            // Validar longitud y contenido del motivo si se proporciona
             if ($motivoCierre !== '') {
                 $valMotivo = Validador::validarTextoLibre($motivoCierre, 'Motivo de Cierre', 5, 500);
                 if (!$valMotivo['valido']) {

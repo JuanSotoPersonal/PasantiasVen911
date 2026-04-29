@@ -224,10 +224,11 @@ class UsuarioControlador {
                     echo json_encode(['success' => false, 'message' => 'Los SuperAdministradores deben configurar sus preguntas de seguridad.']);
                     return;
                 }
-                if (strlen($r1) > 128 || strlen($r2) > 128) {
-                    echo json_encode(['success' => false, 'message' => 'Las respuestas de seguridad no pueden exceder los 128 caracteres.']);
-                    return;
-                }
+                // Hallazgo 5: Usar validarRespuestaSeguridad() centralizado en lugar de strlen manual
+                $valR1 = Validador::validarRespuestaSeguridad($r1);
+                if (!$valR1['valido']) { echo json_encode(['success' => false, 'message' => $valR1['mensaje']]); return; }
+                $valR2 = Validador::validarRespuestaSeguridad($r2);
+                if (!$valR2['valido']) { echo json_encode(['success' => false, 'message' => $valR2['mensaje']]); return; }
                 if ($p1 === $p2) {
                     echo json_encode(['success' => false, 'message' => 'Debes elegir dos preguntas diferentes.']);
                     return;
@@ -286,11 +287,13 @@ class UsuarioControlador {
                 return;
             }
 
-            // Validaciones de formato
-            $valCedula = Validador::validarCedula($cedula, true);
-            if (!$valCedula['valido']) {
-                echo json_encode(['success' => false, 'message' => $valCedula['mensaje']]);
-                return;
+            // Hallazgo 4: cédula opcional en edición (consistente con creación)
+            if (!empty($cedula)) {
+                $valCedula = Validador::validarCedula($cedula, false);
+                if (!$valCedula['valido']) {
+                    echo json_encode(['success' => false, 'message' => $valCedula['mensaje']]);
+                    return;
+                }
             }
             $valUsuario = Validador::validarUsuario($usuario);
             if (!$valUsuario['valido']) {
@@ -523,10 +526,11 @@ class UsuarioControlador {
                 return;
             }
 
-            if (strlen($r1) > 128 || strlen($r2) > 128) {
-                echo json_encode(['success' => false, 'message' => 'Las respuestas de seguridad no pueden exceder los 128 caracteres.']);
-                return;
-            }
+            // Hallazgo 5: Usar validarRespuestaSeguridad() centralizado
+            $valR1 = Validador::validarRespuestaSeguridad($r1);
+            if (!$valR1['valido']) { echo json_encode(['success' => false, 'message' => $valR1['mensaje']]); return; }
+            $valR2 = Validador::validarRespuestaSeguridad($r2);
+            if (!$valR2['valido']) { echo json_encode(['success' => false, 'message' => $valR2['mensaje']]); return; }
 
             // 6.1 Validación del Código de Fábrica (Key de Activación)
             $registroModelo = new RegistroModelo();

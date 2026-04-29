@@ -471,8 +471,16 @@ class DespachoControlador {
             $motivoCierre = trim($_POST['motivo_cierre'] ?? '');
             $tipoMotivo   = trim($_POST['tipo_motivo'] ?? '');
 
-            if (!$fichaId || $nuevoEstado === '') {
-                echo json_encode(['success' => false, 'message' => 'Datos incompletos.']);
+            // Hallazgo 1/2/3 — Validación formal del ID, whitelist de estados y motivos
+            $valFichaId = Validador::validarId($fichaId, 'ID de Ficha');
+            if (!$valFichaId['valido']) {
+                echo json_encode(['success' => false, 'message' => $valFichaId['mensaje']]);
+                return;
+            }
+
+            $estadosPermitidos = ['Pendiente', 'En Proceso', 'Atendido', 'Cerrado'];
+            if (!in_array($nuevoEstado, $estadosPermitidos, true)) {
+                echo json_encode(['success' => false, 'message' => 'El estado especificado no es válido.']);
                 return;
             }
 
@@ -480,6 +488,24 @@ class DespachoControlador {
             if ($nuevoEstado === 'Cerrado' && ($motivoCierre === '' || $tipoMotivo === '')) {
                 echo json_encode(['success' => false, 'message' => 'Debe ingresar el tipo y el motivo de cierre de la ficha.']);
                 return;
+            }
+
+            // Hallazgo 2: Validar contenido y longitud de motivo_cierre con el Helper
+            if ($motivoCierre !== '') {
+                $valMotivo = Validador::validarTextoLibre($motivoCierre, 'Motivo de Cierre', 5, 500);
+                if (!$valMotivo['valido']) {
+                    echo json_encode(['success' => false, 'message' => $valMotivo['mensaje']]);
+                    return;
+                }
+            }
+
+            // Hallazgo 3: Validar tipo_motivo como nombre de catálogo (longitud y caracteres)
+            if ($tipoMotivo !== '') {
+                $valTipo = Validador::validarNombreCatalogo($tipoMotivo, 'Tipo de Motivo');
+                if (!$valTipo['valido']) {
+                    echo json_encode(['success' => false, 'message' => $valTipo['mensaje']]);
+                    return;
+                }
             }
 
             $infoFicha = $this->modelo->obtenerInfoFicha($fichaId);
