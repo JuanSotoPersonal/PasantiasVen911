@@ -172,7 +172,11 @@ $(function () {
             tipo_emergencia: [dtTipos, dtTiposInactivos], 
             municipio: [dtMunicipios, dtMunicipiosInactivos], 
             organismo: [dtOrganismos, dtOrganismosInactivos],
-            motivo_cierre: [dtMotivos, dtMotivosInactivos]
+            motivo_cierre: [
+                dtMotivos, dtMotivosInactivos,
+                ...(typeof dtMotivosOrg !== 'undefined' && dtMotivosOrg ? [dtMotivosOrg] : []),
+                ...(typeof dtMotivosOrgInactivos !== 'undefined' && dtMotivosOrgInactivos ? [dtMotivosOrgInactivos] : [])
+            ]
         };
         guardarCatalogo(datos, tablas[catalogo], 'modalCatalogoSimple');
     });
