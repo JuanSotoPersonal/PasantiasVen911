@@ -15,3 +15,7 @@ src/
 .astro/
 package-lock.json
 package.json
+
+# Exclusiones solicitadas
+.agents/
+.github/

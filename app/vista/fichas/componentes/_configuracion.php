@@ -228,12 +228,12 @@
         <div class="tab-pane fade" id="tab-motivos-organismo" role="tabpanel">
             <div class="card shadow-sm border-0 rounded-bottom">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
-                    <h5 class="card-title mb-0 fw-bold text-danger">
+                    <h5 class="card-title mb-0 fw-bold text-success">
                         <i class="bi bi-slash-circle-fill me-2"></i>Motivos de Cancelación de Organismo
-                        <span class="badge bg-danger-subtle text-danger ms-2" style="font-size:0.65rem;">ORGANISMO</span>
+                        <span class="badge bg-success-subtle text-success ms-2" style="font-size:0.65rem;">ORGANISMO</span>
                     </h5>
                     <div class="card-tools ms-auto">
-                        <button class="btn btn-outline-danger btn-sm rounded-pill px-3" id="btnNuevoMotivoOrganismo">
+                        <button class="btn btn-ven-primary btn-sm rounded-pill px-3" id="btnNuevoMotivoOrganismo">
                             <i class="bi bi-plus-circle-fill me-1"></i>Nuevo Motivo
                         </button>
                     </div>

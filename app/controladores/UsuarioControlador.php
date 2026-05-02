@@ -224,7 +224,7 @@ class UsuarioControlador {
                     echo json_encode(['success' => false, 'message' => 'Los SuperAdministradores deben configurar sus preguntas de seguridad.']);
                     return;
                 }
-                // Hallazgo 5: Usar validarRespuestaSeguridad() centralizado en lugar de strlen manual
+                // 5. Validación del contenido y longitud de respuestas
                 $valR1 = Validador::validarRespuestaSeguridad($r1);
                 if (!$valR1['valido']) { echo json_encode(['success' => false, 'message' => $valR1['mensaje']]); return; }
                 $valR2 = Validador::validarRespuestaSeguridad($r2);
@@ -287,7 +287,7 @@ class UsuarioControlador {
                 return;
             }
 
-            // Hallazgo 4: cédula opcional en edición (consistente con creación)
+            // 4. Cédula opcional en edición
             if (!empty($cedula)) {
                 $valCedula = Validador::validarCedula($cedula, false);
                 if (!$valCedula['valido']) {
@@ -526,7 +526,7 @@ class UsuarioControlador {
                 return;
             }
 
-            // Hallazgo 5: Usar validarRespuestaSeguridad() centralizado
+            // 6. Validación del contenido y longitud de respuestas con el Helper
             $valR1 = Validador::validarRespuestaSeguridad($r1);
             if (!$valR1['valido']) { echo json_encode(['success' => false, 'message' => $valR1['mensaje']]); return; }
             $valR2 = Validador::validarRespuestaSeguridad($r2);
