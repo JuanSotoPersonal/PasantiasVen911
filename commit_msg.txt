@@ -1,9 +1,0 @@
-feat(core): implement RBAC, server-side limits and cleanup
-
-- Implemented global RBAC middleware in index.php with tienePerm() helper.
-- Sessions now load user permissions upon authentication (lazy loaded on update).
-- Refactored sidebar and navbar to display modules dynamically based on user roles.
-- Migrated Logs module to server-side pagination for improved performance with large datasets.
-- Cleaned up deprecated codigo_operador across the application.
-- Fixed critical SSE session lock issue.
-- Updated technical document to v3.2 mapping all recent architecture changes.
