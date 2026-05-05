@@ -359,7 +359,7 @@ class DespachoModelo {
     public function obtenerInfoFicha(int $fichaId): array|false {
         try {
             $stmt = $this->conexion->prepare(
-                "SELECT id, estado_ficha, id_owner FROM fichas_emergencia WHERE id = :id LIMIT 1"
+                "SELECT id, estado_ficha, id_owner, id_user FROM fichas_emergencia WHERE id = :id LIMIT 1"
             );
             $stmt->bindValue(':id', $fichaId, PDO::PARAM_INT);
             $stmt->execute();
@@ -565,6 +565,28 @@ class DespachoModelo {
         } catch (Exception $e) {
             error_log("[DespachoModelo] Error en cancelar: " . $e->getMessage());
             return false;
+        }
+    }
+
+    /**
+     * Cuenta los despachos de una ficha que aún NO están en estado terminal.
+     * Un despacho es "activo" si está en: Asignado, En Camino, En Sitio.
+     * Liberado y Cancelado son terminales y se consideran resueltos.
+     * Se usa para bloquear el cierre de fichas con organismos pendientes.
+     */
+    public function contarDespachosActivos(int $fichaId): int {
+        try {
+            $stmt = $this->conexion->prepare(
+                "SELECT COUNT(*) FROM despachos_organismos
+                 WHERE ficha_id = :ficha_id
+                   AND estatus_despacho NOT IN ('Liberado', 'Cancelado')"
+            );
+            $stmt->bindValue(':ficha_id', $fichaId, PDO::PARAM_INT);
+            $stmt->execute();
+            return (int)$stmt->fetchColumn();
+        } catch (Exception $e) {
+            error_log("[DespachoModelo] Error en contarDespachosActivos: " . $e->getMessage());
+            return 0;
         }
     }
 

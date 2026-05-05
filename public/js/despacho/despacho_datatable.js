@@ -602,6 +602,11 @@ $(document).ready(function () {
                 confirmButtonText: '<i class="bi bi-x-circle-fill me-1"></i>Cancelar Despacho',
                 cancelButtonText:  'Volver',
                 confirmButtonColor: '#dc3545',
+                didOpen: () => {
+                    // SweetAlert2 retiene el foco en el botón de confirmación por defecto,
+                    // bloqueando la escritura en el textarea. Liberamos el foco manualmente.
+                    document.getElementById('swal-tipo-motivo').focus();
+                },
                 preConfirm: () => {
                     const tipo = document.getElementById('swal-tipo-motivo').value.trim();
                     const desc = document.getElementById('swal-descripcion').value.trim();
@@ -991,6 +996,10 @@ $(document).ready(function () {
 
     // 7.4 Guardar edición: usa el mismo endpoint centralizado del módulo de fichas
     $('#btnGuardarEdicion').on('click', function () {
+        const btn = $(this);
+        const originalText = btn.html();
+        btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...');
+
         const fichaId = $('#editar_ficha_id').val();
         const datos   = new FormData(document.getElementById('formEditarFicha'));
 
@@ -1017,6 +1026,7 @@ $(document).ready(function () {
                 }
             },
             error: () => Swal.fire('Error', 'No se pudo conectar con el servidor.', 'error'),
+            complete: () => btn.prop('disabled', false).html(originalText),
         });
     });
 
@@ -1055,6 +1065,10 @@ $(document).ready(function () {
     // ///////////////////////////////////////////////////////////////////
 
     $('#btnGuardarDespacho').on('click', function () {
+        const btn = $(this);
+        const originalText = btn.html();
+        btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...');
+
         const fichaId = $('#asignar_ficha_id').val();
         const datos   = new FormData(document.getElementById('formAsignarDespacho'));
 
@@ -1081,6 +1095,7 @@ $(document).ready(function () {
                 }
             },
             error: () => Swal.fire('Error', 'No se pudo conectar con el servidor.', 'error'),
+            complete: () => btn.prop('disabled', false).html(originalText),
         });
     });
 

@@ -23,6 +23,25 @@ $pageName = $pageName ?? 'home';
     <?php endif; ?>
 
 <?php else: ?>
+    <!-- Contexto de Sesión para Lógica Frontend -->
+    <script>
+        window.USUARIO_ID     = <?php echo (int)($_SESSION['user_id']    ?? 0); ?>;
+        window.USUARIO_ROL_ID = <?php echo (int)($_SESSION['user_rol_id'] ?? 0); ?>;
+
+        // Utilidad global de escape XSS: disponible en todos los módulos del dashboard.
+        // Centralizada aquí para que notificaciones.js y otros scripts no dependan
+        // de que datatables_config.js esté cargado en la misma página.
+        window.escapeHTML = function (str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g,  '&amp;')
+                .replace(/</g,  '&lt;')
+                .replace(/>/g,  '&gt;')
+                .replace(/"/g,  '&quot;')
+                .replace(/'/g,  '&#39;');
+        };
+    </script>
+
     <!-- Scripts Robustos del Sistema (Dashboard) -->
     <script src="public/libs/overlayscrollbars/overlayscrollbars.browser.es6.min.js"></script>
     <script src="public/libs/popperjs/popper.min.js"></script>
@@ -33,6 +52,9 @@ $pageName = $pageName ?? 'home';
     <script src="public/libs/datatables/jquery-3.7.1.min.js"></script>
     <script src="public/libs/select2/select2.min.js"></script>
     <script src="public/libs/select2/es.js"></script>
+
+    <!-- Lógica de Notificaciones en Tiempo Real -->
+    <script src="public/js/comun/notificaciones.js"></script>
 
     <!-- 4. CONFIGURACIÓN DE COMPORTAMIENTO DE INTERFAZ -->
     <script>

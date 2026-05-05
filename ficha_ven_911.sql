@@ -413,6 +413,7 @@ CREATE TABLE `notificaciones` (
   `usuario_recibe_id` int(10) UNSIGNED NOT NULL COMMENT 'Destinatario de la notificación',
   `ficha_id` int(10) UNSIGNED DEFAULT NULL COMMENT 'Ficha que originó la notificación',
   `tipo` varchar(50) NOT NULL DEFAULT 'info' COMMENT 'info | alerta | cambio_estado',
+  `titulo` varchar(150) NOT NULL DEFAULT 'Notificación' COMMENT 'Título corto de la alerta',
   `mensaje` varchar(255) NOT NULL,
   `leido` tinyint(1) NOT NULL DEFAULT 0,
   `fecha_creacion` timestamp NOT NULL DEFAULT current_timestamp()

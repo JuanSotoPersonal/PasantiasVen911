@@ -8,12 +8,14 @@
 require_once 'app/modelos/UsuarioModelo.php';
 require_once 'app/modelos/RegistroModelo.php';
 require_once 'app/modelos/EventoModelo.php';
+require_once 'app/Helpers/Validador.php';
+require_once 'app/Helpers/Notificador.php';
+
 use App\modelos\UsuarioModelo;
 use App\modelos\RegistroModelo;
 use App\modelos\EventoModelo;
 use App\Helpers\Validador;
-
-require_once 'app/Helpers/Validador.php';
+use App\Helpers\Notificador;
 
 class UsuarioControlador {
 
@@ -255,6 +257,10 @@ class UsuarioControlador {
                     'usuario' => $usuario, 'nombre_completo' => $nombreCompleto, 
                     'cedula' => $cedula, 'rol_id' => $rolId
                 ], "Usuario '{$usuario}' creado.");
+
+                // NOTIFICACIÓN AL ADMINISTRADOR (Rol 1)
+                Notificador::enviarPorRol(1, 'info', 'Seguridad: Nuevo Usuario', "Se ha registrado el usuario '{$usuario}' en el sistema.", null);
+
                 echo json_encode(['success' => true, 'message' => 'Usuario creado correctamente.']);
             } else {
                 echo json_encode(['success' => false, 'message' => 'Error al crear el usuario.']);
@@ -470,6 +476,11 @@ class UsuarioControlador {
                     ['estado' => $estadoAnterior], ['estado' => $nuevoEstado], 
                     "Usuario ID {$id} cambiado a '{$nuevoEstado}'."
                 );
+
+                // NOTIFICACIÓN AL ADMINISTRADOR (Rol 1)
+                $txtAccion = ($nuevoEstado === 'activo') ? 'activado' : 'deshabilitado';
+                Notificador::enviarPorRol(1, 'alerta', 'Seguridad: Estado de Usuario', "El usuario '{$usuarioAfectado['usuario']}' ha sido {$txtAccion} por {$_SESSION['user_name']}.", null);
+
                 echo json_encode(['success' => true, 'message' => 'Estado actualizado correctamente.', 'nuevo_estado' => $nuevoEstado]);
             } else {
                 echo json_encode(['success' => false, 'message' => 'Usuario no encontrado.']);

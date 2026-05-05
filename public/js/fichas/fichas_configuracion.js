@@ -46,7 +46,7 @@ $(function () {
      * Gestiona el envío asíncrono, cierre de modales y recarga de múltiples tablas.
      */
     function guardarCatalogo(datos, tablasRef, modalId, callback) {
-        $.post('index.php?url=ficha/guardarCatalogo', datos, function (res) {
+        return $.post('index.php?url=ficha/guardarCatalogo', datos, function (res) {
             if (res.success) {
                 if (modalId) {
                     const m = document.getElementById(modalId);
@@ -160,7 +160,11 @@ $(function () {
     });
 
     // Acción unificada para catálogos simples (Nombre + Descripción)
-    $('#btnGuardarCatSimple').on('click', () => {
+    $('#btnGuardarCatSimple').on('click', function () {
+        const btn = $(this);
+        const originalText = btn.html();
+        btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...');
+
         const datos = Object.fromEntries(new FormData(document.getElementById('formCatalogoSimple')));
         const catalogo = datos.catalogo;
         
@@ -178,7 +182,7 @@ $(function () {
                 ...(typeof dtMotivosOrgInactivos !== 'undefined' && dtMotivosOrgInactivos ? [dtMotivosOrgInactivos] : [])
             ]
         };
-        guardarCatalogo(datos, tablas[catalogo], 'modalCatalogoSimple');
+        guardarCatalogo(datos, tablas[catalogo], 'modalCatalogoSimple').always(() => btn.prop('disabled', false).html(originalText));
     });
 
     // 4. MÓDULO: CASOS DE EMERGENCIA
@@ -221,9 +225,13 @@ $(function () {
         new bootstrap.Modal(document.getElementById('modalCaso')).show();
     });
 
-    $('#btnGuardarCaso').on('click', () => {
+    $('#btnGuardarCaso').on('click', function () {
+        const btn = $(this);
+        const originalText = btn.html();
+        btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...');
+
         const datos = Object.fromEntries(new FormData(document.getElementById('formCaso')));
-        guardarCatalogo(datos, [dtCasos, dtCasosInactivos], 'modalCaso');
+        guardarCatalogo(datos, [dtCasos, dtCasosInactivos], 'modalCaso').always(() => btn.prop('disabled', false).html(originalText));
     });
 
     // 5. MÓDULO: MUNICIPIOS
@@ -302,9 +310,13 @@ $(function () {
         new bootstrap.Modal(document.getElementById('modalParroquia')).show();
     });
 
-    $('#btnGuardarParroquia').on('click', () => {
+    $('#btnGuardarParroquia').on('click', function () {
+        const btn = $(this);
+        const originalText = btn.html();
+        btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...');
+
         const datos = Object.fromEntries(new FormData(document.getElementById('formParroquia')));
-        guardarCatalogo(datos, [dtParroquias, dtParroquiasInactivos], 'modalParroquia');
+        guardarCatalogo(datos, [dtParroquias, dtParroquiasInactivos], 'modalParroquia').always(() => btn.prop('disabled', false).html(originalText));
     });
 
     // 7. MÓDULO: ORGANISMOS DE RESPUESTA

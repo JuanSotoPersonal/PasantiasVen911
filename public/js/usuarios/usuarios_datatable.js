@@ -189,11 +189,6 @@ $(function () {
     $(document).trigger('usuarios:reload');
   }
 
-  function bloquearBtn($btn, texto = 'Procesando...') {
-    $btn.prop('disabled', true).html(`<span class="spinner-border spinner-border-sm me-1"></span>${texto}`);
-  }
-  function desbloquearBtn($btn, html) { $btn.prop('disabled', false).html(html); }
-
   // Toggle de visibilidad de contraseñas
   $(document).on('click', '.btn-eye', function () {
     const targetId = $(this).data('target');
@@ -224,7 +219,7 @@ $(function () {
     const $form = $(this);
     const originalHtml = $btn.html();
 
-    bloquearBtn($btn, 'Guardando...');
+    $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...');
 
     $.ajax({
       url: 'index.php?url=usuario/guardar',
@@ -245,7 +240,7 @@ $(function () {
       .fail(function () {
         Swal.fire({ icon: 'error', title: 'Error', text: 'Error de comunicación con el servidor.' });
       })
-      .always(function () { desbloquearBtn($btn, originalHtml); });
+      .always(function () { $btn.prop('disabled', false).html(originalHtml); });
   });
 
   $('#modalCrearUsuario').on('hidden.bs.modal', function () {
@@ -269,7 +264,7 @@ $(function () {
     const $form = $(this);
     const originalHtml = $btn.html();
 
-    bloquearBtn($btn, 'Guardando...');
+    $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...');
 
     $.ajax({
       url: 'index.php?url=usuario/actualizar',
@@ -289,7 +284,7 @@ $(function () {
       .fail(function () {
         Swal.fire({ icon: 'error', title: 'Error', text: 'Error de comunicación con el servidor.' });
       })
-      .always(function () { desbloquearBtn($btn, originalHtml); });
+      .always(function () { $btn.prop('disabled', false).html(originalHtml); });
   });
 
   // 7. MÓDULO: SEGURIDAD (PASSWORD & PREGUNTAS)
@@ -325,7 +320,7 @@ $(function () {
     const $form = $(this);
     const originalHtml = $btn.html();
 
-    bloquearBtn($btn, 'Actualizando...');
+    $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Actualizando...');
 
     $.ajax({
       url: 'index.php?url=usuario/actualizarContrasena',
@@ -345,7 +340,7 @@ $(function () {
       .fail(function () {
         Swal.fire({ icon: 'error', title: 'Error', text: 'Error de comunicación.' });
       })
-      .always(function () { desbloquearBtn($btn, originalHtml); });
+      .always(function () { $btn.prop('disabled', false).html(originalHtml); });
   });
 
   // Configuración de preguntas de seguridad (Exclusivo SuperAdmin)
@@ -363,7 +358,7 @@ $(function () {
     const $form = $(this);
     const originalHtml = $btn.html();
 
-    bloquearBtn($btn, 'Actualizando...');
+    $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Actualizando...');
 
     $.ajax({
       url: 'index.php?url=usuario/actualizarPreguntasSeguridad',
@@ -382,7 +377,7 @@ $(function () {
       .fail(function () {
         Swal.fire({ icon: 'error', title: 'Error', text: 'Error de comunicación.' });
       })
-      .always(function () { desbloquearBtn($btn, originalHtml); });
+      .always(function () { $btn.prop('disabled', false).html(originalHtml); });
   });
 
   // 8. MÓDULO: ESTADOS (TOGGLE ACTIVO/INACTIVO)

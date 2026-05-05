@@ -142,6 +142,10 @@ $(document).ready(function () {
 
     // Persistencia de nueva ficha (AJAX)
     $('#btnGuardarFicha').on('click', function () {
+        const btn = $(this);
+        const originalText = btn.html();
+        btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...');
+
         const datos = new FormData(document.getElementById('formCrearFicha'));
         $.ajax({
             url:         'index.php?url=ficha/guardar',
@@ -159,6 +163,7 @@ $(document).ready(function () {
                 }
             },
             error: () => Swal.fire('Error', 'No se pudo conectar con el servidor.', 'error'),
+            complete: () => btn.prop('disabled', false).html(originalText),
         });
     });
 
@@ -303,6 +308,10 @@ $(document).ready(function () {
 
     // Persistencia de edición (AJAX)
     $('#btnGuardarEdicion').on('click', function () {
+        const btn = $(this);
+        const originalText = btn.html();
+        btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...');
+
         const datos = new FormData(document.getElementById('formEditarFicha'));
         $.ajax({
             url:         'index.php?url=ficha/actualizar',
@@ -320,6 +329,7 @@ $(document).ready(function () {
                 }
             },
             error: () => Swal.fire('Error', 'No se pudo conectar con el servidor.', 'error'),
+            complete: () => btn.prop('disabled', false).html(originalText),
         });
     });
 

@@ -85,6 +85,43 @@ $pageName = 'home';
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Widget de Estado del Servidor WebSocket (Solo Administrador) -->
+                        <?php if ((int)($_SESSION['user_rol_id'] ?? 0) === 1): ?>
+                        <div class="col-xl-6 col-lg-4 col-12">
+                            <div class="card shadow-sm border-0 rounded-4" id="card-estado-ws">
+                                <div class="card-header bg-white border-bottom p-3 d-flex justify-content-between align-items-center">
+                                    <h3 class="card-title text-success fw-bold mb-0">
+                                        <i class="bi bi-broadcast me-2"></i>Estado del Servidor WS
+                                    </h3>
+                                    <button class="btn btn-sm btn-outline-success rounded-pill" id="btn-refrescar-ws" title="Verificar ahora">
+                                        <i class="bi bi-arrow-clockwise"></i>
+                                    </button>
+                                </div>
+                                <div class="card-body p-4">
+                                    <!-- Indicador principal -->
+                                    <div class="d-flex align-items-center gap-3 mb-3">
+                                        <div id="ws-indicador" style="width:18px;height:18px;border-radius:50%;background:#6c757d;flex-shrink:0;"></div>
+                                        <div>
+                                            <div class="fw-bold fs-6" id="ws-estado-texto">Verificando...</div>
+                                            <small class="text-muted" id="ws-latencia-texto"></small>
+                                        </div>
+                                    </div>
+                                    <!-- Info técnica -->
+                                    <div class="small text-muted border-top pt-3">
+                                        <div><i class="bi bi-hdd-network me-1"></i>WebSocket: <code>ws://localhost:8080</code></div>
+                                        <div><i class="bi bi-diagram-2 me-1"></i>HTTP Receptor: <code>127.0.0.1:8081</code></div>
+                                    </div>
+                                    <!-- Instrucción de arranque -->
+                                    <div class="mt-3 p-2 rounded-3 bg-light small" id="ws-instruccion" style="display:none;">
+                                        <i class="bi bi-exclamation-triangle-fill text-warning me-1"></i>
+                                        El demonio no está activo. Ejecuta:
+                                        <code class="d-block mt-1">iniciar_ws.bat</code>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <?php endif; ?>
                     </div>
 
                 </div>
@@ -100,8 +137,7 @@ $pageName = 'home';
     <!-- 5. CARGA DE ASSETS JAVASCRIPT -->
     <?php require __DIR__ . '/partials/scripts.php'; ?>
 
-    <!-- Módulos de soporte: Notificaciones SSE y motor de gráficas -->
-    <script src="public/js/comun/notificaciones.js"></script>
+    <!-- Motor de gráficas -->
     <script src="public/libs/apexcharts/apexcharts.min.js"></script>
     
     <script>
@@ -114,6 +150,61 @@ $pageName = 'home';
     
     <!-- Script core del home: Renderizado de componentes visuales -->
     <script src="public/js/home/home_graficas.js"></script>
+
+    <?php if ((int)($_SESSION['user_rol_id'] ?? 0) === 1): ?>
+    <!-- Widget de Estado del Servidor WebSocket (Solo Admin) -->
+    <script>
+        (function () {
+            'use strict';
+
+            const $indicador  = document.getElementById('ws-indicador');
+            const $texto      = document.getElementById('ws-estado-texto');
+            const $latencia   = document.getElementById('ws-latencia-texto');
+            const $instruccion = document.getElementById('ws-instruccion');
+            const $btnRefresh = document.getElementById('btn-refrescar-ws');
+
+            if (!$indicador) return; // Seguridad: solo corre si el widget existe
+
+            function verificarEstadoWS() {
+                $texto.textContent = 'Verificando...';
+                $indicador.style.background = '#6c757d';
+                $latencia.textContent = '';
+
+                fetch('index.php?url=notificacion/estadoServidor')
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.activo) {
+                            $indicador.style.background = '#16a34a'; // Verde
+                            $texto.textContent = '✓ Activo — Operativo';
+                            $latencia.textContent = `Latencia: ${data.latencia_ms} ms`;
+                            if ($instruccion) $instruccion.style.display = 'none';
+                        } else {
+                            $indicador.style.background = '#dc3545'; // Rojo
+                            $texto.textContent = '✗ Inactivo — No detectado';
+                            $latencia.textContent = 'Puerto 8081 sin respuesta';
+                            if ($instruccion) $instruccion.style.display = 'block';
+                        }
+                    })
+                    .catch(() => {
+                        $indicador.style.background = '#ffc107'; // Amarillo
+                        $texto.textContent = '⚠ Error de comunicación';
+                        $latencia.textContent = '';
+                    });
+            }
+
+            // Verificar al cargar la página
+            verificarEstadoWS();
+
+            // Botón de refresco manual
+            if ($btnRefresh) {
+                $btnRefresh.addEventListener('click', verificarEstadoWS);
+            }
+
+            // Auto-verificación cada 30 segundos
+            setInterval(verificarEstadoWS, 30000);
+        })();
+    </script>
+    <?php endif; ?>
 
 </body>
 </html>

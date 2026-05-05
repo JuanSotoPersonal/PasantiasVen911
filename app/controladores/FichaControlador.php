@@ -7,11 +7,13 @@
 
 require_once 'app/modelos/FichaModelo.php';
 require_once 'app/modelos/EventoModelo.php';
+require_once 'app/Helpers/Validador.php';
+require_once 'app/Helpers/Notificador.php';
+
 use App\modelos\FichaModelo;
 use App\modelos\EventoModelo;
 use App\Helpers\Validador;
-
-require_once 'app/Helpers/Validador.php';
+use App\Helpers\Notificador;
 
 class FichaControlador {
 
@@ -177,6 +179,19 @@ class FichaControlador {
                 ['id' => $fichaId, 'caso' => $datos['caso_id'], 'estado' => 'Pendiente'],
                 "Ficha de emergencia #{$fichaId} creada."
             );
+
+            // ///////////////////////////////////////////////////////////////////
+            // NOTIFICACIONES EN TIEMPO REAL (Enrutamiento por Roles)
+            // ///////////////////////////////////////////////////////////////////
+
+            // 1. A Despacho (Rol 3): Alerta inmediata de nueva emergencia para despacho
+            Notificador::enviarPorRol(3, 'alerta', 'Nueva Emergencia', "Se ha generado la Ficha #{$fichaId}. Requiere atención inmediata.", $fichaId);
+            
+            // 2. A Jefatura (Rol 4): Notificación de auditoría de creación
+            Notificador::enviarPorRol(4, 'info', 'Nueva Ficha Registrada', "El Operador {$_SESSION['user_name']} ha registrado la Ficha #{$fichaId}.", $fichaId);
+
+            // 3. Al Administrador (Rol 1): Visibilidad global del sistema
+            Notificador::enviarPorRol(1, 'info', 'Sistema: Registro de Ficha', "Se ha creado la Ficha de Emergencia #{$fichaId}.", $fichaId);
 
             echo json_encode(['success' => true, 'message' => "Ficha #{$fichaId} registrada correctamente.", 'id' => $fichaId]);
         } catch (\Exception $e) {
@@ -355,6 +370,28 @@ class FichaControlador {
                     ['estado' => $nuevoEstado, 'motivo' => $motivoCierre],
                     $descripcionEvento
                 );
+
+                // ///////////////////////////////////////////////////////////////////
+                // NOTIFICACIONES EN TIEMPO REAL (Enrutamiento por Roles)
+                // ///////////////////////////////////////////////////////////////////
+
+                // 1. Al Operador (Rol 2): Feedback sobre el estado de su ficha creada
+                if (isset($anterior['id_user'])) {
+                    Notificador::enviarAUsuario(
+                        (int)$anterior['id_user'], 
+                        'cambio_estado', 
+                        'Estado de Ficha Actualizado', 
+                        "Tu Ficha #{$fichaId} ha cambiado de '{$anterior['estado_ficha']}' a '{$nuevoEstado}'.", 
+                        $fichaId
+                    );
+                }
+
+                // 2. A Jefatura (Rol 4): Seguimiento de flujo operativo
+                Notificador::enviarPorRol(4, 'info', 'Actualización de Emergencia', "La Ficha #{$fichaId} fue actualizada a '{$nuevoEstado}' por {$_SESSION['user_name']}.", $fichaId);
+
+                // 3. Al Administrador (Rol 1): Supervisión global de cambios de estado
+                Notificador::enviarPorRol(1, 'info', 'Sistema: Cambio de Estado', "Ficha #{$fichaId} cambió a '{$nuevoEstado}'.", $fichaId);
+
                 echo json_encode(['success' => true, 'message' => "Estado actualizado a '{$nuevoEstado}'.", 'nuevo_estado' => $nuevoEstado]);
             } else {
                 echo json_encode(['success' => false, 'message' => 'No se pudo cambiar el estado.']);

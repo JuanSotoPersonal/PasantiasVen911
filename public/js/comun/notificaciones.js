@@ -10,7 +10,7 @@
     'use strict';
 
     // 1. ESTADO INTERNO Y CONFIGURACIÓN VISUAL
-    let fuenteSSE = null;
+    let websocket = null;
     const INTERVALO_RECONEXION_MS = 8000;
     
     // Diccionario de estilos e iconografía por tipo de notificación
@@ -30,31 +30,97 @@
     // Validación de presencia del módulo en la vista actual
     if (!$badge) return;
 
-    // 3. GESTIÓN DE CONEXIÓN SSE (SERVER-SENT EVENTS)
-    function conectarSSE() {
-        if (fuenteSSE) fuenteSSE.close();
+    // 3. GESTIÓN DE CONEXIÓN WEBSOCKETS (POC RATCHET)
+    function conectarWebSocket() {
+        if (websocket) websocket.close();
 
-        // Apertura del canal de comunicación persistente
-        fuenteSSE = new EventSource('index.php?url=notificacion/stream');
+        // Conexión al demonio Ratchet en el puerto 8080
+        websocket = new WebSocket('ws://localhost:8080');
 
-        // Recepción de ráfagas de datos desde el backend
-        fuenteSSE.onmessage = function (evento) {
+        websocket.onopen = function() {
+            console.log('[Notificaciones] Conectado al servidor WebSocket (Ratchet).');
+        };
+
+        // Recepción de mensajes en tiempo real
+        websocket.onmessage = function (evento) {
             try {
-                const datos = JSON.parse(evento.data);
-                renderizarNotificaciones(datos);
+                const notif = JSON.parse(evento.data);
+
+                // FILTRO DE ENRUTAMIENTO (Roles y Seguridad)
+                // 1. Si es para mi ID de usuario específico (prioritario).
+                // 2. Si es para mi Rol específico.
+                // 3. Si es un mensaje público (sin destinatario).
+                // NOTA: El Admin NO recibe notificaciones privadas de otros usuarios.
+                //       Solo recibe las dirigidas al Rol 1, o sin destinatario.
+                const esParaMiUsuario = notif.usuario_id && parseInt(notif.usuario_id) === window.USUARIO_ID;
+                const esParaMiRol     = notif.rol_id && parseInt(notif.rol_id) === window.USUARIO_ROL_ID;
+                const esPublico       = !notif.rol_id && !notif.usuario_id;
+
+                if (!esParaMiUsuario && !esParaMiRol && !esPublico) {
+                    return; // El mensaje no es para nosotros, se ignora.
+                }
+
+                // Mostrar alerta visual instantánea usando SweetAlert2
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        title: notif.titulo || 'Alerta',
+                        text: notif.mensaje || 'Nueva notificación',
+                        icon: 'info',
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 5000,
+                        timerProgressBar: true
+                    });
+                }
+                
+                // Agregamos la notificación al principio de la lista
+                agregarNotificacionAlDOM(notif);
+                actualizarBadgeManual(1);
+                
             } catch (e) {
-                console.warn('[Notificaciones] Error al procesar ráfaga SSE:', e);
+                console.warn('[Notificaciones] Error al procesar mensaje WS:', e);
             }
         };
 
-        // Gestión de resiliencia ante caídas de conexión
-        fuenteSSE.onerror = function () {
-            // El navegador intenta reconectar automáticamente. 
-            // Si el estado es CLOSED, forzamos reconexión manual tras el intervalo.
-            if (fuenteSSE.readyState === EventSource.CLOSED) {
-                setTimeout(conectarSSE, INTERVALO_RECONEXION_MS);
-            }
+        // Gestión de resiliencia ante caídas del Demonio
+        websocket.onclose = function () {
+            console.warn('[Notificaciones] Desconectado del WebSocket. Reintentando en ' + (INTERVALO_RECONEXION_MS/1000) + 's...');
+            setTimeout(conectarWebSocket, INTERVALO_RECONEXION_MS);
         };
+        
+        websocket.onerror = function (error) {
+            console.error('[Notificaciones] Error en WebSocket:', error);
+            websocket.close(); // Fuerza el onclose para reconectar
+        };
+    }
+
+    function agregarNotificacionAlDOM(notif) {
+        $vacio.style.display = 'none';
+        const li = document.createElement('li');
+        li.className = 'notif-item no-leido';
+        li.dataset.id = notif.id;
+
+        const config = iconosPorTipo[notif.tipo] || iconosPorTipo.default;
+        const tiempo = formatearTiempo(notif.fecha_creacion);
+
+        li.innerHTML = `
+            <div class="notif-icono ${config.clase}">
+                <i class="bi ${config.icono}"></i>
+            </div>
+            <div class="flex-grow-1">
+                <p class="notif-mensaje mb-0">${window.escapeHTML(notif.mensaje)}</p>
+                <span class="notif-tiempo"><i class="bi bi-clock me-1"></i>${tiempo}</span>
+            </div>
+        `;
+        li.addEventListener('click', () => marcarLeida(notif.id, li));
+        
+        // Insertar al principio (después de notif-header si hubiera, o primero)
+        if ($lista.firstChild) {
+            $lista.insertBefore(li, $lista.firstChild);
+        } else {
+            $lista.appendChild(li);
+        }
     }
 
     // 4. RENDERIZADO DINÁMICO DE LA BANDEJA DE NOTIFICACIONES
@@ -171,6 +237,22 @@
     }
 
     // 7. INICIALIZACIÓN DEL PROCESO
-    conectarSSE();
+    function inicializarBandeja() {
+        // 7.1 Carga inicial de notificaciones huérfanas/pendientes al abrir la página
+        fetch('index.php?url=notificacion/obtenerPendientes')
+            .then(res => res.json())
+            .then(res => {
+                if (res.success && Array.isArray(res.data)) {
+                    renderizarNotificaciones(res.data);
+                }
+            })
+            .catch(() => console.warn('[Notificaciones] Fallo carga inicial'))
+            .finally(() => {
+                // 7.2 Levantar la escucha en tiempo real (WebSockets)
+                conectarWebSocket();
+            });
+    }
+
+    inicializarBandeja();
 
 })();

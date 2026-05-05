@@ -18,11 +18,13 @@ require_once 'app/modelos/DespachoModelo.php';
 require_once 'app/modelos/FichaModelo.php';
 require_once 'app/modelos/EventoModelo.php';
 require_once 'app/Helpers/Validador.php';
+require_once 'app/Helpers/Notificador.php';
 
 use App\modelos\DespachoModelo;
 use App\modelos\FichaModelo;
 use App\modelos\EventoModelo;
 use App\Helpers\Validador;
+use App\Helpers\Notificador;
 
 
 class DespachoControlador {
@@ -193,6 +195,19 @@ class DespachoControlador {
                     ['id_owner' => $usuarioId],
                     "Ficha tomada por despachador. Estado: '{$estadoAnterior}' → 'En Proceso'."
                 );
+                // NOTIFICACIONES: Al operador creador de la ficha + Jefatura + Admin
+                if (!empty($infoFicha['id_user'])) {
+                    Notificador::enviarAUsuario(
+                        (int)$infoFicha['id_user'],
+                        'info',
+                        'Ficha Recibida por Despacho',
+                        "Tu Ficha #{$fichaId} fue tomada por el despachador {$_SESSION['user_name']}.",
+                        $fichaId
+                    );
+                }
+                Notificador::enviarPorRol(4, 'info', 'Ficha en Despacho', "La Ficha #{$fichaId} fue asignada al Despachador {$_SESSION['user_name']}.", $fichaId);
+                Notificador::enviarPorRol(1, 'info', 'Sistema: Ficha Tomada', "Ficha #{$fichaId} tomada por {$_SESSION['user_name']}.", $fichaId);
+
                 echo json_encode(['success' => true, 'message' => "Ficha #{$fichaId} tomada correctamente.", 'ficha_id' => $fichaId]);
             } else {
                 echo json_encode(['success' => false, 'message' => 'No se pudo tomar la ficha. Es posible que ya no esté disponible.']);
@@ -306,6 +321,19 @@ class DespachoControlador {
                 "Despacho #{$despachoId}: Organismo ID {$organismoId} — Unidad '{$unidadDesignada}'."
             );
 
+            // NOTIFICACIONES: Al operador creador + Jefatura + Admin
+            if (!empty($infoFicha['id_user'])) {
+                Notificador::enviarAUsuario(
+                    (int)$infoFicha['id_user'],
+                    'info',
+                    'Organismo Despachado',
+                    "Se ha despachado un organismo a tu Ficha #{$fichaId}.",
+                    $fichaId
+                );
+            }
+            Notificador::enviarPorRol(4, 'alerta', 'Nuevo Despacho de Organismo', "Organismo asignado a la Ficha #{$fichaId}. Despacho #{$despachoId}.", $fichaId);
+            Notificador::enviarPorRol(1, 'info', 'Sistema: Organismo Despachado', "Despacho #{$despachoId} registrado en Ficha #{$fichaId}.", $fichaId);
+
             echo json_encode(['success' => true, 'message' => "Despacho registrado correctamente.", 'id' => $despachoId]);
         } catch (\Exception $e) {
             echo json_encode(['success' => false, 'message' => 'Error inesperado: ' . $e->getMessage()]);
@@ -362,6 +390,11 @@ class DespachoControlador {
                     ['estatus' => $nuevoEstado],
                     "Despacho #{$despachoId}: '{$anterior['estatus_despacho']}' → '{$nuevoEstado}'."
                 );
+                // NOTIFICACIONES: Jefatura + Admin (el cambio de estatus de organismo es auditoría operativa)
+                $fichaIdDespacho = (int)$anterior['ficha_id'];
+                Notificador::enviarPorRol(4, 'info', 'Avance de Organismo', "Despacho #{$despachoId}: '{$anterior['estatus_despacho']}' → '{$nuevoEstado}' en Ficha #{$fichaIdDespacho}.", $fichaIdDespacho);
+                Notificador::enviarPorRol(1, 'info', 'Sistema: Avance Despacho', "Despacho #{$despachoId} cambió a '{$nuevoEstado}'.", $fichaIdDespacho);
+
                 echo json_encode(['success' => true, 'message' => "Estatus actualizado a '{$nuevoEstado}'.", 'nuevo_estado' => $nuevoEstado]);
             } else {
                 echo json_encode(['success' => false, 'message' => 'No se pudo cambiar el estatus.']);
@@ -444,6 +477,11 @@ class DespachoControlador {
                     ['estatus' => 'Cancelado', 'motivo' => "{$tipoMotivo}: {$descripcion}"],
                     "Despacho #{$despachoId} ({$despacho['nombre_organismo']}) cancelado. Motivo: {$tipoMotivo}."
                 );
+                // NOTIFICACIONES: Jefatura + Admin
+                $fichaIdCancelacion = (int)$despacho['ficha_id'];
+                Notificador::enviarPorRol(4, 'alerta', 'Organismo Cancelado', "El organismo '{$despacho['nombre_organismo']}' fue cancelado en Ficha #{$fichaIdCancelacion}. Motivo: {$tipoMotivo}.", $fichaIdCancelacion);
+                Notificador::enviarPorRol(1, 'info', 'Sistema: Despacho Cancelado', "Despacho #{$despachoId} ({$despacho['nombre_organismo']}) cancelado.", $fichaIdCancelacion);
+
                 echo json_encode(['success' => true, 'message' => "Despacho de '{$despacho['nombre_organismo']}' cancelado correctamente."]);
             } else {
                 echo json_encode(['success' => false, 'message' => 'No se pudo cancelar el despacho.']);
@@ -602,6 +640,18 @@ class DespachoControlador {
                 return;
             }
 
+            // Blindaje de cierre: verificar que no haya organismos despachados sin resolver
+            if ($nuevoEstado === 'Cerrado') {
+                $despachosActivos = $this->modelo->contarDespachosActivos($fichaId);
+                if ($despachosActivos > 0) {
+                    echo json_encode([
+                        'success' => false,
+                        'message' => "No se puede cerrar la ficha: hay {$despachosActivos} organismo(s) despachado(s) sin resolver. Libere o cancele todos los organismos antes de cerrar.",
+                    ]);
+                    return;
+                }
+            }
+
             $usuarioId      = (int)$_SESSION['user_id'];
             $estadoAnterior = $infoFicha['estado_ficha'];
 
@@ -622,6 +672,19 @@ class DespachoControlador {
                     ['estado' => $nuevoEstado, 'motivo' => $motivoCierre],
                     $descripcion
                 );
+                // NOTIFICACIONES: Al operador creador de la ficha + Jefatura + Admin
+                if (!empty($infoFicha['id_user'])) {
+                    Notificador::enviarAUsuario(
+                        (int)$infoFicha['id_user'],
+                        'cambio_estado',
+                        'Estado de Ficha Actualizado',
+                        "Tu Ficha #{$fichaId} cambió de '{$estadoAnterior}' a '{$nuevoEstado}' por {$_SESSION['user_name']}.",
+                        $fichaId
+                    );
+                }
+                Notificador::enviarPorRol(4, 'info', 'Actualización de Emergencia', "La Ficha #{$fichaId} fue actualizada a '{$nuevoEstado}' por {$_SESSION['user_name']}.", $fichaId);
+                Notificador::enviarPorRol(1, 'info', 'Sistema: Cambio de Estado', "Ficha #{$fichaId} cambió a '{$nuevoEstado}'.", $fichaId);
+
                 echo json_encode(['success' => true, 'message' => "Estado de la ficha actualizado a '{$nuevoEstado}'.", 'nuevo_estado' => $nuevoEstado]);
             } else {
                 echo json_encode(['success' => false, 'message' => 'No se pudo actualizar el estado.']);
