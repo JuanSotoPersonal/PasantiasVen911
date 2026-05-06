@@ -36,6 +36,13 @@ class EventoControlador {
      */
     public function index(): void {
         $tabActiva = $_GET['t'] ?? 'sistema';
+
+        // 2.1 PROTECCIÓN RBAC: Jefatura no puede ver Logs del Sistema (t=sistema)
+        if ($tabActiva === 'sistema' && (int)$_SESSION['user_rol_id'] === 4) {
+            header('Location: index.php?url=evento&t=ficha');
+            exit;
+        }
+
         require_once 'app/vista/eventos/index.php';
     }
 
@@ -49,6 +56,13 @@ class EventoControlador {
      */
     public function obtenerDatos(): void {
         header('Content-Type: application/json');
+
+        // 3.1 PROTECCIÓN RBAC: Bloqueo de obtención de logs para Jefatura
+        if ((int)$_SESSION['user_rol_id'] === 4) {
+            echo json_encode(['draw' => 1, 'recordsTotal' => 0, 'recordsFiltered' => 0, 'data' => [], 'error' => 'Acceso restringido por rol.']);
+            return;
+        }
+
         try {
             // Parámetros estándar de DataTables para paginación y ordenamiento
             $draw     = isset($_POST['draw'])   ? (int)$_POST['draw']   : 1;

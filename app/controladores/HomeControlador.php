@@ -47,7 +47,7 @@ class HomeControlador {
             }
 
             // 2.2 Carga del contenedor principal de la vista home 
-            require_once 'app/vista/home.php';
+            require_once 'app/vista/home/index.php';
         } catch (\Exception $e) {
             error_log("[HomeControlador] Error en index: " . $e->getMessage());
             die("Ocurrió un error inesperado al cargar el inicio.");

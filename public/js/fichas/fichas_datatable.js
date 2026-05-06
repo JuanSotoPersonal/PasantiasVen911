@@ -270,6 +270,51 @@ $(document).ready(function () {
                         </span>
                     </div>` : ''}
                 </div>
+
+                ${res.despachos && res.despachos.length > 0 ? `
+                <div class="detalle-organismos-section mt-4">
+                    <h6 class="fw-bold text-success mb-3">
+                        <i class="bi bi-shield-shaded me-2"></i>Organismos Asignados
+                    </h6>
+                    <div class="organismos-lista">
+                        ${res.despachos.map(d => {
+                            const estatusCls = {
+                                'Asignado':  'badge bg-secondary-subtle text-secondary border border-secondary-subtle',
+                                'En Camino': 'badge bg-warning-subtle text-warning-emphasis border border-warning-subtle',
+                                'En Sitio':  'badge bg-info-subtle text-info-emphasis border border-info-subtle',
+                                'Liberado':  'badge bg-success-subtle text-success border border-success-subtle',
+                                'Cancelado': 'badge bg-danger-subtle text-danger border border-danger-subtle'
+                            }[d.estatus_despacho] || 'badge bg-light text-dark border';
+
+                            return `
+                            <div class="organismo-item p-3 mb-2 rounded-3 border bg-light-subtle shadow-sm">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="fw-bold text-dark"><i class="bi bi-building me-2"></i>${escapeHTML(d.nombre_organismo)}</span>
+                                    <span class="${estatusCls} py-1 px-2" style="font-size:0.7rem;">${escapeHTML(d.estatus_despacho)}</span>
+                                </div>
+                                <div class="row g-2 small text-muted">
+                                    <div class="col-sm-6">
+                                        <i class="bi bi-truck me-1"></i><strong>Unidad:</strong> ${escapeHTML(d.unidad_designada)}
+                                    </div>
+                                    <div class="col-sm-6 text-sm-end">
+                                        <i class="bi bi-person-badge me-1"></i><strong>Mando:</strong> ${escapeHTML(d.mando_acargo)}
+                                    </div>
+                                    <div class="col-12 mt-1">
+                                        <i class="bi bi-clock me-1"></i><strong>Despacho:</strong> ${escapeHTML(d.hora_despacho)}
+                                        ${d.nombre_despachador ? ` | <i class="bi bi-person-check me-1"></i>${escapeHTML(d.nombre_despachador)}` : ''}
+                                    </div>
+                                    ${d.motivo_cancelacion ? `
+                                    <div class="col-12 mt-2 pt-2 border-top text-danger fw-semibold">
+                                        <i class="bi bi-x-circle-fill me-1"></i>Cancelación: ${escapeHTML(d.motivo_cancelacion)}
+                                    </div>` : ''}
+                                </div>
+                            </div>`;
+                        }).join('')}
+                    </div>
+                </div>` : (res.despachos ? `
+                <div class="detalle-organismos-section mt-4 text-center py-3 bg-light rounded-3 border border-dashed">
+                    <p class="text-muted mb-0 small"><i class="bi bi-info-circle me-1"></i>No hay organismos asignados a esta ficha aún.</p>
+                </div>` : '')}
             `);
         }, 'json');
     });

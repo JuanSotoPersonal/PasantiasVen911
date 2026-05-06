@@ -104,12 +104,14 @@ $seccion   = explode('/', $urlActual)[0] ?? '';
                                         <p>Cola General</p>
                                     </a>
                                 </li>
+                                <?php if ((int)$_SESSION['user_rol_id'] !== 4): ?>
                                 <li class="nav-item">
                                     <a href="index.php?url=despacho&t=propias" class="nav-link <?= ($seccion === 'despacho' && $tabDespacho === 'propias') ? 'active' : '' ?>">
                                         <i class="nav-icon bi <?= ($seccion === 'despacho' && $tabDespacho === 'propias') ? 'bi-person-check-fill' : 'bi-person-check' ?>"></i>
                                         <p>Mis Fichas</p>
                                     </a>
                                 </li>
+                                <?php endif; ?>
                             </ul>
                         </li>
                     <?php endif; ?>
@@ -172,12 +174,14 @@ $seccion   = explode('/', $urlActual)[0] ?? '';
                                 <p>Auditoría Integral<i class="nav-arrow bi bi-chevron-right"></i></p>
                             </a>
                             <ul class="nav nav-treeview">
+                                <?php if ((int)$_SESSION['user_rol_id'] !== 4): ?>
                                 <li class="nav-item">
                                     <a href="index.php?url=evento&t=sistema" class="nav-link <?= ($seccion === 'evento' && ($tabLog === 'sistema' || empty($tabLog))) ? 'active' : '' ?>">
                                         <i class="nav-icon bi bi-activity"></i>
                                         <p>Logs del Sistema</p>
                                     </a>
                                 </li>
+                                <?php endif; ?>
                                 <li class="nav-item">
                                     <a href="index.php?url=evento&t=ficha" class="nav-link <?= ($seccion === 'evento' && $tabLog === 'ficha') ? 'active' : '' ?>">
                                         <i class="nav-icon bi bi-clock-fill"></i>

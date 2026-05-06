@@ -157,4 +157,41 @@ class NotificacionControlador {
             ]);
         }
     }
+
+    /**
+     * Ejecuta el script de arranque del servidor WebSocket.
+     * Solo accesible para el Administrador (Rol 1).
+     * 
+     * @Nota: Usa popen para lanzar el proceso en segundo plano sin bloquear PHP.
+     */
+    public function iniciarServidor(): void {
+        header('Content-Type: application/json');
+
+        // 1. SEGURIDAD: Solo Administrador (Rol 1)
+        if ((int)($_SESSION['user_rol_id'] ?? 0) !== 1) {
+            echo json_encode(['success' => false, 'message' => 'Acceso denegado.']);
+            return;
+        }
+
+        try {
+            // 2. RUTA DEL SCRIPT
+            $rutaBat = realpath('iniciar_ws.bat');
+            
+            if (!$rutaBat || !file_exists($rutaBat)) {
+                echo json_encode(['success' => false, 'message' => 'Script de inicio no encontrado en la raíz.']);
+                return;
+            }
+
+            // 3. EJECUCIÓN ASÍNCRONA (Windows)
+            // Se usa 'start /B' para ejecutarlo minimizado y sin bloquear la respuesta HTTP
+            pclose(popen("start /B \"\" \"$rutaBat\"", "r"));
+
+            echo json_encode([
+                'success' => true, 
+                'message' => 'Comando de inicio enviado correctamente al sistema.'
+            ]);
+        } catch (\Exception $e) {
+            echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+        }
+    }
 }

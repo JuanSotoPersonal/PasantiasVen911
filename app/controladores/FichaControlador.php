@@ -6,11 +6,13 @@
  */
 
 require_once 'app/modelos/FichaModelo.php';
+require_once 'app/modelos/DespachoModelo.php';
 require_once 'app/modelos/EventoModelo.php';
 require_once 'app/Helpers/Validador.php';
 require_once 'app/Helpers/Notificador.php';
 
 use App\modelos\FichaModelo;
+use App\modelos\DespachoModelo;
 use App\modelos\EventoModelo;
 use App\Helpers\Validador;
 use App\Helpers\Notificador;
@@ -409,8 +411,19 @@ class FichaControlador {
         try {
             $id = (int)($_GET['id'] ?? 0);
             if (!$id) { echo json_encode(['success' => false]); return; }
+            
             $ficha = $this->modelo->obtenerPorId($id);
-            echo json_encode(['success' => (bool)$ficha, 'data' => $ficha]);
+            if (!$ficha) { echo json_encode(['success' => false]); return; }
+
+            $dataResponse = ['success' => true, 'data' => $ficha];
+
+            // 5.1 PROTECCIÓN RBAC: Solo Administrador, Despachador y Jefatura ven organismos
+            if ((int)$_SESSION['user_rol_id'] !== 2) {
+                $modeloDespacho = new DespachoModelo();
+                $dataResponse['despachos'] = $modeloDespacho->obtenerDespachosDeFicha($id);
+            }
+
+            echo json_encode($dataResponse);
         } catch (\Exception $e) {
             echo json_encode(['success' => false, 'message' => $e->getMessage()]);
         }

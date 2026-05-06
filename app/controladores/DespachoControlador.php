@@ -62,6 +62,14 @@ class DespachoControlador {
             exit;
         }
 
+        $tabActiva = $_GET['t'] ?? 'general';
+
+        // 2.1 PROTECCIÓN RBAC: Jefatura no puede ver "Mis Fichas" en Despacho (t=propias)
+        if ($tabActiva === 'propias' && (int)$_SESSION['user_rol_id'] === 4) {
+            header('Location: index.php?url=despacho&t=general');
+            exit;
+        }
+
         // Carga de catálogos para alimentar el modal de edición completa de fichas
         // (reutiliza FichaModelo para mantener la lógica centralizada)
         $modeloFicha     = new FichaModelo();
@@ -115,6 +123,13 @@ class DespachoControlador {
      */
     public function obtenerDatosPropios(): void {
         header('Content-Type: application/json');
+
+        // 4.1 PROTECCIÓN RBAC: Jefatura no posee fichas propias (proceso de despacho)
+        if ((int)$_SESSION['user_rol_id'] === 4) {
+            echo json_encode(['draw' => 1, 'recordsTotal' => 0, 'recordsFiltered' => 0, 'data' => []]);
+            return;
+        }
+
         try {
             $draw      = isset($_POST['draw'])   ? (int)$_POST['draw']   : 1;
             $inicio    = isset($_POST['start'])  ? (int)$_POST['start']  : 0;
@@ -200,13 +215,13 @@ class DespachoControlador {
                     Notificador::enviarAUsuario(
                         (int)$infoFicha['id_user'],
                         'info',
-                        'Ficha Recibida por Despacho',
-                        "Tu Ficha #{$fichaId} fue tomada por el despachador {$_SESSION['user_name']}.",
+                        'Ficha en Proceso',
+                        "Tu Ficha #{$fichaId} ha pasado de 'Pendiente' a 'En Proceso' y está siendo atendida por {$_SESSION['user_name']}.",
                         $fichaId
                     );
                 }
-                Notificador::enviarPorRol(4, 'info', 'Ficha en Despacho', "La Ficha #{$fichaId} fue asignada al Despachador {$_SESSION['user_name']}.", $fichaId);
-                Notificador::enviarPorRol(1, 'info', 'Sistema: Ficha Tomada', "Ficha #{$fichaId} tomada por {$_SESSION['user_name']}.", $fichaId);
+                Notificador::enviarPorRol(4, 'info', 'Ficha Tomada: Inicio de Gestión', "El despachador {$_SESSION['user_name']} ha tomado la Ficha #{$fichaId}, pasando su estado de 'Pendiente' a 'En Proceso'.", $fichaId);
+                Notificador::enviarPorRol(1, 'info', 'Auditoría: Ficha Tomada', "Ficha #{$fichaId} tomada por {$_SESSION['user_name']}. Estado: Pendiente → En Proceso.", $fichaId);
 
                 echo json_encode(['success' => true, 'message' => "Ficha #{$fichaId} tomada correctamente.", 'ficha_id' => $fichaId]);
             } else {
