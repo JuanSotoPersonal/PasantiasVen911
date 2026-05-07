@@ -41,7 +41,8 @@ class UsuarioModelo {
     // ///////////////////////////////////////////////////////////////////
 
     /**
-     * Retorna todos los usuarios con su nombre de rol, filtrados por estado.
+     * Retorna usuarios con su nombre de rol, filtrados por estado.
+     * NOTA: Método sin callers activos en controladores. LIMIT defensivo aplicado.
      */
     public function obtenerTodos(string $estado = 'activo'): array {
         try {
@@ -50,7 +51,8 @@ class UsuarioModelo {
                       FROM {$this->table_name} u
                       INNER JOIN roles r ON u.rol_id = r.id
                       WHERE u.estado = :estado
-                      ORDER BY u.id ASC";
+                      ORDER BY u.id ASC
+                      LIMIT 500";
 
             $stmt = $this->conexion->prepare($query);
             $stmt->bindValue(':estado', $estado, PDO::PARAM_STR);
@@ -458,13 +460,13 @@ class UsuarioModelo {
 
     /**
      * Conteo filtrado de usuarios por rol (DataTables).
+     * Sin JOIN con roles: el COUNT solo usa columnas de la tabla usuarios.
      */
     public function contarFiltradosPorRol(int $rolId, string $estado, string $busqueda): int {
         try {
             $busquedaLike = '%' . $busqueda . '%';
             $query = "SELECT COUNT(*)
                       FROM {$this->table_name} u
-                      INNER JOIN roles r ON u.rol_id = r.id
                       WHERE u.rol_id = :rol_id
                         AND u.estado = :estado
                         AND (:busqueda = ''

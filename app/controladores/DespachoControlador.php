@@ -35,6 +35,7 @@ class DespachoControlador {
 
     private DespachoModelo $modelo;
     private EventoModelo   $modeloEvento;
+    private FichaModelo    $modeloFicha;
 
     /**
      * Valida sesión activa e instancia los modelos necesarios.
@@ -46,6 +47,7 @@ class DespachoControlador {
         }
         $this->modelo       = new DespachoModelo();
         $this->modeloEvento = new EventoModelo();
+        $this->modeloFicha  = new FichaModelo();
     }
 
     // ///////////////////////////////////////////////////////////////////
@@ -671,8 +673,7 @@ class DespachoControlador {
             $estadoAnterior = $infoFicha['estado_ficha'];
 
             // Delegar al FichaModelo centralizado (gestiona hora_cierre, motivo_cierre y tipo_motivo_cierre)
-            $modeloFicha = new FichaModelo();
-            $exito = $modeloFicha->cambiarEstado($fichaId, $nuevoEstado, $usuarioId, $motivoCierre, $tipoMotivo);
+            $exito = $this->modeloFicha->cambiarEstado($fichaId, $nuevoEstado, $usuarioId, $motivoCierre, $tipoMotivo);
 
             if ($exito) {
                 $descripcion = "Estado cambiado desde Centro de Despacho: '{$estadoAnterior}' → '{$nuevoEstado}'.";

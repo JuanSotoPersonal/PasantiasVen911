@@ -39,12 +39,7 @@ $(function () {
 
         // Bypass de seguridad: El SuperAdmin (Rol 1) es siempre activo y estático
         if (row.rol_id == 1) {
-          return `
-          <h3>
-            <span class="badge badge-estado ${badgeClass}">
-              <i class="bi bi-shield-lock-fill me-1"></i>Activo
-            </span>
-          </h3>`;
+          return `<i class="bi bi-shield-lock-fill text-ven-primary fs-4" title="Administrador Protegido"></i>`;
         }
 
         // Restricción por permisos de edición (Vista de lectura)

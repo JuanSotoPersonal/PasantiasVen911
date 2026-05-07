@@ -37,6 +37,16 @@ $seccion   = explode('/', $urlActual)[0] ?? '';
                         </a>
                     </li>
 
+                    <!-- Módulo: Jefatura (Dashboard Analítico) -->
+                    <?php if (tienePerm('jefatura', 'ver')): ?>
+                        <li class="nav-item">
+                            <a href="index.php?url=jefatura" class="nav-link <?= $seccion === 'jefatura' ? 'active' : '' ?>">
+                                <i class="nav-icon bi bi-graph-up-arrow"></i>
+                                <p>Jefatura</p>
+                            </a>
+                        </li>
+                    <?php endif; ?>
+
                     <!-- Módulo: Fichas de Emergencia -->
                     <?php if (tienePerm('fichas', 'ver')): ?>
                         <?php $tabFicha = $_GET['t'] ?? 'todas'; ?>

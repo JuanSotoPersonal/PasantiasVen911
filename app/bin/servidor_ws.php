@@ -1,10 +1,14 @@
 <?php
 /**
  * servidor_ws.php - Demonio de Notificaciones (WebSockets + HTTP)
- * 
- * Este script corre en segundo plano y maneja dos puertos simultáneamente:
+ *
+ * Maneja dos puertos simultáneamente:
  * - 8080 (WebSockets): Escucha conexiones de navegadores y envía notificaciones en tiempo real.
- * - 8081 (HTTP): Recibe pálpitos internos desde XAMPP/PHP para emitir notificaciones.
+ * - 8081 (HTTP):       Recibe pálpitos internos desde XAMPP/PHP para emitir notificaciones.
+ *
+ * OPTIMIZACIÓN: Los clientes se registran con su usuario_id al conectar.
+ * El servidor enruta la notificación SOLO al cliente correcto, eliminando
+ * el broadcast masivo previo (N envíos → 1 envío dirigido).
  */
 
 // 1. Cargar autoloader de dependencias (generado en /vendor)
@@ -19,8 +23,13 @@ use React\Socket\SocketServer;
 use Psr\Http\Message\ServerRequestInterface;
 use React\Http\Message\Response;
 
-// 2. Clase Pusher: Mantiene a los clientes WS y distribuye los mensajes
+// 2. Clase Pusher: Mantiene el mapa usuario_id → conexión para enrutamiento directo
 class NotificadorPusher implements MessageComponentInterface {
+
+    // Mapa [usuario_id => ConnectionInterface] para enrutamiento dirigido
+    protected array $mapaUsuarios = [];
+
+    // Conexiones sin registrar aún (antes de recibir su mensaje de identificación)
     protected $clientes;
 
     public function __construct() {
@@ -32,12 +41,38 @@ class NotificadorPusher implements MessageComponentInterface {
         echo "Nueva conexión WS! ({$conn->resourceId})\n";
     }
 
+    /**
+     * Procesa mensajes entrantes del navegador.
+     * Protocolo: el cliente envía {"action":"registrar","usuario_id":123} al conectar.
+     * Esto asocia la conexión con el usuario para el enrutamiento posterior.
+     */
     public function onMessage(ConnectionInterface $from, $msg) {
-        // En este diseño, los navegadores solo escuchan. No procesamos mensajes entrantes.
+        $datos = json_decode($msg, true);
+
+        if (!is_array($datos)) {
+            return; // Ignorar mensajes malformados
+        }
+
+        // Registro del cliente: asociar conexión con usuario_id
+        if (($datos['action'] ?? '') === 'registrar' && isset($datos['usuario_id'])) {
+            $usuarioId = (int)$datos['usuario_id'];
+            $this->mapaUsuarios[$usuarioId] = $from;
+            echo "Usuario {$usuarioId} registrado en WS (conn: {$from->resourceId})\n";
+        }
     }
 
     public function onClose(ConnectionInterface $conn) {
         $this->clientes->detach($conn);
+
+        // Limpiar el mapa si el usuario registrado se desconecta
+        foreach ($this->mapaUsuarios as $usuarioId => $conexion) {
+            if ($conexion === $conn) {
+                unset($this->mapaUsuarios[$usuarioId]);
+                echo "Usuario {$usuarioId} eliminado del mapa WS.\n";
+                break;
+            }
+        }
+
         echo "Conexión WS terminada ({$conn->resourceId})\n";
     }
 
@@ -46,26 +81,61 @@ class NotificadorPusher implements MessageComponentInterface {
         $conn->close();
     }
 
-    // Método para disparar la alerta a todos los navegadores conectados
-    public function emitirAlerta($mensajeJSON) {
+    /**
+     * Emite un mensaje a los destinatarios indicados en el JSON.
+     *
+     * Si el payload incluye 'destinatarios' (array de usuario_ids), se enruta
+     * a cada uno de ellos individualmente.
+     * Si incluye un único 'usuario_id', se enruta solo a ese usuario.
+     * Fallback: broadcast a todos (compatibilidad hacia atrás).
+     */
+    public function emitirAlerta(string $mensajeJSON): void {
+        $datos = json_decode($mensajeJSON, true);
+
+        // Caso A: múltiples destinatarios (batch desde enviarPorRol)
+        if (isset($datos['destinatarios']) && is_array($datos['destinatarios'])) {
+            $enviados = 0;
+            foreach ($datos['destinatarios'] as $notif) {
+                $uid = (int)($notif['usuario_id'] ?? 0);
+                if ($uid && isset($this->mapaUsuarios[$uid])) {
+                    // Enviamos el payload individual de esa notificación
+                    $this->mapaUsuarios[$uid]->send(json_encode($notif));
+                    $enviados++;
+                }
+            }
+            echo "Batch enviado: {$enviados}/" . count($datos['destinatarios']) . " usuario(s) alcanzados.\n";
+            return;
+        }
+
+        // Caso B: destinatario único (desde enviarAUsuario)
+        if (isset($datos['usuario_id'])) {
+            $uid = (int)$datos['usuario_id'];
+            if (isset($this->mapaUsuarios[$uid])) {
+                $this->mapaUsuarios[$uid]->send($mensajeJSON);
+                echo "Notificación enviada al usuario {$uid}.\n";
+            } else {
+                echo "Usuario {$uid} no conectado. Notificación descartada del bus WS.\n";
+            }
+            return;
+        }
+
+        // Fallback: broadcast (no debería ocurrir en flujo normal)
         foreach ($this->clientes as $cliente) {
             $cliente->send($mensajeJSON);
         }
-        echo "Notificación distribuida a " . count($this->clientes) . " cliente(s).\n";
+        echo "Broadcast a " . count($this->clientes) . " cliente(s) (fallback).\n";
     }
 }
 
 // 3. Configuración del Loop Asíncrono
-$loop = React\EventLoop\Loop::get();
+$loop   = React\EventLoop\Loop::get();
 $pusher = new NotificadorPusher();
 
 // 4. Levantar Puerto 8080 (WebSockets para Navegadores)
 $socketWeb = new SocketServer('0.0.0.0:8080', [], $loop);
 $servidorWS = new IoServer(
     new HttpServer(
-        new WsServer(
-            $pusher
-        )
+        new WsServer($pusher)
     ),
     $socketWeb,
     $loop
@@ -74,13 +144,9 @@ $servidorWS = new IoServer(
 // 5. Levantar Puerto 8081 (Receptor HTTP Interno para Controladores PHP)
 $socketHTTP = new SocketServer('127.0.0.1:8081', [], $loop);
 $servidorHTTP = new React\Http\HttpServer(function (ServerRequestInterface $request) use ($pusher) {
-    // Cuando el Controlador PHP mande la notificación, la retransmitimos
     $cuerpo = (string)$request->getBody();
-    
-    // Podríamos validar seguridad aquí (ej. verificar una llave secreta)
     echo "Recibido pálpito HTTP: $cuerpo\n";
     $pusher->emitirAlerta($cuerpo);
-    
     return new Response(200, ['Content-Type' => 'text/plain'], "OK\n");
 });
 $servidorHTTP->listen($socketHTTP);

@@ -39,6 +39,10 @@
 
         websocket.onopen = function() {
             console.log('[Notificaciones] Conectado al servidor WebSocket (Ratchet).');
+            // Registrar el usuario en el servidor para enrutamiento directo
+            if (window.USUARIO_ID) {
+                websocket.send(JSON.stringify({ action: 'registrar', usuario_id: window.USUARIO_ID }));
+            }
         };
 
         // Recepción de mensajes en tiempo real
@@ -46,18 +50,10 @@
             try {
                 const notif = JSON.parse(evento.data);
 
-                // FILTRO DE ENRUTAMIENTO (Roles y Seguridad)
-                // 1. Si es para mi ID de usuario específico (prioritario).
-                // 2. Si es para mi Rol específico.
-                // 3. Si es un mensaje público (sin destinatario).
-                // NOTA: El Admin NO recibe notificaciones privadas de otros usuarios.
-                //       Solo recibe las dirigidas al Rol 1, o sin destinatario.
-                const esParaMiUsuario = notif.usuario_id && parseInt(notif.usuario_id) === window.USUARIO_ID;
-                const esParaMiRol     = notif.rol_id && parseInt(notif.rol_id) === window.USUARIO_ROL_ID;
-                const esPublico       = !notif.rol_id && !notif.usuario_id;
-
-                if (!esParaMiUsuario && !esParaMiRol && !esPublico) {
-                    return; // El mensaje no es para nosotros, se ignora.
+                // El servidor ya enruta solo a este cliente. Validación mínima
+                // para proteger contra mensajes malformados o del fallback broadcast.
+                if (notif.usuario_id && parseInt(notif.usuario_id) !== window.USUARIO_ID) {
+                    return;
                 }
 
                 // Mostrar alerta visual instantánea usando SweetAlert2

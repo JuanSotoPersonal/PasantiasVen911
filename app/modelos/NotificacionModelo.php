@@ -123,6 +123,61 @@ class NotificacionModelo {
     }
 
     /**
+     * Inserta notificaciones para múltiples usuarios en una sola consulta SQL (batch).
+     * Reduce los N INSERTs individuales de enviarPorRol() a 1 round-trip a la BD.
+     *
+     * @param array    $usuarioIds Array de IDs de usuarios receptores.
+     * @param string   $tipo       Categoría de la alerta.
+     * @param string   $titulo     Título corto.
+     * @param string   $mensaje    Cuerpo del mensaje.
+     * @param int|null $fichaId    ID de ficha vinculada (opcional).
+     * @return array   Array de ['usuario_id' => X, 'id' => Y] con los IDs insertados.
+     */
+    public function crearBatch(array $usuarioIds, string $tipo, string $titulo, string $mensaje, ?int $fichaId = null): array {
+        if (empty($usuarioIds)) {
+            return [];
+        }
+
+        try {
+            // Construir placeholders: (?,?,?,?,?), (?,?,?,?,?), ...
+            $filaPlaceholder = '(?, ?, ?, ?, ?)';
+            $placeholders    = implode(', ', array_fill(0, count($usuarioIds), $filaPlaceholder));
+            $sql             = "INSERT INTO {$this->tabla} (usuario_recibe_id, ficha_id, tipo, titulo, mensaje)
+                                VALUES {$placeholders}";
+
+            // Aplanar parámetros: [uid1, fichaId, tipo, titulo, mensaje, uid2, ...]
+            $parametros = [];
+            foreach ($usuarioIds as $uid) {
+                $parametros[] = (int)$uid;
+                $parametros[] = $fichaId;
+                $parametros[] = $tipo;
+                $parametros[] = $titulo;
+                $parametros[] = $mensaje;
+            }
+
+            $stmt = $this->conexion->prepare($sql);
+            $stmt->execute($parametros);
+
+            // Recuperar los IDs insertados: MySQL asigna IDs consecutivos en batch
+            $primerIdInsertado = (int)$this->conexion->lastInsertId();
+            $totalInsertados   = $stmt->rowCount();
+
+            $resultado = [];
+            for ($i = 0; $i < $totalInsertados; $i++) {
+                $resultado[] = [
+                    'usuario_id' => (int)$usuarioIds[$i],
+                    'id'         => $primerIdInsertado + $i,
+                ];
+            }
+
+            return $resultado;
+        } catch (Exception $e) {
+            error_log("[NotificacionModelo] Error en crearBatch: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
      * Obtiene todos los IDs de usuario que pertenecen a un rol específico.
      * Útil para notificaciones masivas por jerarquía.
      */

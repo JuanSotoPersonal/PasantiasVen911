@@ -351,7 +351,8 @@ INSERT INTO `modulos` (`id`, `clave`, `descripcion`) VALUES
 (3, 'despachos', 'Despacho a organismos de respuesta'),
 (4, 'historial', 'Visualización del historial de auditoría'),
 (5, 'reportes', 'Generación de informes y estadísticas'),
-(6, 'configuracion', 'Ajustes y configuración del sistema');
+(6, 'configuracion', 'Ajustes y configuración del sistema'),
+(7, 'jefatura', 'Dashboard analítico para Jefatura');
 
 -- --------------------------------------------------------
 
@@ -499,7 +500,8 @@ INSERT INTO `permisos` (`id`, `modulo_id`, `clave`, `descripcion`) VALUES
 (15, 3, 'gestionar', 'Gestión completa de despachos'),
 (16, 4, 'ver', 'Ver el historial de auditoría del sistema'),
 (17, 5, 'ver', 'Acceder a reportes y estadísticas'),
-(18, 6, 'gestionar', 'Acceso completo a la configuración del sistema');
+(18, 6, 'gestionar', 'Acceso completo a la configuración del sistema'),
+(19, 7, 'ver', 'Ver dashboard de Jefatura');
 
 -- --------------------------------------------------------
 

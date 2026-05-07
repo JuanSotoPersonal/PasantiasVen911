@@ -367,50 +367,60 @@ class FichaModelo {
 
     /**
      * Busca o registra a un solicitante basándose en su cédula.
-     * Si existe, actualiza su información de contacto.
+     * Usa INSERT ... ON DUPLICATE KEY UPDATE para resolver en 1 solo round-trip
+     * a la BD en lugar de SELECT + UPDATE separados.
+     * El índice UNIQUE en `solicitantes.cedula` garantiza la detección del duplicado.
      */
     private function guardarSolicitante(array $datos): int|false {
         try {
             $cedula = trim($datos['cedula_solicitante'] ?? '');
 
-            if ($cedula !== '') {
-                $stmt = $this->conexion->prepare(
-                    "SELECT id FROM solicitantes WHERE cedula = :cedula LIMIT 1"
+            // Sin cédula: siempre INSERT (no hay duplicado posible)
+            if ($cedula === '') {
+                $insert = $this->conexion->prepare(
+                    "INSERT INTO solicitantes (cedula, nombre_solicitante, telefono1, telefono2)
+                     VALUES (NULL, :nombre, :tel1, :tel2)"
                 );
-                $stmt->bindValue(':cedula', $cedula, PDO::PARAM_STR);
-                $stmt->execute();
-                $existente = $stmt->fetchColumn();
-
-                if ($existente) {
-                    $update = $this->conexion->prepare(
-                        "UPDATE solicitantes SET nombre_solicitante = :nombre, 
-                                telefono1 = :tel1, telefono2 = :tel2
-                         WHERE id = :id"
-                    );
-                    $update->bindValue(':nombre', $datos['nombre_solicitante'], PDO::PARAM_STR);
-                    $update->bindValue(':tel1',   $datos['telefono1'],          PDO::PARAM_STR);
-                    $update->bindValue(':tel2',   $datos['telefono2'] ?? null,  PDO::PARAM_STR);
-                    $update->bindValue(':id',     (int)$existente,              PDO::PARAM_INT);
-                    $update->execute();
-                    return (int)$existente;
-                }
+                $insert->bindValue(':nombre', $datos['nombre_solicitante'], PDO::PARAM_STR);
+                $insert->bindValue(':tel1',   $datos['telefono1'],           PDO::PARAM_STR);
+                $insert->bindValue(':tel2',   $datos['telefono2'] ?? null,   PDO::PARAM_STR);
+                $insert->execute();
+                return (int)$this->conexion->lastInsertId();
             }
 
-            $insert = $this->conexion->prepare(
+            // Con cédula: 1 solo round-trip — inserta o actualiza si ya existe
+            $upsert = $this->conexion->prepare(
                 "INSERT INTO solicitantes (cedula, nombre_solicitante, telefono1, telefono2)
-                 VALUES (:cedula, :nombre, :tel1, :tel2)"
+                 VALUES (:cedula, :nombre, :tel1, :tel2)
+                 ON DUPLICATE KEY UPDATE
+                     nombre_solicitante = VALUES(nombre_solicitante),
+                     telefono1          = VALUES(telefono1),
+                     telefono2          = VALUES(telefono2)"
             );
-            $insert->bindValue(':cedula', $cedula ?: null, $cedula ? PDO::PARAM_STR : PDO::PARAM_NULL);
-            $insert->bindValue(':nombre', $datos['nombre_solicitante'], PDO::PARAM_STR);
-            $insert->bindValue(':tel1',   $datos['telefono1'],           PDO::PARAM_STR);
-            $insert->bindValue(':tel2',   $datos['telefono2'] ?? null,   PDO::PARAM_STR);
-            $insert->execute();
-            return (int)$this->conexion->lastInsertId();
+            $upsert->bindValue(':cedula', $cedula,                       PDO::PARAM_STR);
+            $upsert->bindValue(':nombre', $datos['nombre_solicitante'],  PDO::PARAM_STR);
+            $upsert->bindValue(':tel1',   $datos['telefono1'],            PDO::PARAM_STR);
+            $upsert->bindValue(':tel2',   $datos['telefono2'] ?? null,    PDO::PARAM_STR);
+            $upsert->execute();
+
+            // lastInsertId() devuelve el ID del INSERT o el del registro actualizado
+            $nuevoId = (int)$this->conexion->lastInsertId();
+            if ($nuevoId > 0) {
+                return $nuevoId;
+            }
+
+            // En ON DUPLICATE KEY UPDATE sin cambio, lastInsertId() puede ser 0: recuperar por cédula
+            $stmt = $this->conexion->prepare("SELECT id FROM solicitantes WHERE cedula = :cedula LIMIT 1");
+            $stmt->bindValue(':cedula', $cedula, PDO::PARAM_STR);
+            $stmt->execute();
+            return (int)$stmt->fetchColumn();
+
         } catch (Exception $e) {
             error_log("[FichaModelo] Error en guardarSolicitante: " . $e->getMessage());
             return false;
         }
     }
+
 
     // ///////////////////////////////////////////////////////////////////
     // 5. CATÁLOGOS: EMERGENCIAS Y CASOS

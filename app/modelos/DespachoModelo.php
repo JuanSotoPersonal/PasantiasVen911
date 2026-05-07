@@ -82,9 +82,7 @@ class DespachoModelo {
                         p.nombre_parroquia,
                         m.nombre_municipio,
                         u_owner.nombre_completo AS nombre_owner,
-                        (SELECT COUNT(*)
-                         FROM despachos_organismos d
-                         WHERE d.ficha_id = f.id) AS total_despachos
+                        COALESCE(dc.total_despachos, 0) AS total_despachos
                       FROM fichas_emergencia f
                       INNER JOIN solicitantes       s       ON f.solicitante_id      = s.id
                       INNER JOIN casos              c       ON f.caso_id             = c.id
@@ -92,6 +90,11 @@ class DespachoModelo {
                       INNER JOIN parroquias         p       ON f.parroquia_id        = p.id
                       INNER JOIN municipios         m       ON p.municipio_id        = m.id
                       LEFT  JOIN usuarios           u_owner ON f.id_owner            = u_owner.id
+                      LEFT  JOIN (
+                          SELECT ficha_id, COUNT(*) AS total_despachos
+                          FROM despachos_organismos
+                          GROUP BY ficha_id
+                      ) dc ON dc.ficha_id = f.id
                       WHERE f.estado_ficha IN ('Pendiente', 'En Proceso')
                         AND (:busqueda = ''
                           OR s.nombre_solicitante  LIKE :b1
@@ -224,9 +227,7 @@ class DespachoModelo {
                         p.nombre_parroquia,
                         m.nombre_municipio,
                         u_owner.nombre_completo AS nombre_owner,
-                        (SELECT COUNT(*)
-                         FROM despachos_organismos d
-                         WHERE d.ficha_id = f.id) AS total_despachos
+                        COALESCE(dc.total_despachos, 0) AS total_despachos
                       FROM fichas_emergencia f
                       INNER JOIN solicitantes       s       ON f.solicitante_id      = s.id
                       INNER JOIN casos              c       ON f.caso_id             = c.id
@@ -234,6 +235,11 @@ class DespachoModelo {
                       INNER JOIN parroquias         p       ON f.parroquia_id        = p.id
                       INNER JOIN municipios         m       ON p.municipio_id        = m.id
                       LEFT  JOIN usuarios           u_owner ON f.id_owner            = u_owner.id
+                      LEFT  JOIN (
+                          SELECT ficha_id, COUNT(*) AS total_despachos
+                          FROM despachos_organismos
+                          GROUP BY ficha_id
+                      ) dc ON dc.ficha_id = f.id
                       WHERE f.estado_ficha IN ('Pendiente', 'En Proceso')
                         AND f.id_owner = :usuario_id
                         AND (:busqueda = ''

@@ -318,6 +318,7 @@ class EventoModelo {
     /**
      * Retorna el historial combinado de un usuario (Acciones de Sistema + Fichas).
      * Utiliza UNION ALL para consolidar la línea de tiempo del operador.
+     * Limitado a los últimos 100 eventos para evitar full scan sin cota.
      */
     public function obtenerEventosPorUsuario(int $usuario_id): array {
         try {
@@ -338,7 +339,8 @@ class EventoModelo {
                         ef.fecha
                       FROM eventos_fichas ef
                       WHERE ef.usuario_id = :uid2
-                      ORDER BY fecha DESC";
+                      ORDER BY fecha DESC
+                      LIMIT 100";
 
             $stmt = $this->conexion->prepare($query);
             $stmt->bindValue(':uid1', $usuario_id, PDO::PARAM_INT);

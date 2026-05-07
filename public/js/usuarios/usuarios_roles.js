@@ -37,12 +37,18 @@ $(function () {
         render: (d) => d ? `V-${escapeHTML(d)}` : '<span class="text-muted fst-italic small">Sin cédula</span>',
       },
       {
-        // Columna: Estado (Badge interactivo de Toggle)
+        // Columna: Estado (Badge interactivo de Toggle con protección de SuperAdmin)
         data: 'estado',
         render: (d, type, row) => {
           const activo     = d === 'activo';
           const badgeClass = activo ? 'badge-activo' : 'badge-inactivo';
           const icon       = activo ? 'bi-toggle-on' : 'bi-toggle-off';
+
+          // Protección: El SuperAdmin (Rol 1) es estático y no puede ser deshabilitado
+          if (row.rol_id == 1) {
+            return `<i class="bi bi-shield-lock-fill text-ven-primary fs-4" title="Administrador Protegido"></i>`;
+          }
+
           return `
             <button
               type="button"
@@ -58,34 +64,63 @@ $(function () {
         },
       },
       {
-        // Columna: Acciones (Edición y Seguridad)
+        // Columna: Acciones (Edición y Seguridad con protección RBAC)
         data: null,
         orderable: false,
         searchable: false,
         className: 'text-center',
-        render: (d, type, row) => `
-          <button
-            type="button"
-            class="btn btn-ven-edit btn-accion btn-editar me-1"
-            data-id="${row.id}"
-            data-nombre="${escapeHTML(row.nombre_completo)}"
-            data-cedula="${escapeHTML(row.cedula || '')}"
-            data-usuario="${escapeHTML(row.usuario)}"
-            data-rol="${row.rol_id}"
-            data-id-rol="${row.rol_id}"
-            title="Editar usuario"
-          >
-            <i class="bi bi-pencil-fill"></i>
-          </button>
-          <button
-            type="button"
-            class="btn btn-ven-password btn-accion btn-password"
-            data-id="${row.id}"
-            data-nombre="${escapeHTML(row.nombre_completo)}"
-            title="Cambiar contraseña"
-          >
-            <i class="bi bi-key-fill"></i>
-          </button>`,
+        render: (d, type, row) => {
+          const actions = [];
+
+          // Caso SuperAdmin: Acciones protegidas
+          if (row.rol_id == 1) {
+            actions.push(`
+              <span class="btn-ven-edit btn-accion me-1 d-inline-flex align-items-center justify-content-center"
+                    style="cursor: help; opacity: 0.9;" title="Administrador Protegido">
+                <i class="bi bi-shield-lock-fill"></i>
+              </span>
+            `);
+            
+            // Solo si el usuario logueado es el Admin puede ver sus opciones de seguridad
+            if (window.USER_ROL_ID === 1) {
+               actions.push(`
+                <button type="button" class="btn btn-ven-password btn-accion btn-password"
+                  data-id="${row.id}" data-nombre="${escapeHTML(row.nombre_completo)}" title="Cambiar contraseña">
+                  <i class="bi bi-key-fill"></i>
+                </button>
+               `);
+            }
+          } 
+          // Caso estándar: Usuarios operativos
+          else {
+            actions.push(`
+              <button
+                type="button"
+                class="btn btn-ven-edit btn-accion btn-editar me-1"
+                data-id="${row.id}"
+                data-nombre="${escapeHTML(row.nombre_completo)}"
+                data-cedula="${escapeHTML(row.cedula || '')}"
+                data-usuario="${escapeHTML(row.usuario)}"
+                data-rol="${row.rol_id}"
+                data-id-rol="${row.rol_id}"
+                title="Editar usuario"
+              >
+                <i class="bi bi-pencil-fill"></i>
+              </button>
+              <button
+                type="button"
+                class="btn btn-ven-password btn-accion btn-password"
+                data-id="${row.id}"
+                data-nombre="${escapeHTML(row.nombre_completo)}"
+                title="Cambiar contraseña"
+              >
+                <i class="bi bi-key-fill"></i>
+              </button>
+            `);
+          }
+
+          return actions.join('');
+        },
       },
     ];
 

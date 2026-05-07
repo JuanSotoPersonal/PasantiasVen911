@@ -23,8 +23,9 @@ class UsuarioControlador {
     // 1. SEGURIDAD Y CONSTRUCTOR
     // ///////////////////////////////////////////////////////////////////
 
-    private UsuarioModelo $modelo;
-    private EventoModelo $log;
+    private UsuarioModelo  $modelo;
+    private EventoModelo   $log;
+    private RegistroModelo $modeloRegistro;
 
     /**
      * Valida la sesión y los permisos de acceso al módulo antes de instanciar.
@@ -34,8 +35,9 @@ class UsuarioControlador {
             header('Location: index.php?url=home');
             exit;
         }
-        $this->modelo = new UsuarioModelo();
-        $this->log    = new EventoModelo();
+        $this->modelo          = new UsuarioModelo();
+        $this->log             = new EventoModelo();
+        $this->modeloRegistro  = new RegistroModelo();
     }
 
     // ///////////////////////////////////////////////////////////////////
@@ -47,9 +49,8 @@ class UsuarioControlador {
      */
     public function index(): void {
         try {
-            $roles = $this->modelo->obtenerRoles();
-            $registroModelo = new RegistroModelo();
-            $preguntas = $registroModelo->obtenerPreguntasSeguridad();
+            $roles     = $this->modelo->obtenerRoles();
+            $preguntas = $this->modeloRegistro->obtenerPreguntasSeguridad();
             
             $tabActiva = $_GET['t'] ?? 'todos';
             $rolActivoId = 0;
@@ -544,8 +545,7 @@ class UsuarioControlador {
             if (!$valR2['valido']) { echo json_encode(['success' => false, 'message' => $valR2['mensaje']]); return; }
 
             // 6.1 Validación del Código de Fábrica (Key de Activación)
-            $registroModelo = new RegistroModelo();
-            if (!$registroModelo->validarLlaveActivacion($codigoFabrica)) {
+            if (!$this->modeloRegistro->validarLlaveActivacion($codigoFabrica)) {
                 echo json_encode(['success' => false, 'message' => 'Código de Fábrica inválido. No tienes permiso para esta acción.']);
                 return;
             }

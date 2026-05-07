@@ -23,8 +23,9 @@ class FichaControlador {
     // 1. ATRIBUTOS Y CONSTRUCTOR
     // ///////////////////////////////////////////////////////////////////
 
-    private FichaModelo  $modelo;
-    private EventoModelo $modeloEvento;
+    private FichaModelo    $modelo;
+    private EventoModelo   $modeloEvento;
+    private DespachoModelo $modeloDespacho;
 
     /**
      * Valida la sesión activa e instancia los modelos de operación y auditoría.
@@ -34,8 +35,9 @@ class FichaControlador {
             header('Location: index.php?url=auth');
             exit;
         }
-        $this->modelo       = new FichaModelo();
-        $this->modeloEvento = new EventoModelo();
+        $this->modelo          = new FichaModelo();
+        $this->modeloEvento    = new EventoModelo();
+        $this->modeloDespacho  = new DespachoModelo();
     }
 
     // ///////////////////////////////////////////////////////////////////
@@ -419,8 +421,7 @@ class FichaControlador {
 
             // 5.1 PROTECCIÓN RBAC: Solo Administrador, Despachador y Jefatura ven organismos
             if ((int)$_SESSION['user_rol_id'] !== 2) {
-                $modeloDespacho = new DespachoModelo();
-                $dataResponse['despachos'] = $modeloDespacho->obtenerDespachosDeFicha($id);
+                $dataResponse['despachos'] = $this->modeloDespacho->obtenerDespachosDeFicha($id);
             }
 
             echo json_encode($dataResponse);
