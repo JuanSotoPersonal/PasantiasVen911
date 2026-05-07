@@ -56,6 +56,7 @@ class EventoControlador {
      */
     public function obtenerDatos(): void {
         header('Content-Type: application/json');
+        session_write_close();
 
         // 3.1 PROTECCIÓN RBAC: Bloqueo de obtención de logs para Jefatura
         if ((int)$_SESSION['user_rol_id'] === 4) {
@@ -103,6 +104,7 @@ class EventoControlador {
      */
     public function obtenerDatosFichas(): void {
         header('Content-Type: application/json');
+        session_write_close();
         try {
             $draw     = isset($_POST['draw'])   ? (int)$_POST['draw']   : 1;
             $inicio   = isset($_POST['start'])  ? (int)$_POST['start']  : 0;

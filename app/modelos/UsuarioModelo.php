@@ -40,36 +40,14 @@ class UsuarioModelo {
     // 3. MÉTODOS DE CONSULTA (LECTURA)
     // ///////////////////////////////////////////////////////////////////
 
-    /**
-     * Retorna usuarios con su nombre de rol, filtrados por estado.
-     * NOTA: Método sin callers activos en controladores. LIMIT defensivo aplicado.
-     */
-    public function obtenerTodos(string $estado = 'activo'): array {
-        try {
-            $query = "SELECT u.id, u.usuario, u.nombre_completo, u.cedula,
-                             u.estado, u.rol_id, r.nombre AS nombre_rol
-                      FROM {$this->table_name} u
-                      INNER JOIN roles r ON u.rol_id = r.id
-                      WHERE u.estado = :estado
-                      ORDER BY u.id ASC
-                      LIMIT 500";
-
-            $stmt = $this->conexion->prepare($query);
-            $stmt->bindValue(':estado', $estado, PDO::PARAM_STR);
-            $stmt->execute();
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
-        } catch (Exception $e) {
-            error_log("[UsuarioModelo] Error en obtenerTodos: " . $e->getMessage());
-            return [];
-        }
-    }
 
     /**
      * Retorna un usuario específico por su ID primario.
      */
     public function obtenerPorId(int $id): array|false {
         try {
-            $query = "SELECT u.*, r.nombre AS nombre_rol
+            $query = "SELECT u.id, u.usuario, u.nombre_completo, u.cedula, u.rol_id, u.estado,
+                             u.pregunta_1_id, u.pregunta_2_id, r.nombre AS nombre_rol
                       FROM {$this->table_name} u
                       LEFT JOIN roles r ON u.rol_id = r.id
                       WHERE u.id = :id
@@ -90,7 +68,7 @@ class UsuarioModelo {
      */
     public function obtenerUsuarioPorNombre($nombreUsuario): array|false {
         try {
-            $query = "SELECT u.*, r.nombre as nombre_rol 
+            $query = "SELECT u.id, u.usuario, u.password, u.nombre_completo, u.cedula, u.rol_id, u.estado, r.nombre as nombre_rol 
                       FROM {$this->table_name} u
                       INNER JOIN roles r ON u.rol_id = r.id
                       WHERE u.usuario = :usuario AND u.estado = 'activo'

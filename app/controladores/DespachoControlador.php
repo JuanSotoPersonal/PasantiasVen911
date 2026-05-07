@@ -92,6 +92,7 @@ class DespachoControlador {
      */
     public function obtenerDatos(): void {
         header('Content-Type: application/json');
+        session_write_close();
         try {
             $draw     = isset($_POST['draw'])   ? (int)$_POST['draw']   : 1;
             $inicio   = isset($_POST['start'])  ? (int)$_POST['start']  : 0;
@@ -125,6 +126,7 @@ class DespachoControlador {
      */
     public function obtenerDatosPropios(): void {
         header('Content-Type: application/json');
+        session_write_close();
 
         // 4.1 PROTECCIÓN RBAC: Jefatura no posee fichas propias (proceso de despacho)
         if ((int)$_SESSION['user_rol_id'] === 4) {
@@ -141,9 +143,9 @@ class DespachoControlador {
             $dirOrden  = $_POST['order'][0]['dir'] ?? 'asc';
             $usuarioId = (int)$_SESSION['user_id'];
 
-            $datos          = $this->modelo->obtenerFichasPropiasP­aginado($usuarioId, $inicio, $cantidad, $busqueda, $colOrden, $dirOrden);
+            $datos          = $this->modelo->obtenerFichasPropiasPaginado($usuarioId, $inicio, $cantidad, $busqueda, $colOrden, $dirOrden);
             $totalRegistros = $this->modelo->contarFichasPropias($usuarioId);
-            $totalFiltrados = $busqueda !== '' ? $this->modelo->contarFichasPropiasF­iltradas($usuarioId, $busqueda) : $totalRegistros;
+            $totalFiltrados = $busqueda !== '' ? $this->modelo->contarFichasPropiasFiltradas($usuarioId, $busqueda) : $totalRegistros;
 
             echo json_encode([
                 'draw'            => $draw,
@@ -244,6 +246,7 @@ class DespachoControlador {
      */
     public function detalleFicha(): void {
         header('Content-Type: application/json');
+        session_write_close();
         try {
             $fichaId = (int)($_GET['id'] ?? 0);
             if (!$fichaId) {
@@ -720,6 +723,7 @@ class DespachoControlador {
      */
     public function obtenerOrganismos(): void {
         header('Content-Type: application/json');
+        session_write_close();
         try {
             echo json_encode($this->modelo->obtenerOrganismos());
         } catch (\Exception $e) {

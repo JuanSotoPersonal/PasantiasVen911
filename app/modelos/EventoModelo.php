@@ -202,13 +202,15 @@ class EventoModelo {
      */
     public function obtenerEventosPorFicha(int $ficha_id): array {
         try {
-            $query = "SELECT ef.*,
+            $query = "SELECT ef.id, ef.ficha_id, ef.usuario_id, ef.tipo_evento, ef.estado_anterior,
+                             ef.estado_nuevo, ef.valor_anterior, ef.valor_nuevo, ef.descripcion, ef.fecha,
                              u.nombre_completo AS nombre_operador,
                              u.usuario         AS usuario_operador
                       FROM {$this->tabla_fichas} ef
                       LEFT JOIN usuarios u ON ef.usuario_id = u.id
                       WHERE ef.ficha_id = :ficha_id
-                      ORDER BY ef.fecha ASC";
+                      ORDER BY ef.fecha ASC
+                      LIMIT 500";
             $stmt = $this->conexion->prepare($query);
             $stmt->bindValue(':ficha_id', $ficha_id, PDO::PARAM_INT);
             $stmt->execute();
@@ -232,8 +234,10 @@ class EventoModelo {
 
         try {
             $busquedaLike = '%' . $busqueda . '%';
-            $query = "SELECT ef.*, u.usuario AS nombre_admin
-                      FROM {$this->tabla_fichas} ef
+            $query = "SELECT ef.id, ef.ficha_id, ef.usuario_id, ef.tipo_evento, ef.estado_anterior,
+                             ef.estado_nuevo, ef.valor_anterior, ef.valor_nuevo, ef.descripcion, ef.fecha,
+                             u.usuario AS nombre_admin
+                       FROM {$this->tabla_fichas} ef
                       LEFT JOIN usuarios u ON ef.usuario_id = u.id
                       WHERE (:busqueda = ''
                           OR ef.tipo_evento      LIKE :b1

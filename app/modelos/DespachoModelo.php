@@ -19,6 +19,7 @@ use PDO;
 use Exception;
 
 require_once 'app/Config/Database.php';
+require_once 'app/Helpers/Cache.php';
 
 class DespachoModelo {
 
@@ -27,6 +28,7 @@ class DespachoModelo {
     // ///////////////////////////////////////////////////////////////////
 
     private $conexion;
+    private static $cacheOrganismos = null;
 
     /**
      * Inicializa la conexión centralizada a la base de datos.
@@ -71,8 +73,6 @@ class DespachoModelo {
             $query = "SELECT
                         f.id,
                         f.estado_ficha,
-                        f.descripcion_caso,
-                        f.direccion_exacta,
                         f.fecha_creacion,
                         f.id_owner,
                         s.nombre_solicitante,
@@ -82,7 +82,7 @@ class DespachoModelo {
                         p.nombre_parroquia,
                         m.nombre_municipio,
                         u_owner.nombre_completo AS nombre_owner,
-                        COALESCE(dc.total_despachos, 0) AS total_despachos
+                        (SELECT COUNT(*) FROM despachos_organismos WHERE ficha_id = f.id) AS total_despachos
                       FROM fichas_emergencia f
                       INNER JOIN solicitantes       s       ON f.solicitante_id      = s.id
                       INNER JOIN casos              c       ON f.caso_id             = c.id
@@ -90,11 +90,6 @@ class DespachoModelo {
                       INNER JOIN parroquias         p       ON f.parroquia_id        = p.id
                       INNER JOIN municipios         m       ON p.municipio_id        = m.id
                       LEFT  JOIN usuarios           u_owner ON f.id_owner            = u_owner.id
-                      LEFT  JOIN (
-                          SELECT ficha_id, COUNT(*) AS total_despachos
-                          FROM despachos_organismos
-                          GROUP BY ficha_id
-                      ) dc ON dc.ficha_id = f.id
                       WHERE f.estado_ficha IN ('Pendiente', 'En Proceso')
                         AND (:busqueda = ''
                           OR s.nombre_solicitante  LIKE :b1
@@ -148,22 +143,32 @@ class DespachoModelo {
     public function contarFichasFiltradas(string $busqueda): int {
         try {
             $busquedaLike = '%' . $busqueda . '%';
-            $query = "SELECT COUNT(*)
-                      FROM fichas_emergencia f
-                      INNER JOIN solicitantes     s ON f.solicitante_id = s.id
-                      INNER JOIN casos            c ON f.caso_id        = c.id
-                      INNER JOIN parroquias       p ON f.parroquia_id   = p.id
-                      LEFT  JOIN usuarios         u ON f.id_owner       = u.id
-                      WHERE f.estado_ficha IN ('Pendiente', 'En Proceso')
-                        AND (:busqueda = ''
-                          OR s.nombre_solicitante LIKE :b1
-                          OR c.nombre_caso        LIKE :b2
-                          OR p.nombre_parroquia   LIKE :b3
-                          OR f.descripcion_caso   LIKE :b4
-                          OR f.id                 LIKE :b5
-                          OR u.nombre_completo    LIKE :b6
-                        )";
-            $stmt = $this->conexion->prepare($query);
+            if ($busqueda === '') {
+                $query = "SELECT COUNT(*) FROM fichas_emergencia f WHERE f.estado_ficha IN ('Pendiente', 'En Proceso')";
+                $stmt = $this->conexion->prepare($query);
+            } else {
+                $query = "SELECT COUNT(*)
+                          FROM fichas_emergencia f
+                          INNER JOIN solicitantes     s ON f.solicitante_id = s.id
+                          INNER JOIN casos            c ON f.caso_id        = c.id
+                          INNER JOIN parroquias       p ON f.parroquia_id   = p.id
+                          LEFT  JOIN usuarios         u ON f.id_owner       = u.id
+                          WHERE f.estado_ficha IN ('Pendiente', 'En Proceso')
+                            AND (s.nombre_solicitante LIKE :b1
+                              OR c.nombre_caso        LIKE :b2
+                              OR p.nombre_parroquia   LIKE :b3
+                              OR f.descripcion_caso   LIKE :b4
+                              OR f.id                 LIKE :b5
+                              OR u.nombre_completo    LIKE :b6
+                            )";
+                $stmt = $this->conexion->prepare($query);
+                $stmt->bindValue(':b1',       $busquedaLike, PDO::PARAM_STR);
+                $stmt->bindValue(':b2',       $busquedaLike, PDO::PARAM_STR);
+                $stmt->bindValue(':b3',       $busquedaLike, PDO::PARAM_STR);
+                $stmt->bindValue(':b4',       $busquedaLike, PDO::PARAM_STR);
+                $stmt->bindValue(':b5',       $busquedaLike, PDO::PARAM_STR);
+                $stmt->bindValue(':b6',       $busquedaLike, PDO::PARAM_STR);
+            }
             $stmt->bindValue(':busqueda', $busqueda,     PDO::PARAM_STR);
             $stmt->bindValue(':b1',       $busquedaLike, PDO::PARAM_STR);
             $stmt->bindValue(':b2',       $busquedaLike, PDO::PARAM_STR);
@@ -190,7 +195,7 @@ class DespachoModelo {
      * Permite al despachador ver su carga de trabajo personal sin
      * perder visibilidad de la cola global.
      */
-    public function obtenerFichasPropiasP­aginado(
+    public function obtenerFichasPropiasPaginado(
         int    $usuarioId,
         int    $inicio,
         int    $cantidad,
@@ -216,8 +221,6 @@ class DespachoModelo {
             $query = "SELECT
                         f.id,
                         f.estado_ficha,
-                        f.descripcion_caso,
-                        f.direccion_exacta,
                         f.fecha_creacion,
                         f.id_owner,
                         s.nombre_solicitante,
@@ -227,7 +230,7 @@ class DespachoModelo {
                         p.nombre_parroquia,
                         m.nombre_municipio,
                         u_owner.nombre_completo AS nombre_owner,
-                        COALESCE(dc.total_despachos, 0) AS total_despachos
+                        (SELECT COUNT(*) FROM despachos_organismos WHERE ficha_id = f.id) AS total_despachos
                       FROM fichas_emergencia f
                       INNER JOIN solicitantes       s       ON f.solicitante_id      = s.id
                       INNER JOIN casos              c       ON f.caso_id             = c.id
@@ -235,11 +238,6 @@ class DespachoModelo {
                       INNER JOIN parroquias         p       ON f.parroquia_id        = p.id
                       INNER JOIN municipios         m       ON p.municipio_id        = m.id
                       LEFT  JOIN usuarios           u_owner ON f.id_owner            = u_owner.id
-                      LEFT  JOIN (
-                          SELECT ficha_id, COUNT(*) AS total_despachos
-                          FROM despachos_organismos
-                          GROUP BY ficha_id
-                      ) dc ON dc.ficha_id = f.id
                       WHERE f.estado_ficha IN ('Pendiente', 'En Proceso')
                         AND f.id_owner = :usuario_id
                         AND (:busqueda = ''
@@ -292,7 +290,7 @@ class DespachoModelo {
     /**
      * Total de fichas propias del despachador aplicando filtro de búsqueda.
      */
-    public function contarFichasPropiasF­iltradas(int $usuarioId, string $busqueda): int {
+    public function contarFichasPropiasFiltradas(int $usuarioId, string $busqueda): int {
         try {
             $busquedaLike = '%' . $busqueda . '%';
             $query = "SELECT COUNT(*)
@@ -385,8 +383,6 @@ class DespachoModelo {
             $query = "SELECT
                         f.id,
                         f.estado_ficha,
-                        f.descripcion_caso,
-                        f.direccion_exacta,
                         f.fecha_creacion,
                         f.id_owner,
                         s.nombre_solicitante,
@@ -459,8 +455,11 @@ class DespachoModelo {
      */
     public function obtenerPorId(int $id): array|false {
         try {
-            $query = "SELECT d.*, o.nombre_organismo, u.nombre_completo AS nombre_despachador
-                      FROM despachos_organismos d
+            $query = "SELECT d.id, d.ficha_id, d.organismo_id, d.unidad_designada, d.mando_acargo,
+                             d.persona_atiende, d.hora_despacho, d.estatus_despacho,
+                             d.despachador_id, d.motivo_cancelacion, d.tipo_motivo_cancelacion,
+                             o.nombre_organismo, u.nombre_completo AS nombre_despachador
+                       FROM despachos_organismos d
                       INNER JOIN organismos o ON d.organismo_id  = o.id
                       LEFT  JOIN usuarios   u ON d.despachador_id = u.id
                       WHERE d.id = :id LIMIT 1";
@@ -604,12 +603,21 @@ class DespachoModelo {
      * Retorna organismos activos para el selector del modal de asignación.
      */
     public function obtenerOrganismos(): array {
+        if (self::$cacheOrganismos !== null) return self::$cacheOrganismos;
+        
+        $cacheKey = "org_activos";
+        $l2 = \App\Helpers\Cache::obtener($cacheKey);
+        if ($l2) return self::$cacheOrganismos = $l2;
+
         try {
             $stmt = $this->conexion->prepare(
                 "SELECT id, nombre_organismo FROM organismos WHERE estado = 1 ORDER BY nombre_organismo ASC"
             );
             $stmt->execute();
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $res = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            \App\Helpers\Cache::guardar($cacheKey, $res, 86400); // 24h
+            return self::$cacheOrganismos = $res;
         } catch (Exception $e) {
             error_log("[DespachoModelo] Error en obtenerOrganismos: " . $e->getMessage());
             return [];

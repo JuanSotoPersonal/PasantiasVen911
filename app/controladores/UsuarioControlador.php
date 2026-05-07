@@ -74,6 +74,7 @@ class UsuarioControlador {
      */
     public function obtenerDatos(): void {
         header('Content-Type: application/json');
+        session_write_close();
         try {
             $draw     = isset($_POST['draw'])   ? (int)$_POST['draw']   : 1;
             $inicio   = isset($_POST['start'])  ? (int)$_POST['start']  : 0;
@@ -111,6 +112,7 @@ class UsuarioControlador {
      */
     public function obtenerDatosPorRol(): void {
         header('Content-Type: application/json');
+        session_write_close();
         try {
             $rolId   = (int)($_GET['rol_id'] ?? 0);
             $estado  = $_GET['estado'] ?? 'activo';

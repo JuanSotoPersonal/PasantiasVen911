@@ -45,6 +45,7 @@ class NotificacionControlador {
      */
     public function obtenerPendientes(): void {
         header('Content-Type: application/json');
+        session_write_close();
         $usuario_id = (int)$_SESSION['user_id'];
         $notificaciones = $this->modelo->obtenerNoLeidas($usuario_id);
         echo json_encode(['success' => true, 'data' => $notificaciones]);
@@ -131,6 +132,7 @@ class NotificacionControlador {
      */
     public function estadoServidor(): void {
         header('Content-Type: application/json');
+        session_write_close();
 
         // Restricción estricta: solo el Administrador puede consultar esto
         if ((int)$_SESSION['user_rol_id'] !== 1) {

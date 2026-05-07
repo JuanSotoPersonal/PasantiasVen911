@@ -12,6 +12,7 @@ use PDO;
 use Exception;
 
 require_once 'app/Config/Database.php';
+require_once 'app/Helpers/Cache.php';
 
 class FichaModelo {
 
@@ -20,6 +21,12 @@ class FichaModelo {
     // ///////////////////////////////////////////////////////////////////
 
     private $conexion;
+    private static $cacheMunicipios = [];
+    private static $cacheParroquias = [];
+    private static $cacheTiposEmergencia = [];
+    private static $cacheCasos = [];
+    private static $cacheOrganismos = [];
+    private static $cacheMotivosCierre = [];
 
     /**
      * Inicializa la conexión centralizada a la base de datos.
@@ -77,20 +84,12 @@ class FichaModelo {
             $query = "SELECT
                         f.id,
                         f.estado_ficha,
-                        f.direccion_exacta,
-                        f.descripcion_caso,
                         f.fecha_creacion,
-                        f.hora_cierre,
                         solicitante.nombre_solicitante,
-                        solicitante.telefono1,
-                        solicitante.cedula AS cedula_solicitante,
                         c.nombre_caso,
                         t.nombre AS tipo_emergencia,
                         p.nombre_parroquia,
-                        m.nombre_municipio,
-                        creador.nombre_completo AS nombre_creador,
-                        f.id_user,
-                        f.id_owner
+                        m.nombre_municipio
                       FROM fichas_emergencia f
                       INNER JOIN solicitantes     solicitante ON f.solicitante_id = solicitante.id
                       INNER JOIN casos             c           ON f.caso_id        = c.id
@@ -176,22 +175,32 @@ class FichaModelo {
             if ($rolId == 2 && $usuarioId > 0) $condiciones[] = 'f.id_user = :id_user';
             $where = implode(' AND ', $condiciones);
 
-            $query = "SELECT COUNT(*)
-                      FROM fichas_emergencia f
-                      INNER JOIN solicitantes    s  ON f.solicitante_id = s.id
-                      INNER JOIN casos           c  ON f.caso_id = c.id
-                      INNER JOIN tipos_emergencia t  ON c.tipo_emergencia_id = t.id
-                      INNER JOIN parroquias       p  ON f.parroquia_id = p.id
-                      WHERE {$where}
-                        AND (:busqueda = ''
-                          OR f.id           LIKE :b1
-                          OR s.nombre_solicitante LIKE :b2
-                          OR c.nombre_caso   LIKE :b3
-                          OR t.nombre        LIKE :b4
-                          OR p.nombre_parroquia LIKE :b5
-                          OR f.estado_ficha  LIKE :b6
-                        )";
-            $stmt = $this->conexion->prepare($query);
+            if ($busqueda === '') {
+                $query = "SELECT COUNT(*) FROM fichas_emergencia f WHERE {$where}";
+                $stmt = $this->conexion->prepare($query);
+            } else {
+                $query = "SELECT COUNT(*)
+                          FROM fichas_emergencia f
+                          INNER JOIN solicitantes    s  ON f.solicitante_id = s.id
+                          INNER JOIN casos           c  ON f.caso_id = c.id
+                          INNER JOIN tipos_emergencia t  ON c.tipo_emergencia_id = t.id
+                          INNER JOIN parroquias       p  ON f.parroquia_id = p.id
+                          WHERE {$where}
+                            AND (f.id           LIKE :b1
+                              OR s.nombre_solicitante LIKE :b2
+                              OR c.nombre_caso   LIKE :b3
+                              OR t.nombre        LIKE :b4
+                              OR p.nombre_parroquia LIKE :b5
+                              OR f.estado_ficha  LIKE :b6
+                            )";
+                $stmt = $this->conexion->prepare($query);
+                $stmt->bindValue(':b1',       $busquedaLike, PDO::PARAM_STR);
+                $stmt->bindValue(':b2',       $busquedaLike, PDO::PARAM_STR);
+                $stmt->bindValue(':b3',       $busquedaLike, PDO::PARAM_STR);
+                $stmt->bindValue(':b4',       $busquedaLike, PDO::PARAM_STR);
+                $stmt->bindValue(':b5',       $busquedaLike, PDO::PARAM_STR);
+                $stmt->bindValue(':b6',       $busquedaLike, PDO::PARAM_STR);
+            }
             if ($estado !== 'todos') $stmt->bindValue(':estado', $estado, PDO::PARAM_STR);
             if ($rolId == 2 && $usuarioId > 0) $stmt->bindValue(':id_user', $usuarioId, PDO::PARAM_INT);
             $stmt->bindValue(':busqueda', $busqueda,     PDO::PARAM_STR);
@@ -218,7 +227,9 @@ class FichaModelo {
      */
     public function obtenerPorId(int $id): array|false {
         try {
-            $query = "SELECT f.*,
+            $query = "SELECT f.id, f.parroquia_id, f.direccion_exacta, f.caso_id, f.descripcion_caso,
+                        f.solicitante_id, f.id_user, f.id_owner, f.fecha_creacion, f.hora_cierre,
+                        f.motivo_cierre, f.tipo_motivo_cierre, f.estado_ficha, f.fecha_actualizacion,
                         solicitante.nombre_solicitante, solicitante.cedula AS cedula_solicitante,
                         solicitante.telefono1, solicitante.telefono2,
                         c.nombre_caso, c.tipo_emergencia_id,
@@ -428,12 +439,23 @@ class FichaModelo {
 
     // --- Tipos de Emergencia ---
     public function obtenerTiposEmergencia(int $estado = 1): array {
+        $cacheKey = "e_{$estado}";
+        if (isset(self::$cacheTiposEmergencia[$cacheKey])) return self::$cacheTiposEmergencia[$cacheKey];
+        
+        // Intento de L2 Cache (Disco)
+        $l2 = \App\Helpers\Cache::obtener($cacheKey);
+        if ($l2) return self::$cacheTiposEmergencia[$cacheKey] = $l2;
+
         $stmt = $this->conexion->prepare("SELECT id, nombre, descripcion, estado FROM tipos_emergencia WHERE estado = :estado ORDER BY nombre ASC");
         $stmt->execute([':estado' => $estado]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $res = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        \App\Helpers\Cache::guardar($cacheKey, $res, 86400); // 24h
+        return self::$cacheTiposEmergencia[$cacheKey] = $res;
     }
 
     public function crearTipoEmergencia(string $nombre, string $descripcion = ''): bool {
+        \App\Helpers\Cache::borrar("e_1"); \App\Helpers\Cache::borrar("e_0");
         $stmt = $this->conexion->prepare("INSERT INTO tipos_emergencia (nombre, descripcion, estado) VALUES (:nombre, :descripcion, 1)");
         $stmt->bindValue(':nombre',      $nombre,      PDO::PARAM_STR);
         $stmt->bindValue(':descripcion', $descripcion, PDO::PARAM_STR);
@@ -441,6 +463,7 @@ class FichaModelo {
     }
 
     public function actualizarTipoEmergencia(int $id, string $nombre, string $descripcion = ''): bool {
+        \App\Helpers\Cache::borrar("e_1"); \App\Helpers\Cache::borrar("e_0");
         $stmt = $this->conexion->prepare("UPDATE tipos_emergencia SET nombre = :nombre, descripcion = :descripcion WHERE id = :id");
         $stmt->bindValue(':nombre',      $nombre,      PDO::PARAM_STR);
         $stmt->bindValue(':descripcion', $descripcion, PDO::PARAM_STR);
@@ -449,12 +472,20 @@ class FichaModelo {
     }
 
     public function toggleEstadoTipoEmergencia(int $id): bool {
+        \App\Helpers\Cache::borrar("e_1"); \App\Helpers\Cache::borrar("e_0");
         $stmt = $this->conexion->prepare("UPDATE tipos_emergencia SET estado = 1 - estado WHERE id = :id");
         return $stmt->execute([':id' => $id]);
     }
 
     // --- Casos ---
     public function obtenerCasos(?int $tipoId = null, int $estado = 1): array {
+        $cacheKey = "c_{$tipoId}_{$estado}";
+        if (isset(self::$cacheCasos[$cacheKey])) return self::$cacheCasos[$cacheKey];
+
+        // Intento de L2 Cache (Disco)
+        $l2 = \App\Helpers\Cache::obtener($cacheKey);
+        if ($l2) return self::$cacheCasos[$cacheKey] = $l2;
+
         $sql = "SELECT c.id, c.nombre_caso, c.descripcion, c.tipo_emergencia_id, t.nombre AS tipo_emergencia, c.estado
                 FROM casos c INNER JOIN tipos_emergencia t ON c.tipo_emergencia_id = t.id
                 WHERE c.estado = :estado ";
@@ -465,10 +496,14 @@ class FichaModelo {
         $stmt->bindValue(':estado', $estado, PDO::PARAM_INT);
         if ($tipoId) $stmt->bindValue(':tipo_id', $tipoId, PDO::PARAM_INT);
         $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $res = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        \App\Helpers\Cache::guardar($cacheKey, $res, 86400); // 24h
+        return self::$cacheCasos[$cacheKey] = $res;
     }
 
     public function crearCaso(int $tipoId, string $nombre, string $descripcion): bool {
+        \App\Helpers\Cache::limpiarTodo(); // Invalida casos
         $stmt = $this->conexion->prepare(
             "INSERT INTO casos (tipo_emergencia_id, nombre_caso, descripcion, estado) VALUES (:tipo_id, :nombre, :descripcion, 1)"
         );
@@ -500,12 +535,22 @@ class FichaModelo {
 
     // --- Municipios ---
     public function obtenerMunicipios(int $estado = 1): array {
+        $cacheKey = "m_{$estado}";
+        if (isset(self::$cacheMunicipios[$cacheKey])) return self::$cacheMunicipios[$cacheKey];
+
+        $l2 = \App\Helpers\Cache::obtener($cacheKey);
+        if ($l2) return self::$cacheMunicipios[$cacheKey] = $l2;
+
         $stmt = $this->conexion->prepare("SELECT id, nombre_municipio, descripcion, estado FROM municipios WHERE estado = :estado ORDER BY nombre_municipio ASC");
         $stmt->execute([':estado' => $estado]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $res = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        \App\Helpers\Cache::guardar($cacheKey, $res, 86400);
+        return self::$cacheMunicipios[$cacheKey] = $res;
     }
 
     public function crearMunicipio(string $nombre, string $descripcion = ''): bool {
+        \App\Helpers\Cache::borrar("m_1"); \App\Helpers\Cache::borrar("m_0");
         $stmt = $this->conexion->prepare("INSERT INTO municipios (nombre_municipio, descripcion, estado) VALUES (:nombre, :descripcion, 1)");
         $stmt->bindValue(':nombre',      $nombre,      PDO::PARAM_STR);
         $stmt->bindValue(':descripcion', $descripcion, PDO::PARAM_STR);
@@ -527,6 +572,9 @@ class FichaModelo {
 
     // --- Parroquias ---
     public function obtenerParroquias(?int $municipioId = null, int $estado = 1): array {
+        $cacheKey = "p_{$municipioId}_{$estado}";
+        if (isset(self::$cacheParroquias[$cacheKey])) return self::$cacheParroquias[$cacheKey];
+
         $sql = "SELECT p.id, p.nombre_parroquia, p.descripcion, p.municipio_id, m.nombre_municipio, p.estado
                 FROM parroquias p INNER JOIN municipios m ON p.municipio_id = m.id
                 WHERE p.estado = :estado ";
@@ -537,7 +585,7 @@ class FichaModelo {
         $stmt->bindValue(':estado', $estado, PDO::PARAM_INT);
         if ($municipioId) $stmt->bindValue(':municipio_id', $municipioId, PDO::PARAM_INT);
         $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return self::$cacheParroquias[$cacheKey] = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function crearParroquia(int $municipioId, string $nombre, string $descripcion = ''): bool {
@@ -585,9 +633,12 @@ class FichaModelo {
     }
 
     public function obtenerOrganismos(int $estado = 1): array {
+        $cacheKey = "o_{$estado}";
+        if (isset(self::$cacheOrganismos[$cacheKey])) return self::$cacheOrganismos[$cacheKey];
+
         $stmt = $this->conexion->prepare("SELECT id, nombre_organismo, descripcion, estado FROM organismos WHERE estado = :estado ORDER BY nombre_organismo ASC");
         $stmt->execute([':estado' => $estado]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return self::$cacheOrganismos[$cacheKey] = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function crearOrganismo(string $nombre, string $descripcion = ''): bool {
@@ -621,6 +672,9 @@ class FichaModelo {
     // ///////////////////////////////////////////////////////////////////
 
     public function obtenerMotivosCierre(int $estado = 1, string $contexto = 'ficha'): array {
+        $cacheKey = "mc_{$estado}_{$contexto}";
+        if (isset(self::$cacheMotivosCierre[$cacheKey])) return self::$cacheMotivosCierre[$cacheKey];
+
         $stmt = $this->conexion->prepare(
             "SELECT id, nombre, descripcion, estado, contexto 
              FROM motivos_cierre 
@@ -628,7 +682,7 @@ class FichaModelo {
              ORDER BY nombre ASC"
         );
         $stmt->execute([':estado' => $estado, ':contexto' => $contexto]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return self::$cacheMotivosCierre[$cacheKey] = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function crearMotivoCierre(string $nombre, string $descripcion = '', string $contexto = 'ficha'): bool {

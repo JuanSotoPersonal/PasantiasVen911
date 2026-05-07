@@ -74,6 +74,7 @@ class FichaControlador {
      */
     public function obtenerDatos(): void {
         header('Content-Type: application/json');
+        session_write_close(); // Liberar bloqueo de sesión para permitir concurrencia en AJAX
         try {
             $draw     = isset($_POST['draw'])   ? (int)$_POST['draw']   : 1;
             $inicio   = isset($_POST['start'])  ? (int)$_POST['start']  : 0;
@@ -577,6 +578,7 @@ class FichaControlador {
      */
     public function obtenerCatalogo(): void {
         header('Content-Type: application/json');
+        session_write_close(); // Liberar bloqueo de sesión
         try {
             if (!tienePerm('configuracion', 'gestionar')) {
                 echo json_encode(['data' => []]);
