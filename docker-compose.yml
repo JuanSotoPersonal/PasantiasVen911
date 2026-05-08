@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  # Servidor Web y Aplicación
+  ven911_app:
+    build: .
+    container_name: ven911_web
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - .:/var/www/html
+    environment:
+      - DB_HOST=ven911_db
+      - DB_NAME=ficha_ven_911
+      - DB_USER=ven911_user
+      - DB_PASS=ven911_secure_pass
+      - WS_INTERNAL_HOST=ven911_sockets
+    depends_on:
+      - ven911_db
+    networks:
+      - ven911_network
+
+  # Base de Datos (MariaDB)
+  ven911_db:
+    image: mariadb:10.11
+    container_name: ven911_mysql
+    restart: always
+    environment:
+      - MARIADB_DATABASE=ficha_ven_911
+      - MARIADB_USER=ven911_user
+      - MARIADB_PASSWORD=ven911_secure_pass
+      - MARIADB_ROOT_PASSWORD=root_secure_pass
+    volumes:
+      - ven911_db_data:/var/lib/mysql
+    networks:
+      - ven911_network
+
+  # Servidor de WebSockets (Independiente)
+  ven911_ws:
+    build: .
+    container_name: ven911_sockets
+    restart: always
+    command: php app/bin/servidor_ws.php
+    ports:
+      - "8080:8080"
+    depends_on:
+      - ven911_db
+    networks:
+      - ven911_network
+
+networks:
+  ven911_network:
+    driver: bridge
+
+volumes:
+  ven911_db_data:

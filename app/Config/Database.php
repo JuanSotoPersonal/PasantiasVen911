@@ -6,11 +6,18 @@ use PDO;
 use PDOException;
 
 class Database {
-    private $servidor   = "localhost";
-    private $nombre_bd  = "ficha_ven_911";
-    private $usuario    = "root";
-    private $contrasena = "";
+    private $servidor;
+    private $nombre_bd;
+    private $usuario;
+    private $contrasena;
     private $conexion;
+
+    public function __construct() {
+        $this->servidor   = getenv('DB_HOST') ?: "localhost";
+        $this->nombre_bd  = getenv('DB_NAME') ?: "ficha_ven_911";
+        $this->usuario    = getenv('DB_USER') ?: "root";
+        $this->contrasena = getenv('DB_PASS') ?: "";
+    }
 
     /**
      * Obtiene la conexión a la base de datos mediante PDO.

@@ -17,7 +17,7 @@ session_set_cookie_params([
     'lifetime' => 0,
     'path'     => '/',
     'domain'   => '',       // Ajustar a dominio real en producción
-    'secure'   => true,     // Envío solo mediante HTTPS
+    'secure'   => false,    // Cambiado a false para permitir acceso local vía HTTP (sin SSL)
     'httponly' => true,     // Impide acceso a la cookie desde JavaScript
     'samesite' => 'Strict'  // Bloquea solicitudes cruzadas de otros dominios
 ]);

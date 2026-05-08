@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function() {
         btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Buscando...';
         tbody.innerHTML = '<tr><td colspan="7" class="text-center py-5"><div class="spinner-border text-primary"></div></td></tr>';
 
-        fetch(window.location.origin + '/ProyectoFicha/reporte/buscar', {
+        fetch('index.php?url=reporte/buscar', {
             method: 'POST',
             body: formData
         })

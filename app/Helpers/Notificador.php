@@ -136,7 +136,8 @@ class Notificador {
         if (isset($data['ficha_id']))   $data['ficha_id']   = $data['ficha_id'] ? (int)$data['ficha_id'] : null;
 
         $payload = json_encode($data);
-        $ch      = curl_init('http://127.0.0.1:8081');
+        $ws_host = getenv('WS_INTERNAL_HOST') ?: '127.0.0.1';
+        $ch      = curl_init("http://{$ws_host}:8081");
 
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
         curl_setopt($ch, CURLOPT_POSTFIELDS,    $payload);

@@ -21,7 +21,8 @@ use Ratchet\MessageComponentInterface;
 use Ratchet\ConnectionInterface;
 use React\Socket\SocketServer;
 use Psr\Http\Message\ServerRequestInterface;
-use React\Http\Message\Response;
+use React\Http\Message\R
+esponse;
 
 // 2. Clase Pusher: Mantiene el mapa usuario_id → conexión para enrutamiento directo
 class NotificadorPusher implements MessageComponentInterface {
@@ -142,7 +143,7 @@ $servidorWS = new IoServer(
 );
 
 // 5. Levantar Puerto 8081 (Receptor HTTP Interno para Controladores PHP)
-$socketHTTP = new SocketServer('127.0.0.1:8081', [], $loop);
+$socketHTTP = new SocketServer('0.0.0.0:8081', [], $loop);
 $servidorHTTP = new React\Http\HttpServer(function (ServerRequestInterface $request) use ($pusher) {
     $cuerpo = (string)$request->getBody();
     echo "Recibido pálpito HTTP: $cuerpo\n";
