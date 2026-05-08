@@ -1,0 +1,107 @@
+/* 
+ * reportes.css - Estilos Premium para el Módulo de Inteligencia
+ */
+
+:root {
+    --report-primary: #2563eb;
+    --report-success: #16a34a;
+    --report-warning: #ca8a04;
+    --report-danger: #dc2626;
+    --report-bg: #f8fafc;
+}
+
+.report-card-kpi {
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+    border: 1px solid rgba(0,0,0,0.05) !important;
+}
+
+.report-card-kpi:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.08) !important;
+}
+
+.icon-shape {
+    width: 54px;
+    height: 54px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.report-card-kpi:hover .icon-shape {
+    transform: scale(1.1) rotate(5deg);
+}
+
+/* Panel de Filtros */
+.sticky-filters {
+    position: sticky;
+    top: 1.5rem;
+}
+
+#formFiltrosReporte .form-label {
+    color: #475569;
+    letter-spacing: 0.2px;
+}
+
+#formFiltrosReporte .form-control, 
+#formFiltrosReporte .form-select {
+    border-color: #e2e8f0;
+    padding: 0.6rem 0.8rem;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+#formFiltrosReporte .form-control:focus, 
+#formFiltrosReporte .form-select:focus {
+    border-color: var(--report-primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* Tabla de Resultados */
+#tablaReportes thead th {
+    background-color: #f1f5f9;
+    color: #475569;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    border-top: none;
+    padding: 1rem 0.75rem;
+}
+
+#tablaReportes tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+#tablaReportes tbody tr:hover {
+    background-color: rgba(37, 99, 235, 0.02);
+}
+
+/* Badges personalizados */
+.badge-status {
+    padding: 0.5em 0.8em;
+    font-weight: 600;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.bg-success-subtle { background-color: rgba(22, 163, 74, 0.12) !important; color: #16a34a !important; }
+.bg-warning-subtle { background-color: rgba(202, 138, 4, 0.12) !important; color: #ca8a04 !important; }
+.bg-info-subtle { background-color: rgba(37, 99, 235, 0.12) !important; color: #2563eb !important; }
+.bg-secondary-subtle { background-color: rgba(100, 116, 139, 0.12) !important; color: #64748b !important; }
+
+/* Botones de Exportación */
+.btn-export {
+    font-weight: 600;
+    padding: 0.6rem 1.2rem;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.btn-export:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}

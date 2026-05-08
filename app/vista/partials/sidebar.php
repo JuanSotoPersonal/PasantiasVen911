@@ -37,12 +37,12 @@ $seccion   = explode('/', $urlActual)[0] ?? '';
                         </a>
                     </li>
 
-                    <!-- Módulo: Jefatura (Dashboard Analítico) -->
-                    <?php if (tienePerm('jefatura', 'ver')): ?>
+                    <!-- Módulo: Reportes e Inteligencia -->
+                    <?php if (tienePerm('reportes', 'ver')): ?>
                         <li class="nav-item">
-                            <a href="index.php?url=jefatura" class="nav-link <?= $seccion === 'jefatura' ? 'active' : '' ?>">
-                                <i class="nav-icon bi bi-graph-up-arrow"></i>
-                                <p>Jefatura</p>
+                            <a href="index.php?url=reporte" class="nav-link <?= $seccion === 'reporte' ? 'active' : '' ?>">
+                                <i class="nav-icon bi bi-file-earmark-bar-graph"></i>
+                                <p>Reportes</p>
                             </a>
                         </li>
                     <?php endif; ?>
