@@ -519,3 +519,61 @@ i.bi, i.fas, i.far, i.fab, i.fa {
 .select2-results__options::-webkit-scrollbar-thumb:hover {
     background: var(--ven-primary);
 }
+
+/* =============================================
+   DASHBOARD REFINEMENTS (BOTONES GIGANTES)
+   ============================================= */
+
+.cursor-pointer { cursor: pointer; }
+
+.hover-scale { 
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+}
+
+.hover-scale:hover { 
+    transform: translateY(-5px) scale(1.02); 
+    box-shadow: 0 15px 30px rgba(6, 78, 59, 0.3) !important;
+}
+
+/* Botón de Creación Premium (Flat) */
+.card-btn-crear { 
+    background-color: #16a34a !important; 
+    box-shadow: 0 10px 20px rgba(22, 163, 74, 0.15);
+    border: 2px solid rgba(255, 255, 255, 0.1) !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.card-btn-crear:hover {
+    background-color: #15803d !important;
+}
+
+.card-btn-crear h3 {
+    letter-spacing: 1px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.card-btn-crear p {
+    font-weight: 500 !important;
+    letter-spacing: 0.3px;
+}
+
+.btn-crear-icon {
+    font-size: 4.5rem;
+    color: #ffffff !important;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
+    margin-bottom: 0.8rem;
+    transition: transform 0.3s ease;
+}
+
+/* Glassmorphism en modales (Asegurar transparencia en Home) */
+.modal-backdrop { 
+    background-color: rgba(6, 78, 59, 0.18) !important; 
+    backdrop-filter: blur(4px) !important; 
+}
+
+.modal-content {
+    border: 1px solid rgba(187, 247, 208, 0.5) !important;
+    backdrop-filter: blur(10px) !important;
+    background: rgba(255, 255, 255, 0.98) !important;
+}

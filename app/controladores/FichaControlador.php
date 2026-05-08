@@ -471,9 +471,14 @@ class FichaControlador {
                 'tipo_emergencia' => match ($accion) {
                     'crear', 'editar' => (function() use ($id, $accion) {
                         $nombre = trim($_POST['nombre'] ?? '');
+                        $desc   = trim($_POST['descripcion'] ?? '');
                         $v = Validador::validarNombreCatalogo($nombre, 'Nombre del Tipo');
                         if (!$v['valido']) return $v;
-                        return ($accion === 'crear') ? $this->modelo->crearTipoEmergencia($nombre) : $this->modelo->actualizarTipoEmergencia($id, $nombre);
+                        if (!empty($desc)) {
+                            $vDesc = Validador::validarTextoLibre($desc, 'Descripción', 0, 255);
+                            if (!$vDesc['valido']) return $vDesc;
+                        }
+                        return ($accion === 'crear') ? $this->modelo->crearTipoEmergencia($nombre, $desc) : $this->modelo->actualizarTipoEmergencia($id, $nombre, $desc);
                     })(),
                     'eliminar'  => $this->modelo->toggleEstadoTipoEmergencia($id),
                     default     => false,
@@ -483,10 +488,18 @@ class FichaControlador {
                         $tipoId = (int)($_POST['tipo_emergencia_id'] ?? 0);
                         $nombre = trim($_POST['nombre_caso'] ?? '');
                         $desc   = trim($_POST['descripcion'] ?? '');
+                        
                         $vId = Validador::validarId($tipoId, 'Tipo de Emergencia');
                         if (!$vId['valido']) return $vId;
+                        
                         $vNom = Validador::validarNombreCatalogo($nombre, 'Nombre del Caso');
                         if (!$vNom['valido']) return $vNom;
+
+                        if (!empty($desc)) {
+                            $vDesc = Validador::validarTextoLibre($desc, 'Descripción', 0, 255);
+                            if (!$vDesc['valido']) return $vDesc;
+                        }
+
                         return ($accion === 'crear') ? $this->modelo->crearCaso($tipoId, $nombre, $desc) : $this->modelo->actualizarCaso($id, $tipoId, $nombre, $desc);
                     })(),
                     'eliminar' => $this->modelo->toggleEstadoCaso($id),
@@ -551,7 +564,7 @@ class FichaControlador {
                         }
                         return ($accion === 'crear')
                             ? $this->modelo->crearMotivoCierre($nombre, $desc, $contexto)
-                            : $this->modelo->actualizarMotivoCierre($id, $nombre, $desc);
+                            : $this->modelo->actualizarMotivoCierre($id, $nombre, $desc, $contexto);
                     })(),
                     'eliminar' => $this->modelo->toggleEstadoMotivoCierre($id),
                     default    => false,

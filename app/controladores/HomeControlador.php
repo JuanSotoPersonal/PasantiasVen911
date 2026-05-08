@@ -33,18 +33,41 @@ class HomeControlador {
      */
     public function index() {
         try {
-            $usuarioModelo = new UsuarioModelo();
-            $estadisticas = $usuarioModelo->contarPorEstado();
+            require_once 'app/modelos/HomeModelo.php';
+            $homeModelo = new \App\modelos\HomeModelo();
+            
+            $rolId = (int)($_SESSION['user_rol_id'] ?? 0);
+            $userId = (int)($_SESSION['user_id'] ?? 0);
 
-            $datos = [
-                'activo'   => 0,
-                'inactivo' => 0
-            ];
+            $stats = [];
 
-            // 2.1 Mapeo dinámico de contadores de usuarios según su estado actual
-            foreach ($estadisticas as $dato_estadistico) {
-                $datos[$dato_estadistico['estado']] = (int)$dato_estadistico['total'];
+            // 2.1 Carga de estadísticas segmentadas por rol
+            $municipios = [];
+            $tiposEmergencia = [];
+
+            switch ($rolId) {
+                case 1: // Administrador
+                    $stats = $homeModelo->obtenerResumenAdmin();
+                    break;
+                case 2: // Operador
+                    $stats = $homeModelo->obtenerResumenOperador($userId);
+                    
+                    // Necesario para el modal de creación rápida
+                    require_once 'app/modelos/FichaModelo.php';
+                    $fichaMod = new \App\modelos\FichaModelo();
+                    $municipios = $fichaMod->obtenerMunicipios();
+                    $tiposEmergencia = $fichaMod->obtenerTiposEmergencia();
+                    break;
+                case 3: // Despachador
+                    $stats = $homeModelo->obtenerResumenDespachador($userId);
+                    break;
+                case 4: // Jefatura
+                    $stats = $homeModelo->obtenerResumenJefatura();
+                    break;
             }
+
+            // Pasamos los datos a la vista
+            $datos = $stats;
 
             // 2.2 Carga del contenedor principal de la vista home 
             require_once 'app/vista/home/index.php';
@@ -52,5 +75,33 @@ class HomeControlador {
             error_log("[HomeControlador] Error en index: " . $e->getMessage());
             die("Ocurrió un error inesperado al cargar el inicio.");
         }
+    }
+
+    /**
+     * Endpoint AJAX para obtener estadísticas en tiempo real sin recargar la página.
+     */
+    public function obtenerStatsAjax() {
+        header('Content-Type: application/json');
+        try {
+            require_once 'app/modelos/HomeModelo.php';
+            $homeModelo = new \App\modelos\HomeModelo();
+            
+            $rolId = (int)($_SESSION['user_rol_id'] ?? 0);
+            $userId = (int)($_SESSION['user_id'] ?? 0);
+            $stats = [];
+
+            switch ($rolId) {
+                case 1: $stats = $homeModelo->obtenerResumenAdmin(); break;
+                case 2: $stats = $homeModelo->obtenerResumenOperador($userId); break;
+                case 3: $stats = $homeModelo->obtenerResumenDespachador($userId); break;
+                case 4: $stats = $homeModelo->obtenerResumenJefatura(); break;
+            }
+
+            echo json_encode(['success' => true, 'datos' => $stats]);
+        } catch (\Exception $e) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+        }
+        exit;
     }
 }

@@ -514,6 +514,7 @@ class FichaModelo {
     }
 
     public function actualizarCaso(int $id, int $tipoId, string $nombre, string $descripcion): bool {
+        \App\Helpers\Cache::limpiarTodo();
         $stmt = $this->conexion->prepare(
             "UPDATE casos SET tipo_emergencia_id = :tipo_id, nombre_caso = :nombre, descripcion = :descripcion WHERE id = :id"
         );
@@ -525,6 +526,7 @@ class FichaModelo {
     }
 
     public function toggleEstadoCaso(int $id): bool {
+        \App\Helpers\Cache::limpiarTodo();
         $stmt = $this->conexion->prepare("UPDATE casos SET estado = 1 - estado WHERE id = :id");
         return $stmt->execute([':id' => $id]);
     }
@@ -558,6 +560,7 @@ class FichaModelo {
     }
 
     public function actualizarMunicipio(int $id, string $nombre, string $descripcion = ''): bool {
+        \App\Helpers\Cache::borrar("m_1"); \App\Helpers\Cache::borrar("m_0");
         $stmt = $this->conexion->prepare("UPDATE municipios SET nombre_municipio = :nombre, descripcion = :descripcion WHERE id = :id");
         $stmt->bindValue(':nombre',      $nombre,      PDO::PARAM_STR);
         $stmt->bindValue(':descripcion', $descripcion, PDO::PARAM_STR);
@@ -566,6 +569,7 @@ class FichaModelo {
     }
 
     public function toggleEstadoMunicipio(int $id): bool {
+        \App\Helpers\Cache::borrar("m_1"); \App\Helpers\Cache::borrar("m_0");
         $stmt = $this->conexion->prepare("UPDATE municipios SET estado = 1 - estado WHERE id = :id");
         return $stmt->execute([':id' => $id]);
     }
@@ -574,6 +578,9 @@ class FichaModelo {
     public function obtenerParroquias(?int $municipioId = null, int $estado = 1): array {
         $cacheKey = "p_{$municipioId}_{$estado}";
         if (isset(self::$cacheParroquias[$cacheKey])) return self::$cacheParroquias[$cacheKey];
+
+        $l2 = \App\Helpers\Cache::obtener($cacheKey);
+        if ($l2) return self::$cacheParroquias[$cacheKey] = $l2;
 
         $sql = "SELECT p.id, p.nombre_parroquia, p.descripcion, p.municipio_id, m.nombre_municipio, p.estado
                 FROM parroquias p INNER JOIN municipios m ON p.municipio_id = m.id
@@ -585,10 +592,14 @@ class FichaModelo {
         $stmt->bindValue(':estado', $estado, PDO::PARAM_INT);
         if ($municipioId) $stmt->bindValue(':municipio_id', $municipioId, PDO::PARAM_INT);
         $stmt->execute();
-        return self::$cacheParroquias[$cacheKey] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $res = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        \App\Helpers\Cache::guardar($cacheKey, $res, 86400);
+        return self::$cacheParroquias[$cacheKey] = $res;
     }
 
     public function crearParroquia(int $municipioId, string $nombre, string $descripcion = ''): bool {
+        \App\Helpers\Cache::limpiarTodo();
         $stmt = $this->conexion->prepare(
             "INSERT INTO parroquias (municipio_id, nombre_parroquia, descripcion, estado) VALUES (:municipio_id, :nombre, :descripcion, 1)"
         );
@@ -599,6 +610,7 @@ class FichaModelo {
     }
 
     public function actualizarParroquia(int $id, int $municipioId, string $nombre, string $descripcion = ''): bool {
+        \App\Helpers\Cache::limpiarTodo();
         $stmt = $this->conexion->prepare(
             "UPDATE parroquias SET municipio_id = :municipio_id, nombre_parroquia = :nombre, descripcion = :descripcion WHERE id = :id"
         );
@@ -610,6 +622,7 @@ class FichaModelo {
     }
 
     public function toggleEstadoParroquia(int $id): bool {
+        \App\Helpers\Cache::limpiarTodo();
         $stmt = $this->conexion->prepare("UPDATE parroquias SET estado = 1 - estado WHERE id = :id");
         return $stmt->execute([':id' => $id]);
     }
@@ -636,12 +649,19 @@ class FichaModelo {
         $cacheKey = "o_{$estado}";
         if (isset(self::$cacheOrganismos[$cacheKey])) return self::$cacheOrganismos[$cacheKey];
 
+        $l2 = \App\Helpers\Cache::obtener($cacheKey);
+        if ($l2) return self::$cacheOrganismos[$cacheKey] = $l2;
+
         $stmt = $this->conexion->prepare("SELECT id, nombre_organismo, descripcion, estado FROM organismos WHERE estado = :estado ORDER BY nombre_organismo ASC");
         $stmt->execute([':estado' => $estado]);
-        return self::$cacheOrganismos[$cacheKey] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $res = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        \App\Helpers\Cache::guardar($cacheKey, $res, 86400);
+        return self::$cacheOrganismos[$cacheKey] = $res;
     }
 
     public function crearOrganismo(string $nombre, string $descripcion = ''): bool {
+        \App\Helpers\Cache::limpiarTodo();
         if ($this->existeNombreCatalogo('organismos', 'nombre_organismo', $nombre)) {
             throw new Exception("El organismo '{$nombre}' ya está registrado y activo.");
         }
@@ -652,6 +672,7 @@ class FichaModelo {
     }
 
     public function actualizarOrganismo(int $id, string $nombre, string $descripcion = ''): bool {
+        \App\Helpers\Cache::limpiarTodo();
         if ($this->existeNombreCatalogo('organismos', 'nombre_organismo', $nombre, $id)) {
             throw new Exception("Ya existe otro organismo activo con el nombre '{$nombre}'.");
         }
@@ -663,6 +684,7 @@ class FichaModelo {
     }
 
     public function toggleEstadoOrganismo(int $id): bool {
+        \App\Helpers\Cache::limpiarTodo();
         $stmt = $this->conexion->prepare("UPDATE organismos SET estado = 1 - estado WHERE id = :id");
         return $stmt->execute([':id' => $id]);
     }
@@ -675,6 +697,9 @@ class FichaModelo {
         $cacheKey = "mc_{$estado}_{$contexto}";
         if (isset(self::$cacheMotivosCierre[$cacheKey])) return self::$cacheMotivosCierre[$cacheKey];
 
+        $l2 = \App\Helpers\Cache::obtener($cacheKey);
+        if ($l2) return self::$cacheMotivosCierre[$cacheKey] = $l2;
+
         $stmt = $this->conexion->prepare(
             "SELECT id, nombre, descripcion, estado, contexto 
              FROM motivos_cierre 
@@ -682,10 +707,14 @@ class FichaModelo {
              ORDER BY nombre ASC"
         );
         $stmt->execute([':estado' => $estado, ':contexto' => $contexto]);
-        return self::$cacheMotivosCierre[$cacheKey] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $res = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        \App\Helpers\Cache::guardar($cacheKey, $res, 86400);
+        return self::$cacheMotivosCierre[$cacheKey] = $res;
     }
 
     public function crearMotivoCierre(string $nombre, string $descripcion = '', string $contexto = 'ficha'): bool {
+        \App\Helpers\Cache::limpiarTodo();
         // Verificar unicidad dentro del mismo contexto
         $stmt = $this->conexion->prepare(
             "SELECT COUNT(*) FROM motivos_cierre WHERE nombre = :nombre AND contexto = :contexto AND estado = 1"
@@ -703,14 +732,15 @@ class FichaModelo {
         return $stmt->execute();
     }
 
-    public function actualizarMotivoCierre(int $id, string $nombre, string $descripcion = ''): bool {
-        // Verificar unicidad excluyendo el registro actual
+    public function actualizarMotivoCierre(int $id, string $nombre, string $descripcion = '', string $contexto = 'ficha'): bool {
+        \App\Helpers\Cache::limpiarTodo();
+        // Verificar unicidad excluyendo el registro actual, pero RESTRINGIDO al contexto
         $stmt = $this->conexion->prepare(
-            "SELECT COUNT(*) FROM motivos_cierre WHERE nombre = :nombre AND id != :id AND estado = 1"
+            "SELECT COUNT(*) FROM motivos_cierre WHERE nombre = :nombre AND id != :id AND contexto = :contexto AND estado = 1"
         );
-        $stmt->execute([':nombre' => $nombre, ':id' => $id]);
+        $stmt->execute([':nombre' => $nombre, ':id' => $id, ':contexto' => $contexto]);
         if ((int)$stmt->fetchColumn() > 0) {
-            throw new \Exception("Ya existe otro motivo activo con el nombre '{$nombre}'.");
+            throw new \Exception("Ya existe otro motivo activo con el nombre '{$nombre}' en este contexto.");
         }
         $stmt = $this->conexion->prepare(
             "UPDATE motivos_cierre SET nombre = :nombre, descripcion = :descripcion WHERE id = :id"
@@ -722,6 +752,7 @@ class FichaModelo {
     }
 
     public function toggleEstadoMotivoCierre(int $id): bool {
+        \App\Helpers\Cache::limpiarTodo();
         $stmt = $this->conexion->prepare("UPDATE motivos_cierre SET estado = 1 - estado WHERE id = :id");
         return $stmt->execute([':id' => $id]);
     }

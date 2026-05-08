@@ -20,6 +20,7 @@ $pageName = 'home';
     
     <!-- Estilos específicos para notificaciones push y diseño home -->
     <link rel="stylesheet" href="public/css/notificaciones.css" />
+    <link rel="stylesheet" href="public/css/fichas.css" />
 </head>
 
 <body class="layout-fixed sidebar-expand-lg bg-body-tertiary">
@@ -41,8 +42,12 @@ $pageName = 'home';
                             <div class="home-hero-header mt-2 d-flex align-items-center">
                                 <img src="public/assets/img/logos/VEN 9-1-1.webp" alt="VEN 911 Logo" class="home-hero-logo me-3">
                                 <div>
-                                    <h1 class="home-hero-title h2 mb-1">Panel de Control</h1>
-                                    <p class="home-hero-subtitle text-muted mb-0">Sistema Integrado de Gestión de Emergencias VEN 911</p>
+                                    <div class="d-flex align-items-center justify-content-between w-100">
+                                        <div>
+                                            <h1 class="home-hero-title h2 mb-1">Panel de Control</h1>
+                                            <p class="home-hero-subtitle fw-medium mb-0" style="color: #475569;">Sistema Integrado de Gestión de Emergencias VEN 911</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -53,33 +58,29 @@ $pageName = 'home';
             <!-- Sección de Widgets y Estadísticas Dinámicas -->
             <div class="app-content mt-4">
                 <div class="container-fluid">
-                    
-                    <!-- Bloque de Bienvenida: UI Informativa -->
-                    <div class="row mb-4">
-                        <div class="col-12">
-                            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-                                <div class="card-body p-4 bg-white border-start border-success border-5">
-                                    <h3 class="fw-bold text-success mb-2">¡Bienvenido al Centro de Mando!</h3>
-                                    <p class="text-secondary mb-0">
-                                        Estado del sistema: <span class="badge bg-success-subtle text-success">Óptimo</span>. 
-                                        Utilice el menú lateral para gestionar fichas de emergencia y monitorizar el despacho en tiempo real.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- Visualizaciones de Datos: Componentización -->
+                    <!-- Visualizaciones de Datos: Segmentación por Rol -->
                     <div class="row g-4">
-                        <!-- Widget de Gráfica de Usuarios -->
-                        <div class="col-xl-6 col-lg-8 col-12">
-                            <?php require __DIR__ . '/componentes/_grafica_usuarios.php'; ?>
+                        <div class="col-12">
+                            <?php 
+                            $rolId = (int)($_SESSION['user_rol_id'] ?? 0);
+                            switch ($rolId) {
+                                case 1: require __DIR__ . '/componentes/_stats_admin.php'; break;
+                                case 2: require __DIR__ . '/componentes/_stats_operador.php'; break;
+                                case 3: require __DIR__ . '/componentes/_stats_despachador.php'; break;
+                                case 4: require __DIR__ . '/componentes/_stats_jefatura.php'; break;
+                                default: 
+                                    echo '<div class="alert alert-info shadow-sm rounded-4">No se han definido visualizaciones para su rol.</div>';
+                            }
+                            ?>
                         </div>
 
                         <!-- Widget de Estado del Servidor WebSocket (Solo Administrador) -->
-                        <div class="col-xl-6 col-lg-4 col-12">
+                        <?php if ($rolId === 1): ?>
+                        <div class="col-12 mt-4">
                             <?php require __DIR__ . '/componentes/_widget_ws.php'; ?>
                         </div>
+                        <?php endif; ?>
                     </div>
 
                 </div>
@@ -91,6 +92,11 @@ $pageName = 'home';
         <?php require __DIR__ . '/../partials/footer.php'; ?>
 
     </div>
+    
+    <!-- 4. COMPONENTES DE ACCIÓN (MODALES REUTILIZADOS) -->
+    <?php if ($rolId === 2 && tienePerm('fichas', 'crear')): ?>
+        <?php require __DIR__ . '/../fichas/componentes/_modal_crear.php'; ?>
+    <?php endif; ?>
 
     <!-- 5. CARGA DE ASSETS JAVASCRIPT -->
     <?php require __DIR__ . '/../partials/scripts.php'; ?>
@@ -104,6 +110,9 @@ $pageName = 'home';
          * Se inyectan los datos desde el controlador para que ApexCharts los procese.
          */
         window.VENT911_STATS = <?php echo json_encode($datos ?? []); ?>;
+        window.USER_ROL = <?php echo (int)($_SESSION['user_rol_id'] ?? 0); ?>;
+        window.VEN911_PERM_EDITAR = <?php echo tienePerm('fichas', 'editar') ? 'true' : 'false'; ?>;
+        window.VEN911_PERM_CAMBIAR_ESTADO = <?php echo tienePerm('fichas', 'cambiar_estado') ? 'true' : 'false'; ?>;
     </script>
     
     <!-- Scripts de Lógica Modular -->
@@ -111,6 +120,14 @@ $pageName = 'home';
     
     <?php if ((int)($_SESSION['user_rol_id'] ?? 0) === 1): ?>
     <script src="public/js/home/home_ws.js"></script>
+    <?php endif; ?>
+
+    <!-- Lógica de Fichas para el botón de creación rápida -->
+    <?php if ($rolId === 2 && tienePerm('fichas', 'crear')): ?>
+        <script src="public/libs/datatables/dataTables.min.js"></script>
+        <script src="public/libs/datatables/dataTables.bootstrap5.min.js"></script>
+        <script src="public/js/comun/datatables_config.js"></script>
+        <script src="public/js/fichas/fichas_datatable.js"></script>
     <?php endif; ?>
 
 </body>

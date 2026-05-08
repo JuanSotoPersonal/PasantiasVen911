@@ -56,8 +56,10 @@ $(function () {
                 
                 // Recarga atómica de tablas vinculadas
                 if (Array.isArray(tablasRef)) {
-                    tablasRef.forEach(t => t.ajax.reload(null, false));
-                } else if (tablasRef) {
+                    tablasRef.forEach(t => {
+                        if (t && typeof t.ajax === 'object') t.ajax.reload(null, false);
+                    });
+                } else if (tablasRef && typeof tablasRef.ajax === 'object') {
                     tablasRef.ajax.reload(null, false);
                 }
                 
@@ -118,7 +120,7 @@ $(function () {
 
         return `
             <button class="btn btn-ven-edit btn-accion btn-editar-cat me-1"
-                    data-cat="${catalogo}" data-row='${JSON.stringify(row)}' title="Editar">
+                    data-cat="${catalogo}" data-row='${escapeHTML(JSON.stringify(row))}' title="Editar">
                 <i class="bi bi-pencil-fill"></i>
             </button>`;
     }

@@ -157,7 +157,13 @@ $(document).ready(function () {
                 if (res.success) {
                     bootstrap.Modal.getOrCreateInstance(document.getElementById('modalCrearFicha')).hide();
                     Swal.fire('¡Registrada!', res.message, 'success');
-                    tablaFichas.ajax.reload(null, false);
+                    if (tablaEl.length > 0) {
+                        tablaFichas.ajax.reload(null, false);
+                    }
+                    // Refrescar Dashboard si está presente (Integración Modular)
+                    if (typeof window.actualizarDashboard === 'function') {
+                        window.actualizarDashboard();
+                    }
                 } else {
                     Swal.fire('Error', res.message, 'error');
                 }
@@ -369,6 +375,10 @@ $(document).ready(function () {
                     bootstrap.Modal.getOrCreateInstance(document.getElementById('modalEditarFicha')).hide();
                     Swal.fire('¡Guardado!', res.message, 'success');
                     tablaFichas.ajax.reload(null, false);
+                    // Refrescar Dashboard si está presente
+                    if (typeof window.actualizarDashboard === 'function') {
+                        window.actualizarDashboard();
+                    }
                 } else {
                     Swal.fire('Error', res.message, 'error');
                 }
