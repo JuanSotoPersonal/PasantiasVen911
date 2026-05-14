@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y \
     git \
     curl \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) gd pdo_mysql zip
+    && docker-php-ext-install -j$(nproc) gd pdo_mysql zip sockets
 
 # Habilitar mod_rewrite de Apache para URLs amigables
 RUN a2enmod rewrite

@@ -35,10 +35,36 @@ class EventoModelo {
     // ///////////////////////////////////////////////////////////////////
 
     /**
-     * Registra un evento general del sistema en la tabla eventos_sistema.
-     * Útil para auditar cambios en configuraciones, roles o perfiles de usuario.
+     * Proxy Asíncrono: Encola un evento general del sistema en RabbitMQ.
      */
     public function registrarEvento(
+        ?int    $usuario_id,
+        string  $tipo_accion,
+        string  $tabla,
+        ?int    $registro_id = null,
+        ?array  $anterior    = null,
+        ?array  $nuevo       = null,
+        ?string $descripcion = null
+    ): void {
+        require_once 'app/Helpers/Notificador.php';
+        \App\Helpers\Notificador::encolarTrabajo([
+            'action' => 'registrar_auditoria_sistema',
+            'datos' => [
+                'usuario_id'  => $usuario_id,
+                'tipo_accion' => $tipo_accion,
+                'tabla'       => $tabla,
+                'registro_id' => $registro_id,
+                'anterior'    => $anterior,
+                'nuevo'       => $nuevo,
+                'descripcion' => $descripcion
+            ]
+        ]);
+    }
+
+    /**
+     * (Método Interno / Worker) Inserta realmente el log en la BD.
+     */
+    public function insertarEventoSistemaReal(
         ?int    $usuario_id,
         string  $tipo_accion,
         string  $tabla,
@@ -63,15 +89,43 @@ class EventoModelo {
             $stmt->bindValue(':descripcion', $descripcion, PDO::PARAM_STR);
             $stmt->execute();
         } catch (\Exception $e) {
-            error_log("[EventoModelo] Error en registrarEvento: " . $e->getMessage());
+            error_log("[EventoModelo] Error en insertarEventoSistemaReal: " . $e->getMessage());
         }
     }
 
     /**
-     * Registra un evento específico del ciclo de vida de una ficha.
-     * Captura transiciones de estado y snapshots de datos para reconstruir la historia de una emergencia.
+     * Proxy Asíncrono: Encola un evento de ficha en RabbitMQ.
      */
     public function registrarEventoFicha(
+        int     $ficha_id,
+        ?int    $usuario_id      = null,
+        string  $tipo_evento     = 'MODIFICACION',
+        ?string $estado_anterior = null,
+        ?string $estado_nuevo    = null,
+        ?array  $anterior        = null,
+        ?array  $nuevo           = null,
+        ?string $descripcion     = null
+    ): void {
+        require_once 'app/Helpers/Notificador.php';
+        \App\Helpers\Notificador::encolarTrabajo([
+            'action' => 'registrar_auditoria_ficha',
+            'datos' => [
+                'ficha_id'        => $ficha_id,
+                'usuario_id'      => $usuario_id,
+                'tipo_evento'     => $tipo_evento,
+                'estado_anterior' => $estado_anterior,
+                'estado_nuevo'    => $estado_nuevo,
+                'anterior'        => $anterior,
+                'nuevo'           => $nuevo,
+                'descripcion'     => $descripcion
+            ]
+        ]);
+    }
+
+    /**
+     * (Método Interno / Worker) Inserta realmente el evento de la ficha en la BD.
+     */
+    public function insertarEventoFichaReal(
         int     $ficha_id,
         ?int    $usuario_id      = null,
         string  $tipo_evento     = 'MODIFICACION',
@@ -98,7 +152,7 @@ class EventoModelo {
             $stmt->bindValue(':descripcion',     $descripcion,    PDO::PARAM_STR);
             $stmt->execute();
         } catch (\Exception $e) {
-            error_log("[EventoModelo] Error en registrarEventoFicha: " . $e->getMessage());
+            error_log("[EventoModelo] Error en insertarEventoFichaReal: " . $e->getMessage());
         }
     }
 

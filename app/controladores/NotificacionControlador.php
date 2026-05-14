@@ -130,67 +130,144 @@ class NotificacionControlador {
      * Usa fsockopen con timeout para no bloquear la interfaz.
      * Solo accesible para el Administrador (Rol 1).
      */
+    /**
+     * Verifica el estado de los servicios de notificación.
+     * 1. Puerto 8081 (Servidor WebSocket Interno)
+     * 2. RabbitMQ (Puerto 5672)
+     * 3. Proceso del Worker en el Sistema Operativo
+     */
     public function estadoServidor(): void {
         header('Content-Type: application/json');
         session_write_close();
 
-        // Restricción estricta: solo el Administrador puede consultar esto
         if ((int)$_SESSION['user_rol_id'] !== 1) {
             echo json_encode(['success' => false, 'message' => 'Sin permisos.']);
             return;
         }
 
-        $inicio = microtime(true);
-        $conexion = @fsockopen('127.0.0.1', 8081, $errno, $errstr, 1);
-        $latencia = round((microtime(true) - $inicio) * 1000); // ms
+        // Obtener variables de entorno (Docker) con fallback a localhost (XAMPP local)
+        $wsHost = getenv('WS_INTERNAL_HOST') ?: '127.0.0.1';
+        $rabbitHost = getenv('RABBITMQ_HOST') ?: '127.0.0.1';
+        $rabbitPort = getenv('RABBITMQ_PORT') ?: 5672;
+        $rabbitUser = getenv('RABBITMQ_USER') ?: 'ven911';
+        $rabbitPass = getenv('RABBITMQ_PASS') ?: 'ven911_mq_pass';
+        $rabbitQueue = getenv('RABBITMQ_QUEUE') ?: 'notificaciones';
 
-        if ($conexion) {
-            fclose($conexion);
-            echo json_encode([
-                'activo'     => true,
-                'latencia_ms' => $latencia,
-                'mensaje'    => 'Servidor WebSocket operativo.',
-            ]);
-        } else {
-            echo json_encode([
-                'activo'     => false,
-                'latencia_ms' => null,
-                'mensaje'    => 'Demonio WebSocket no detectado en el puerto 8081.',
-            ]);
+        // 1. Validar Servidor WebSocket (8081 Interno)
+        $inicio = microtime(true);
+        $fpWS = @fsockopen($wsHost, 8081, $errno, $errstr, 0.5);
+        $latencia = round((microtime(true) - $inicio) * 1000);
+
+        $wsActivo = false;
+        if ($fpWS) {
+            $wsActivo = true;
+            fclose($fpWS);
         }
+
+        // 2. Validar RabbitMQ (Puerto 5672)
+        $fpRabbit = @fsockopen($rabbitHost, $rabbitPort, $errno, $errstr, 0.5);
+        $rabbitActivo = false;
+        if ($fpRabbit) {
+            $rabbitActivo = true;
+            fclose($fpRabbit);
+        }
+
+        // 3. Validar Proceso Worker PHP Activo
+        $workerActivo = false;
+        
+        // Si estamos en entorno Docker (getenv devuelve algo), verificamos vía API de RabbitMQ
+        if (getenv('RABBITMQ_HOST')) {
+            // URL de la API de Management de RabbitMQ (Puerto 15672)
+            $url = "http://{$rabbitUser}:{$rabbitPass}@{$rabbitHost}:15672/api/queues/%2F/{$rabbitQueue}";
+            $ctx = stream_context_create(['http' => ['timeout' => 1]]);
+            $res = @file_get_contents($url, false, $ctx);
+            
+            if ($res) {
+                $data = json_decode($res, true);
+                if (isset($data['consumers']) && $data['consumers'] > 0) {
+                    $workerActivo = true;
+                }
+            }
+        } else {
+            // Entorno local Windows/XAMPP
+            $out = [];
+            $cmd = 'powershell -NoProfile -Command "if (Get-CimInstance Win32_Process -Filter \\"CommandLine LIKE \'%consumidor_notif.php%\'\\" -ErrorAction SilentlyContinue) { echo 1 } else { echo 0 }"';
+            exec($cmd, $out);
+            if (!empty($out) && trim($out[0]) === '1') {
+                $workerActivo = true;
+            }
+        }
+
+        echo json_encode([
+            'success'      => true,
+            'ws_activo'    => $wsActivo,
+            'rabbit_activo'=> $rabbitActivo,
+            'worker_activo'=> $workerActivo,
+            'latencia_ms'  => $latencia,
+            'mensaje'      => ($wsActivo && $rabbitActivo && $workerActivo) ? 'Servicios operativos.' : 'Uno o más servicios fuera de línea.'
+        ]);
     }
 
     /**
-     * Ejecuta el script de arranque del servidor WebSocket.
-     * Solo accesible para el Administrador (Rol 1).
-     * 
-     * @Nota: Usa popen para lanzar el proceso en segundo plano sin bloquear PHP.
+     * Ejecuta el script de arranque de los demonios PHP directamente.
+     * Sin depender de archivos .bat externos.
      */
     public function iniciarServidor(): void {
         header('Content-Type: application/json');
 
-        // 1. SEGURIDAD: Solo Administrador (Rol 1)
         if ((int)($_SESSION['user_rol_id'] ?? 0) !== 1) {
             echo json_encode(['success' => false, 'message' => 'Acceso denegado.']);
             return;
         }
 
+        // Si estamos en Docker, los contenedores se manejan solos
+        if (getenv('WS_INTERNAL_HOST')) {
+            echo json_encode(['success' => false, 'message' => 'Entorno Docker detectado. Los servicios se administran automáticamente mediante el contenedor.']);
+            return;
+        }
+
         try {
-            // 2. RUTA DEL SCRIPT
-            $rutaBat = realpath('iniciar_ws.bat');
+            $phpExe = 'C:\\xampp\\php\\php.exe';
             
-            if (!$rutaBat || !file_exists($rutaBat)) {
-                echo json_encode(['success' => false, 'message' => 'Script de inicio no encontrado en la raíz.']);
+            // Rutas absolutas a los scripts
+            $wsScript     = realpath(__DIR__ . '/../bin/servidor_ws.php');
+            $workerScript = realpath(__DIR__ . '/../bin/consumidor_notif.php');
+            $logDir       = realpath(__DIR__ . '/../bin');
+
+            if (!$wsScript || !$workerScript) {
+                echo json_encode(['success' => false, 'message' => 'Scripts de inicio no encontrados.']);
                 return;
             }
 
-            // 3. EJECUCIÓN ASÍNCRONA (Windows)
-            // Se usa 'start /B' para ejecutarlo minimizado y sin bloquear la respuesta HTTP
-            pclose(popen("start /B \"\" \"$rutaBat\"", "r"));
+            $wsLog     = $logDir . '\\servidor_ws.log';
+            $workerLog = $logDir . '\\worker.log';
+
+            // Función anidada para lanzar proceso silencioso en PowerShell
+            $lanzarEnBackground = function($script, $log) use ($phpExe) {
+                // Se usa PowerShell Start-Process oculto para lanzar el demonio PHP sin bloquear ni mostrar ventana
+                $psCommand = "Start-Process -FilePath '$phpExe' -ArgumentList '$script' -WindowStyle Hidden -RedirectStandardOutput '$log' -RedirectStandardError '$log'";
+                $cmd = "powershell -NoProfile -WindowStyle Hidden -Command \"$psCommand\"";
+                pclose(popen($cmd, "r"));
+            };
+
+            // 1. Evitar duplicar WS
+            $fpWS = @fsockopen('127.0.0.1', 8080, $errno, $errstr, 0.5);
+            if (!$fpWS) {
+                $lanzarEnBackground($wsScript, $wsLog);
+            } else {
+                fclose($fpWS);
+            }
+
+            // 2. Evitar duplicar Worker
+            $out = [];
+            exec('powershell -NoProfile -Command "if (Get-CimInstance Win32_Process -Filter \\"CommandLine LIKE \'%consumidor_notif.php%\'\\" -ErrorAction SilentlyContinue) { echo 1 } else { echo 0 }"', $out);
+            if (empty($out) || trim($out[0]) !== '1') {
+                $lanzarEnBackground($workerScript, $workerLog);
+            }
 
             echo json_encode([
                 'success' => true, 
-                'message' => 'Comando de inicio enviado correctamente al sistema.'
+                'message' => 'Servicios iniciados en segundo plano correctamente.'
             ]);
         } catch (\Exception $e) {
             echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);

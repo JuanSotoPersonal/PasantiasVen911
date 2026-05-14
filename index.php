@@ -132,7 +132,8 @@ if ($autenticado) {
         'notificacion' => ['fichas', 'ver'],
         'ficha'     => ['fichas',    'ver'],
         'despacho'  => ['despachos', 'ver'],
-        'jefatura' => ['jefatura', 'ver'],
+        'jefatura'  => ['jefatura',  'ver'],
+        'reporte'   => ['reportes',  'ver'],
     ];
 
     $slugRuta = strtolower($nombreBase);

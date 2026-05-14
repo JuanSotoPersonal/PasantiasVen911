@@ -16,6 +16,24 @@ src/
 package-lock.json
 package.json
 
+# Archivos de sistema y logs
+.DS_Store
+Thumbs.db
+error_log
+php_errors.log
+
+# IDEs
+.vscode/
+.idea/
+
+# Carpetas de desarrollo innecesarias en prod si existen
+node_modules/
+dist/
+src/
+.astro/
+package-lock.json
+package.json
+
 # Exclusiones solicitadas
 .agents/
 .github/
@@ -24,3 +42,9 @@ package.json
 storage/cache/*.cache
 storage/cache/*.json
 scratch/
+
+# Herramientas y Debug
+graphify-out/
+debug_*.php
+test_*.php
+graphify_help.txt

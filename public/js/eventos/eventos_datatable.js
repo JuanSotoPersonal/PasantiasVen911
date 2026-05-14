@@ -80,7 +80,8 @@ $(document).ready(function () {
         ],
         "language": window.Ven911DataTablesLang, // Configuración de idioma global
         "order": [[4, "desc"]], // Ordenar por fecha descendente por defecto
-        "responsive": true
+        "responsive": true,
+        "searchDelay": 600 // Debounce para optimizar búsquedas
     });
 
     // 2. GESTIÓN DEL MODAL DE DETALLES (DELEGACIÓN DE EVENTOS)

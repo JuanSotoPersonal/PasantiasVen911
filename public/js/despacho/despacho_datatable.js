@@ -168,6 +168,7 @@ $(document).ready(function () {
         order:      [[7, 'asc']], // Más antiguas primero
         responsive: true,
         pageLength: 15,
+        searchDelay: 600, // Debounce para optimizar búsquedas
         drawCallback: function (settings) {
             // Actualiza el contador del badge del tab "Cola General"
             const total = settings.json ? settings.json.recordsFiltered : 0;
@@ -268,6 +269,7 @@ $(document).ready(function () {
         order:      [[7, 'asc']],
         responsive: true,
         pageLength: 15,
+        searchDelay: 600, // Debounce para optimizar búsquedas
         drawCallback: function (settings) {
             // Actualiza el contador del badge del tab "Mis Fichas"
             const total = settings.json ? settings.json.recordsFiltered : 0;
@@ -1009,6 +1011,7 @@ $(document).ready(function () {
             data:         datos,
             processData: false,
             contentType: false,
+            dataType:    'json',
             success: function (res) {
                 if (res.success) {
                     bootstrap.Modal.getOrCreateInstance(document.getElementById('modalEditarFicha')).hide();

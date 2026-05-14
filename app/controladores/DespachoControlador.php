@@ -660,13 +660,13 @@ class DespachoControlador {
                 return;
             }
 
-            // Blindaje de cierre: verificar que no haya organismos despachados sin resolver
-            if ($nuevoEstado === 'Cerrado') {
+            // Blindaje de integridad: verificar que no haya organismos despachados sin resolver (Liberado/Cancelado)
+            if (in_array($nuevoEstado, ['Cerrado', 'Atendido'])) {
                 $despachosActivos = $this->modelo->contarDespachosActivos($fichaId);
                 if ($despachosActivos > 0) {
                     echo json_encode([
                         'success' => false,
-                        'message' => "No se puede cerrar la ficha: hay {$despachosActivos} organismo(s) despachado(s) sin resolver. Libere o cancele todos los organismos antes de cerrar.",
+                        'message' => "No se puede marcar como {$nuevoEstado}: hay {$despachosActivos} organismo(s) en curso. Libere o cancele todos los organismos antes de finalizar.",
                     ]);
                     return;
                 }

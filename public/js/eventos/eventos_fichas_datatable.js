@@ -88,7 +88,8 @@ $(document).ready(function () {
         ],
         "language": window.Ven911DataTablesLang, // Traducción global
         "order": [[5, "desc"]], // Ordenar por fecha más reciente
-        "responsive": true
+        "responsive": true,
+        "searchDelay": 600 // Debounce para optimizar búsquedas
     });
 
     // 2. GESTIÓN DEL MODAL DE CAMBIOS (DELEGACIÓN DE EVENTOS)

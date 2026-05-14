@@ -12,9 +12,14 @@ class ComposerStaticInitedd4607eee3099e05ae35fa920ed05f7
         '6e3fae29631ef280660b3cdad06f25a8' => __DIR__ . '/..' . '/symfony/deprecation-contracts/function.php',
         '0e6d7bf4a5811bfa5cf40c5ccd6fae6a' => __DIR__ . '/..' . '/symfony/polyfill-mbstring/bootstrap.php',
         '662a729f963d39afe703c9d9b7ab4a8c' => __DIR__ . '/..' . '/symfony/polyfill-php83/bootstrap.php',
+        'decc78cc4436b1292c6c0d151b19445c' => __DIR__ . '/..' . '/phpseclib/phpseclib/phpseclib/bootstrap.php',
     );
 
     public static $prefixLengthsPsr4 = array (
+        'p' =>
+        array (
+            'phpseclib3\\' => 11,
+        ),
         'S' =>
         array (
             'Symfony\\Polyfill\\Php83\\' => 23,
@@ -37,6 +42,8 @@ class ComposerStaticInitedd4607eee3099e05ae35fa920ed05f7
         'P' =>
         array (
             'Psr\\Http\\Message\\' => 17,
+            'PhpAmqpLib\\' => 11,
+            'ParagonIE\\ConstantTime\\' => 23,
         ),
         'G' =>
         array (
@@ -53,6 +60,10 @@ class ComposerStaticInitedd4607eee3099e05ae35fa920ed05f7
     );
 
     public static $prefixDirsPsr4 = array (
+        'phpseclib3\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/phpseclib/phpseclib/phpseclib',
+        ),
         'Symfony\\Polyfill\\Php83\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-php83',
@@ -109,6 +120,14 @@ class ComposerStaticInitedd4607eee3099e05ae35fa920ed05f7
         array (
             0 => __DIR__ . '/..' . '/psr/http-factory/src',
             1 => __DIR__ . '/..' . '/psr/http-message/src',
+        ),
+        'PhpAmqpLib\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/php-amqplib/php-amqplib/PhpAmqpLib',
+        ),
+        'ParagonIE\\ConstantTime\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/paragonie/constant_time_encoding/src',
         ),
         'GuzzleHttp\\Psr7\\' =>
         array (

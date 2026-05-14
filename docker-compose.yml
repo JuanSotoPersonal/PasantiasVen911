@@ -16,8 +16,16 @@ services:
       - DB_USER=ven911_user
       - DB_PASS=ven911_secure_pass
       - WS_INTERNAL_HOST=ven911_sockets
+      - RABBITMQ_HOST=ven911_rabbit
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USER=ven911
+      - RABBITMQ_PASS=ven911_mq_pass
+      - RABBITMQ_QUEUE=notificaciones
     depends_on:
-      - ven911_db
+      ven911_db:
+        condition: service_started
+      ven911_rabbit:
+        condition: service_healthy
     networks:
       - ven911_network
 
@@ -44,6 +52,62 @@ services:
     command: php app/bin/servidor_ws.php
     ports:
       - "8080:8080"
+    depends_on:
+      - ven911_db
+    networks:
+      - ven911_network
+
+  # Broker de Mensajería (RabbitMQ)
+  ven911_rabbit:
+    image: rabbitmq:3.13-management-alpine
+    container_name: ven911_rabbit
+    restart: always
+    ports:
+      - "15672:15672"   # Panel de administración (solo para diagnóstico interno)
+    environment:
+      - RABBITMQ_DEFAULT_USER=ven911
+      - RABBITMQ_DEFAULT_PASS=ven911_mq_pass
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - ven911_network
+
+  # Worker Consumer: Lee la cola de RabbitMQ y entrega al bus WS
+  ven911_consumer:
+    build: .
+    container_name: ven911_consumer
+    restart: always
+    command: php app/bin/consumidor_notif.php
+    environment:
+      - RABBITMQ_HOST=ven911_rabbit
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USER=ven911
+      - RABBITMQ_PASS=ven911_mq_pass
+      - RABBITMQ_QUEUE=notificaciones
+      - WS_INTERNAL_HOST=ven911_sockets
+    depends_on:
+      ven911_rabbit:
+        condition: service_healthy
+      ven911_ws:
+        condition: service_started
+    networks:
+      - ven911_network
+
+  # phpMyAdmin para acceder a la base de datos desde la web
+  ven911_phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: ven911_phpmyadmin
+    restart: always
+    ports:
+      - "8081:80"
+    environment:
+      - PMA_HOST=ven911_db
+      - PMA_USER=ven911_user
+      - PMA_PASSWORD=ven911_secure_pass
+      - PMA_ROOT_PASSWORD=root_secure_pass
     depends_on:
       - ven911_db
     networks:

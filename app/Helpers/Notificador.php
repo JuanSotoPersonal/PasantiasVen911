@@ -39,95 +39,39 @@ class Notificador {
     // 2. ENVÍO MASIVO POR ROL (OPTIMIZADO: batch INSERT + 1 curl)
     // ///////////////////////////////////////////////////////////////////
 
-    /**
-     * Envía una notificación a todos los usuarios que posean un rol específico.
-     * Usa un INSERT batch para persistir todas las notificaciones en 1 query,
-     * y un único emit al bus WebSocket con el array de destinatarios.
-     *
-     * @param int      $rolId   ID del rol destinatario (1: Admin, 2: Operador, 3: Despacho, 4: Jefatura)
-     * @param string   $tipo    Categoría de la alerta (alerta, info, cambio_estado)
-     * @param string   $titulo  Título corto de la notificación
-     * @param string   $mensaje Cuerpo detallado del mensaje
-     * @param int|null $fichaId ID de la ficha vinculada (opcional)
-     */
     public static function enviarPorRol(int $rolId, string $tipo, string $titulo, string $mensaje, ?int $fichaId = null): void {
-        try {
-            $modelo   = self::obtenerModelo();
-            $usuarios = $modelo->obtenerUsuariosPorRol($rolId);
-
-            if (empty($usuarios)) {
-                return;
-            }
-
-            // 1. Persistencia masiva en BD: 1 INSERT batch en lugar de N INSERTs
-            $insertados = $modelo->crearBatch($usuarios, $tipo, $titulo, $mensaje, $fichaId);
-
-            if (empty($insertados)) {
-                return;
-            }
-
-            // 2. Un solo emit al bus WS con el array de destinatarios
-            $fechaActual   = date('Y-m-d H:i:s');
-            $destinatarios = array_map(function ($item) use ($tipo, $titulo, $mensaje, $fichaId, $fechaActual) {
-                return [
-                    'id'             => $item['id'],
-                    'usuario_id'     => $item['usuario_id'],
-                    'tipo'           => $tipo,
-                    'titulo'         => $titulo,
-                    'mensaje'        => $mensaje,
-                    'fecha_creacion' => $fechaActual,
-                    'ficha_id'       => $fichaId,
-                ];
-            }, $insertados);
-
-            self::emitirSocket(['destinatarios' => $destinatarios]);
-
-        } catch (\Exception $e) {
-            error_log("[Notificador] Error en enviarPorRol: " . $e->getMessage());
-        }
+        self::encolarTrabajo([
+            'action'   => 'guardar_notificacion_rol',
+            'rol_id'   => $rolId,
+            'tipo'     => $tipo,
+            'titulo'   => $titulo,
+            'mensaje'  => $mensaje,
+            'ficha_id' => $fichaId
+        ]);
     }
 
     // ///////////////////////////////////////////////////////////////////
     // 3. ENVÍO INDIVIDUAL (sin cambios en lógica, usa el singleton)
     // ///////////////////////////////////////////////////////////////////
 
-    /**
-     * Envía una notificación dirigida a un único usuario específico.
-     *
-     * @param int      $usuarioId ID del usuario receptor
-     * @param string   $tipo      Categoría de la alerta
-     * @param string   $titulo    Título corto
-     * @param string   $mensaje   Cuerpo detallado
-     * @param int|null $fichaId   ID de la ficha vinculada (opcional)
-     */
     public static function enviarAUsuario(int $usuarioId, string $tipo, string $titulo, string $mensaje, ?int $fichaId = null): void {
-        try {
-            $modelo  = self::obtenerModelo();
-            $notifId = $modelo->crear($usuarioId, $tipo, $titulo, $mensaje, $fichaId);
-
-            if ($notifId) {
-                self::emitirSocket([
-                    'id'             => $notifId,
-                    'usuario_id'     => $usuarioId,
-                    'tipo'           => $tipo,
-                    'titulo'         => $titulo,
-                    'mensaje'        => $mensaje,
-                    'fecha_creacion' => date('Y-m-d H:i:s'),
-                    'ficha_id'       => $fichaId,
-                ]);
-            }
-        } catch (\Exception $e) {
-            error_log("[Notificador] Error en enviarAUsuario: " . $e->getMessage());
-        }
+        self::encolarTrabajo([
+            'action'     => 'guardar_notificacion_usuario',
+            'usuario_id' => $usuarioId,
+            'tipo'       => $tipo,
+            'titulo'     => $titulo,
+            'mensaje'    => $mensaje,
+            'ficha_id'   => $fichaId
+        ]);
     }
 
     // ///////////////////////////////////////////////////////////////////
-    // 4. COMUNICACIÓN INTERNA CON EL BUS DE EVENTOS (RATCHET)
+    // 4. COMUNICACIÓN ASÍNCRONA CON RABBITMQ
     // ///////////////////////////////////////////////////////////////////
 
     /**
-     * Emite un POST al servidor WebSocket interno (puerto 8081).
-     * Timeout de 1s para no bloquear el request del despachador si el demonio está caído.
+     * Publica el payload en RabbitMQ de forma asíncrona (fire-and-forget).
+     * Reemplaza el cURL directo al servidor WS para evitar bloqueos.
      */
     private static function emitirSocket(array $data): void {
         // Normalizar tipos escalares para JSON bien formado
@@ -136,19 +80,58 @@ class Notificador {
         if (isset($data['ficha_id']))   $data['ficha_id']   = $data['ficha_id'] ? (int)$data['ficha_id'] : null;
 
         $payload = json_encode($data);
-        $ws_host = getenv('WS_INTERNAL_HOST') ?: '127.0.0.1';
-        $ch      = curl_init("http://{$ws_host}:8081");
 
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
-        curl_setopt($ch, CURLOPT_POSTFIELDS,    $payload);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            'Content-Type: application/json',
-            'Content-Length: ' . strlen($payload),
-            'Connection: close',
-        ]);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 1);
-        curl_exec($ch);
-        curl_close($ch);
+        try {
+            require_once dirname(dirname(__DIR__)) . '/vendor/autoload.php';
+            
+            $rabbitHost = getenv('RABBITMQ_HOST') ?: '127.0.0.1';
+            $rabbitPort = getenv('RABBITMQ_PORT') ?: 5672;
+            $rabbitUser = getenv('RABBITMQ_USER') ?: 'ven911';
+            $rabbitPass = getenv('RABBITMQ_PASS') ?: 'ven911_mq_pass';
+            $queueName  = getenv('RABBITMQ_QUEUE') ?: 'notificaciones';
+
+            $connection = new \PhpAmqpLib\Connection\AMQPStreamConnection($rabbitHost, $rabbitPort, $rabbitUser, $rabbitPass);
+            $channel = $connection->channel();
+            
+            // Declarar cola (por si no existe)
+            $channel->queue_declare($queueName, false, true, false, false);
+            
+            $msg = new \PhpAmqpLib\Message\AMQPMessage($payload, ['delivery_mode' => 2]); // Persistente
+            $channel->basic_publish($msg, '', $queueName);
+            
+            $channel->close();
+            $connection->close();
+        } catch (\Exception $e) {
+            error_log("[Notificador AMQP] Fallo silencioso enviando a RabbitMQ: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Publica un trabajo arbitrario en RabbitMQ de forma asíncrona.
+     * Útil para tareas pesadas como generación de reportes en segundo plano.
+     */
+    public static function encolarTrabajo(array $payload): void {
+        try {
+            require_once dirname(dirname(__DIR__)) . '/vendor/autoload.php';
+            
+            $rabbitHost = getenv('RABBITMQ_HOST') ?: '127.0.0.1';
+            $rabbitPort = getenv('RABBITMQ_PORT') ?: 5672;
+            $rabbitUser = getenv('RABBITMQ_USER') ?: 'ven911';
+            $rabbitPass = getenv('RABBITMQ_PASS') ?: 'ven911_mq_pass';
+            $queueName  = getenv('RABBITMQ_QUEUE') ?: 'notificaciones';
+
+            $connection = new \PhpAmqpLib\Connection\AMQPStreamConnection($rabbitHost, $rabbitPort, $rabbitUser, $rabbitPass);
+            $channel = $connection->channel();
+            
+            $channel->queue_declare($queueName, false, true, false, false);
+            
+            $msg = new \PhpAmqpLib\Message\AMQPMessage(json_encode($payload), ['delivery_mode' => 2]);
+            $channel->basic_publish($msg, '', $queueName);
+            
+            $channel->close();
+            $connection->close();
+        } catch (\Exception $e) {
+            error_log("[Notificador AMQP] Fallo encolando trabajo: " . $e->getMessage());
+        }
     }
 }

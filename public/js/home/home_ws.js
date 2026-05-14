@@ -30,15 +30,26 @@
         fetch('index.php?url=notificacion/estadoServidor')
             .then(r => r.json())
             .then(data => {
-                if (data.activo) {
+                const wsActivo = data.ws_activo;
+                const rabbitActivo = data.rabbit_activo;
+                const workerActivo = data.worker_activo;
+
+                if (wsActivo && rabbitActivo && workerActivo) {
                     $indicador.style.background = '#16a34a'; // Verde
-                    $texto.textContent = '✓ Activo — Operativo';
+                    $texto.textContent = '✓ Todos los servicios activos';
                     $latencia.textContent = `Latencia: ${data.latencia_ms} ms`;
                     if ($instruccion) $instruccion.style.display = 'none';
                 } else {
                     $indicador.style.background = '#dc3545'; // Rojo
-                    $texto.textContent = '✗ Inactivo — No detectado';
-                    $latencia.textContent = 'Puerto 8081 sin respuesta';
+                    let msg = '✗ Servicios fuera de línea';
+                    
+                    if (!wsActivo && !rabbitActivo && !workerActivo) msg = '✗ Todo fuera de línea';
+                    else if (!wsActivo) msg = '✗ WebSocket inactivo';
+                    else if (!rabbitActivo) msg = '✗ RabbitMQ inactivo';
+                    else if (!workerActivo) msg = '✗ Worker PHP caído';
+                    
+                    $texto.textContent = msg;
+                    $latencia.textContent = !workerActivo ? 'Sin puente Worker' : (wsActivo ? 'RabbitMQ sin respuesta' : 'WebSocket sin respuesta');
                     if ($instruccion) $instruccion.style.display = 'block';
                 }
             })

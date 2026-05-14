@@ -1,6 +1,7 @@
 <?php
 /**
- * Componente: Formulario de Filtros de Búsqueda
+ * Componente: Formulario de Filtros de Búsqueda de Reportes
+ * Incluye filtros por: Fecha, Municipio, Tipo de Emergencia, Tipo de Caso, Operador y Estado.
  */
 ?>
 <div class="card shadow-sm border-0 rounded-4 mb-4 sticky-filters">
@@ -10,7 +11,9 @@
         </h5>
     </div>
     <div class="card-body p-3">
-        <form id="formFiltrosReporte">
+        <form id="formFiltrosReporte" method="POST">
+
+
             <!-- Rango de Fechas -->
             <div class="mb-3">
                 <label class="form-label fw-medium small">Desde:</label>
@@ -29,18 +32,31 @@
                 <select class="form-select select2" name="municipio_id" id="filtro_municipio">
                     <option value="">Todos los municipios</option>
                     <?php foreach ($datos['municipios'] as $m): ?>
-                        <option value="<?php echo $m['id']; ?>"><?php echo $m['nombre_municipio']; ?></option>
+                        <option value="<?php echo $m['id']; ?>"><?php echo htmlspecialchars($m['nombre_municipio']); ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
 
-            <!-- Emergencia -->
+            <!-- Tipo de Emergencia -->
             <div class="mb-3">
                 <label class="form-label fw-medium small">Tipo de Emergencia:</label>
                 <select class="form-select select2" name="tipo_emergencia_id" id="filtro_emergencia">
                     <option value="">Todas las emergencias</option>
                     <?php foreach ($datos['tipos_emergencia'] as $e): ?>
-                        <option value="<?php echo $e['id']; ?>"><?php echo $e['nombre']; ?></option>
+                        <option value="<?php echo $e['id']; ?>"><?php echo htmlspecialchars($e['nombre']); ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <!-- Tipo de Caso (nuevo filtro) -->
+            <div class="mb-3">
+                <label class="form-label fw-medium small">Tipo de Caso:</label>
+                <select class="form-select select2" name="caso_id" id="filtro_caso">
+                    <option value="">Todos los casos</option>
+                    <?php foreach ($datos['casos'] as $c): ?>
+                        <option value="<?php echo $c['id']; ?>" data-tipo="<?php echo $c['tipo_emergencia_id']; ?>">
+                            <?php echo htmlspecialchars($c['nombre_caso']); ?>
+                        </option>
                     <?php endforeach; ?>
                 </select>
             </div>
@@ -51,7 +67,7 @@
                 <select class="form-select select2" name="usuario_id" id="filtro_operador">
                     <option value="">Todos los operadores</option>
                     <?php foreach ($datos['operadores'] as $o): ?>
-                        <option value="<?php echo $o['id']; ?>"><?php echo $o['nombre_completo']; ?></option>
+                        <option value="<?php echo $o['id']; ?>"><?php echo htmlspecialchars($o['nombre_completo']); ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
@@ -61,9 +77,10 @@
                 <label class="form-label fw-medium small">Estado de Ficha:</label>
                 <select class="form-select" name="estado" id="filtro_estado">
                     <option value="">Todos los estados</option>
-                    <option value="Pendiente">Pendientes</option>
-                    <option value="Atendido">Atendidos</option>
-                    <option value="Cerrado">Cerrados</option>
+                    <option value="Pendiente">Pendiente</option>
+                    <option value="En Proceso">En Proceso</option>
+                    <option value="Atendido">Atendido</option>
+                    <option value="Cerrado">Cerrado</option>
                 </select>
             </div>
 

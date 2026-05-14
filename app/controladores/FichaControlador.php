@@ -344,6 +344,18 @@ class FichaControlador {
                 }
             }
 
+            // 5.2 Blindaje de Integridad Operativa: Bloquear cierre si hay organismos activos (no liberados)
+            if (in_array($nuevoEstado, ['Cerrado', 'Atendido'])) {
+                $despachosActivos = $this->modeloDespacho->contarDespachosActivos($fichaId);
+                if ($despachosActivos > 0) {
+                    echo json_encode([
+                        'success' => false, 
+                        'message' => "No se puede finalizar la ficha #{$fichaId} porque aún tiene {$despachosActivos} organismo(s) en curso (no liberados)."
+                    ]);
+                    return;
+                }
+            }
+
             $anterior = $this->modelo->obtenerPorId($fichaId);
             if (!$anterior) {
                 echo json_encode(['success' => false, 'message' => 'Ficha no encontrada.']);

@@ -129,6 +129,7 @@ $(document).ready(function () {
         order:      [[5, 'desc']], // Ordenar por fecha de creación (desc)
         responsive: true,
         pageLength: 15,
+        searchDelay: 600, // Debounce de 600ms para evitar múltiples consultas SQL al escribir
     });
 
     // 3. GESTIÓN DE FORMULARIOS (CREACIÓN)
@@ -150,9 +151,10 @@ $(document).ready(function () {
         $.ajax({
             url:         'index.php?url=ficha/guardar',
             method:      'POST',
-            data:         datos,
+            data:        datos,
             processData: false,
             contentType: false,
+            dataType:    'json',
             success: function (res) {
                 if (res.success) {
                     bootstrap.Modal.getOrCreateInstance(document.getElementById('modalCrearFicha')).hide();
@@ -370,6 +372,7 @@ $(document).ready(function () {
             data:         datos,
             processData: false,
             contentType: false,
+            dataType:    'json',
             success: function (res) {
                 if (res.success) {
                     bootstrap.Modal.getOrCreateInstance(document.getElementById('modalEditarFicha')).hide();

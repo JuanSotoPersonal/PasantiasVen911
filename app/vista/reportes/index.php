@@ -63,10 +63,11 @@ $pageName = 'reporte';
                                     <table class="table table-hover align-middle mb-0" id="tablaReportes">
                                         <thead class="table-light">
                                             <tr>
+                                                <th>#</th>
                                                 <th>Fecha/Hora</th>
-                                                <th>Código</th>
                                                 <th>Municipio</th>
                                                 <th>Emergencia</th>
+                                                <th>Tipo de Caso</th>
                                                 <th>Operador</th>
                                                 <th>Estado</th>
                                                 <th>Acción</th>
@@ -74,7 +75,7 @@ $pageName = 'reporte';
                                         </thead>
                                         <tbody id="tbodyReportes">
                                             <tr>
-                                                <td colspan="7" class="text-center py-5 text-muted">
+                                                <td colspan="8" class="text-center py-5 text-muted">
                                                     <i class="bi bi-search display-4 d-block mb-2"></i>
                                                     Utilice los filtros para iniciar la búsqueda
                                                 </td>
@@ -91,5 +92,13 @@ $pageName = 'reporte';
         <?php require __DIR__ . '/../partials/footer.php'; ?>
     </div>
     <?php require __DIR__ . '/../partials/scripts.php'; ?>
+    
+    <!-- Librerías de datos y utilidades (DataTables, SweetAlert) -->
+    <script src="public/libs/datatables/dataTables.min.js"></script>
+    <script src="public/libs/datatables/dataTables.bootstrap5.min.js"></script>
+    
+    <!-- Lógica de comportamiento del módulo -->
+    <script src="public/js/comun/datatables_config.js"></script>
+    <script src="public/js/reportes/reportes.js"></script>
 </body>
 </html>

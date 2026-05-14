@@ -21,8 +21,7 @@ use Ratchet\MessageComponentInterface;
 use Ratchet\ConnectionInterface;
 use React\Socket\SocketServer;
 use Psr\Http\Message\ServerRequestInterface;
-use React\Http\Message\R
-esponse;
+use React\Http\Message\Response;
 
 // 2. Clase Pusher: Mantiene el mapa usuario_id → conexión para enrutamiento directo
 class NotificadorPusher implements MessageComponentInterface {

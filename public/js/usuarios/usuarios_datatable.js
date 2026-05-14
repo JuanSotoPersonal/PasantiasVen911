@@ -143,6 +143,7 @@ $(function () {
       responsive: true,
       order: [[0, 'asc']],
       pageLength: 10,
+      searchDelay: 600, // Debounce de 600ms para búsqueda
     });
 
     // Gestión de contadores en tiempo real tras carga de datos
@@ -169,6 +170,7 @@ $(function () {
       responsive: true,
       order: [[0, 'asc']],
       pageLength: 10,
+      searchDelay: 600, // Debounce de 600ms para búsqueda
     });
 
     tablaInactivos.on('xhr.dt', function (e, settings, json) {

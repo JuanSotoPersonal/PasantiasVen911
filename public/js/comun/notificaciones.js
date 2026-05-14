@@ -56,6 +56,8 @@
                     return;
                 }
 
+
+
                 // Mostrar alerta visual instantánea usando SweetAlert2
                 if (typeof Swal !== 'undefined') {
                     Swal.fire({
