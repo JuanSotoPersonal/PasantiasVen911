@@ -3,15 +3,21 @@
  * VISTA: Buzón de Notificaciones
  * Propósito: Visualizar el historial completo de alertas del usuario mediante DataTables.
  */
-$tituloPagina = "Buzón de Notificaciones";
+$pageName = 'notificacion';
 $seccion = 'notificacion';
-require_once 'app/vista/partials/header.php';
-require_once 'app/vista/partials/navbar.php';
-require_once 'app/vista/partials/sidebar.php';
 ?>
+<!doctype html>
+<html lang="es">
 
-<!-- Estilos Específicos -->
-<style>
+<head>
+    <title>Ven911 | Buzón de Notificaciones</title>
+    
+    <!-- CABECERA GLOBALES Y ESTILOS -->
+    <?php require __DIR__ . '/../partials/head.php'; ?>
+    
+    <!-- Estilos específicos para notificaciones -->
+    <link rel="stylesheet" href="public/css/notificaciones.css" />
+    <style>
     .notif-row-unread {
         background-color: rgba(25, 135, 84, 0.05) !important;
         font-weight: 600;
@@ -28,9 +34,17 @@ require_once 'app/vista/partials/sidebar.php';
         justify-content: center;
     }
 </style>
+</head>
 
-<div class="content-wrapper">
-    <div class="content-header">
+<body class="layout-fixed sidebar-expand-lg bg-body-tertiary">
+    <div class="app-wrapper">
+
+        <!-- COMPONENTES DE INTERFAZ GLOBAL -->
+        <?php require __DIR__ . '/../partials/navbar.php'; ?>
+        <?php require __DIR__ . '/../partials/sidebar.php'; ?>
+
+        <main class="app-main">
+            <div class="content-header">
         <div class="container-fluid">
             <div class="row mb-2 align-items-center">
                 <div class="col-sm-6">
@@ -56,13 +70,15 @@ require_once 'app/vista/partials/sidebar.php';
                 </div>
             </div>
         </div>
-    </section>
-</div>
+        </main>
 
-<?php 
-require_once 'app/vista/partials/footer.php';
-require_once 'app/vista/partials/scripts.php'; 
-?>
+        <!-- Pie de página Institucional -->
+        <?php require __DIR__ . '/../partials/footer.php'; ?>
+
+    </div>
+
+    <!-- CARGA DE ASSETS JAVASCRIPT -->
+    <?php require __DIR__ . '/../partials/scripts.php'; ?>
 <!-- Script principal de DataTables para el Buzón -->
 <script src="public/js/notificaciones/index.js?v=<?= time() ?>"></script>
 </body>
