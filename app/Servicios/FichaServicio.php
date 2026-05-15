@@ -118,6 +118,7 @@ class FichaServicio {
                 Notificador::enviarAUsuario((int)$anterior['id_user'], 'info', 'Ficha Modificada', "Tu Ficha #{$fichaId} fue modificada por {$usuarioNombre}.", $fichaId);
             }
             Notificador::enviarPorRol(4, 'info', 'Edición de Emergencia', "Ficha #{$fichaId} editada por {$usuarioNombre}.", $fichaId);
+            Notificador::enviarPorRol(1, 'info', 'Sistema', "Ficha #{$fichaId} editada por {$usuarioNombre}.", $fichaId);
 
             return ['success' => true, 'message' => "Ficha #{$fichaId} actualizada."];
         }

@@ -133,6 +133,7 @@ class DespachoServicio {
             // Notificaciones de cambio en despacho
             $fichaId = (int)$anterior['ficha_id'];
             Notificador::enviarPorRol(4, 'info', 'Actualización de Despacho', "El organismo en la Ficha #{$fichaId} pasó a estado '{$nuevoEstado}'.", $fichaId);
+            Notificador::enviarPorRol(1, 'info', 'Sistema', "Organismo en Ficha #{$fichaId} pasó a '{$nuevoEstado}'.", $fichaId);
             $infoFicha = $this->modeloFicha->obtenerInfoFicha($fichaId);
             if ($infoFicha && !empty($infoFicha['id_user'])) {
                 Notificador::enviarAUsuario((int)$infoFicha['id_user'], 'info', 'Organismo Actualizado', "El organismo despachado en tu Ficha #{$fichaId} está '{$nuevoEstado}'.", $fichaId);
@@ -166,6 +167,7 @@ class DespachoServicio {
             // Notificaciones de cancelación
             $fichaId = (int)$despacho['ficha_id'];
             Notificador::enviarPorRol(4, 'alerta', 'Despacho Cancelado', "Se ha cancelado un organismo en la Ficha #{$fichaId}. Motivo: {$tipoMotivo}.", $fichaId);
+            Notificador::enviarPorRol(1, 'info', 'Sistema', "Despacho cancelado en Ficha #{$fichaId}.", $fichaId);
             $infoFicha = $this->modeloFicha->obtenerInfoFicha($fichaId);
             if ($infoFicha && !empty($infoFicha['id_user'])) {
                 Notificador::enviarAUsuario((int)$infoFicha['id_user'], 'alerta', 'Organismo Cancelado', "Un organismo despachado a tu Ficha #{$fichaId} fue cancelado.", $fichaId);
