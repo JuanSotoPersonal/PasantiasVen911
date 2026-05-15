@@ -605,23 +605,13 @@ class DespachoModelo {
     public function obtenerOrganismos(): array {
         if (self::$cacheOrganismos !== null) return self::$cacheOrganismos;
         
-        $cacheKey = "org_activos";
-        $l2 = \App\Helpers\Cache::obtener($cacheKey);
-        if ($l2) return self::$cacheOrganismos = $l2;
-
-        try {
+        return self::$cacheOrganismos = Cache::remember('org_activos', 86400, function() {
             $stmt = $this->conexion->prepare(
                 "SELECT id, nombre_organismo FROM organismos WHERE estado = 1 ORDER BY nombre_organismo ASC"
             );
             $stmt->execute();
-            $res = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            
-            \App\Helpers\Cache::guardar($cacheKey, $res, 86400); // 24h
-            return self::$cacheOrganismos = $res;
-        } catch (Exception $e) {
-            error_log("[DespachoModelo] Error en obtenerOrganismos: " . $e->getMessage());
-            return [];
-        }
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        });
     }
 
     // ///////////////////////////////////////////////////////////////////

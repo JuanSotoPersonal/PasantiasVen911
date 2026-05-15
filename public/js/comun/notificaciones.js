@@ -15,16 +15,16 @@
     
     // Diccionario de estilos e iconografía por tipo de notificación
     const iconosPorTipo = {
-        alerta:         { clase: 'tipo-alerta',  icono: 'bi-exclamation-triangle-fill' },
-        info:           { clase: 'tipo-info',    icono: 'bi-info-circle-fill'          },
-        cambio_estado:  { clase: 'tipo-cambio',  icono: 'bi-arrow-repeat'              },
-        default:        { clase: 'tipo-info',    icono: 'bi-bell-fill'                 },
+        alerta: { clase: 'tipo-alerta', icono: 'bi-exclamation-triangle-fill' },
+        info: { clase: 'tipo-info', icono: 'bi-info-circle-fill' },
+        cambio_estado: { clase: 'tipo-cambio', icono: 'bi-arrow-repeat' },
+        default: { clase: 'tipo-info', icono: 'bi-bell-fill' },
     };
 
     // 2. REFERENCIAS AL DOM (ELEMENTOS NUCLEARES)
-    const $badge    = document.getElementById('notif-badge');
-    const $lista    = document.getElementById('notif-lista');
-    const $vacio    = document.getElementById('notif-vacio');
+    const $badge = document.getElementById('notif-badge');
+    const $lista = document.getElementById('notif-lista');
+    const $vacio = document.getElementById('notif-vacio');
     const $btnTodas = document.getElementById('btn-marcar-todas');
 
     // Validación de presencia del módulo en la vista actual
@@ -56,17 +56,13 @@
                     return;
                 }
 
-
-
                 // Mostrar alerta visual instantánea usando SweetAlert2
                 if (typeof Swal !== 'undefined') {
                     Swal.fire({
-                        title: notif.titulo || 'Alerta',
-                        text: notif.mensaje || 'Nueva notificación',
-                        icon: 'info',
-                        toast: true,
-                        position: 'top-end',
-                        showConfirmButton: false,
+                        title: notif.titulo || 'Notificación',
+                        text: notif.mensaje || 'Nueva actividad registrada en el sistema.',
+                        icon: (notif.tipo === 'alerta' ? 'warning' : 'info'),
+                        confirmButtonText: 'Entendido',
                         timer: 5000,
                         timerProgressBar: true
                     });
@@ -76,8 +72,8 @@
                 agregarNotificacionAlDOM(notif);
                 actualizarBadgeManual(1);
                 
-            } catch (e) {
-                console.warn('[Notificaciones] Error al procesar mensaje WS:', e);
+            } catch (err) {
+                console.error('Error al procesar notificación Socket:', err, evento.data);
             }
         };
 
@@ -103,15 +99,20 @@
         const tiempo = formatearTiempo(notif.fecha_creacion);
 
         li.innerHTML = `
-            <div class="notif-icono ${config.clase}">
-                <i class="bi ${config.icono}"></i>
-            </div>
-            <div class="flex-grow-1">
-                <p class="notif-mensaje mb-0">${window.escapeHTML(notif.mensaje)}</p>
-                <span class="notif-tiempo"><i class="bi bi-clock me-1"></i>${tiempo}</span>
+            <div class="notif-content">
+                <div class="notif-header">
+                    <span class="notif-titulo fw-bold">${window.escapeHTML(notif.titulo || 'Notificación')}</span>
+                    <span class="notif-tiempo small text-muted">${tiempo}</span>
+                </div>
+                <p class="notif-mensaje mb-0">${window.escapeHTML(notif.mensaje || 'Nueva actividad registrada.')}</p>
             </div>
         `;
-        li.addEventListener('click', () => marcarLeida(notif.id, li));
+        li.addEventListener('click', () => {
+            marcarLeida(notif.id, li);
+            if (notif.ficha_id) {
+                window.location.href = `index.php?url=ficha&id=${notif.ficha_id}`;
+            }
+        });
         
         // Insertar al principio (después de notif-header si hubiera, o primero)
         if ($lista.firstChild) {
@@ -125,11 +126,12 @@
     function renderizarNotificaciones(notificaciones) {
         if (!Array.isArray(notificaciones)) return;
 
-        const cantidad = notificaciones.length;
+        const noLeidas = notificaciones.filter(n => n.leido == 0).length;
+        const total = notificaciones.length;
 
-        // Actualización del contador visual (Badge)
-        if (cantidad > 0) {
-            $badge.textContent = cantidad > 99 ? '99+' : cantidad;
+        // Actualización del contador visual (Badge) - Solo No Leídas
+        if (noLeidas > 0) {
+            $badge.textContent = noLeidas > 99 ? '99+' : noLeidas;
             $badge.classList.remove('d-none');
         } else {
             $badge.classList.add('d-none');
@@ -140,7 +142,7 @@
         items.forEach(item => item.remove());
 
         // Manejo de estado vacío (Empty State)
-        if (cantidad === 0) {
+        if (total === 0) {
             $vacio.style.display = 'block';
             return;
         }
@@ -157,18 +159,22 @@
             const tiempo = formatearTiempo(notif.fecha_creacion);
 
             li.innerHTML = `
-                <div class="notif-icono ${config.clase}">
-                    <i class="bi ${config.icono}"></i>
+            <div class="notif-content">
+                <div class="notif-header">
+                    <span class="notif-titulo fw-bold">${window.escapeHTML(notif.titulo || 'Notificación')}</span>
+                    <span class="notif-tiempo small text-muted">${tiempo}</span>
                 </div>
-                <div class="flex-grow-1">
-                    <p class="notif-mensaje mb-0">${window.escapeHTML(notif.mensaje)}</p>
-                    <span class="notif-tiempo"><i class="bi bi-clock me-1"></i>${tiempo}</span>
-                </div>
-            `;
-
-            // Vinculación de evento para marcado individual
-            li.addEventListener('click', () => marcarLeida(notif.id, li));
-            $lista.insertBefore(li, $vacio);
+                <p class="notif-mensaje mb-0">${window.escapeHTML(notif.mensaje || 'Nueva actividad registrada.')}</p>
+            </div>
+        `;
+            // Vinculación de evento para marcado individual y navegación
+            li.addEventListener('click', () => {
+                marcarLeida(notif.id, li);
+                if (notif.ficha_id) {
+                    window.location.href = `index.php?url=ficha&id=${notif.ficha_id}`;
+                }
+            });
+            $lista.appendChild(li);
         });
     }
 
@@ -207,7 +213,7 @@
                     $badge.classList.add('d-none');
                 }
             })
-            .catch(() => {});
+            .catch(() => { });
         });
     }
 
@@ -224,8 +230,11 @@
     }
 
     function formatearTiempo(fechaStr) {
-        if (!fechaStr) return '';
-        const diff = Math.floor((Date.now() - new Date(fechaStr).getTime()) / 1000);
+        if (!fechaStr) return 'Reciente';
+        const fecha = new Date(fechaStr);
+        if (isNaN(fecha.getTime())) return 'Reciente';
+
+        const diff = Math.floor((Date.now() - fecha.getTime()) / 1000);
         
         if (diff < 60)    return 'Hace un momento';
         if (diff < 3600)  return `Hace ${Math.floor(diff / 60)} min`;

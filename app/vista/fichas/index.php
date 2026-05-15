@@ -109,6 +109,7 @@ $estadoFiltro = match($tabActiva) {
 
     <!-- Carga condicional de lógica de negocio -->
     <script src="public/js/comun/datatables_config.js"></script>
+    <script src="public/js/comun/fichas_comun.js"></script>
     <?php if ($tabActiva === 'configuracion'): ?>
         <script src="public/js/fichas/fichas_configuracion.js"></script>
     <?php else: ?>

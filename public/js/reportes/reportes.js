@@ -119,10 +119,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     <td class="small">${window.escapeHTML(f.nombre_operador)}</td>
                     <td><span class="badge ${badge} rounded-pill">${window.escapeHTML(f.estado_ficha)}</span></td>
                     <td>
-                        <a href="index.php?url=ficha/detalle/${f.id}" target="_blank"
-                           class="btn btn-sm btn-light" title="Ver ficha">
+                        <button class="btn btn-sm btn-light btn-ver-detalle" data-id="${f.id}" title="Ver ficha">
                             <i class="bi bi-eye"></i>
-                        </a>
+                        </button>
                     </td>
                 </tr>`;
         });

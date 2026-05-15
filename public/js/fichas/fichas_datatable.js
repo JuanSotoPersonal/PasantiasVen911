@@ -9,7 +9,7 @@
 $(document).ready(function () {
 
     // 1. CONFIGURACIÓN INICIAL Y UI (SELECT2 & PERMISOS)
-    
+
     // Inicialización de Select2 con soporte para modales (z-index fix)
     $('.form-select').each(function () {
         const $modal = $(this).closest('.modal');
@@ -21,28 +21,16 @@ $(document).ready(function () {
         });
     });
 
-    const tablaEl      = $('#tablaFichas');
+    const tablaEl = $('#tablaFichas');
     const estadoFiltro = tablaEl.data('estado') || 'todos';
-    
+
 
     // Inyección de banderas de permisos desde el scope global
     const puedeEditar = window.VEN911_PERM_EDITAR ?? false;
 
 
-    // Diccionarios visuales para estados de fichas
-    const badgeClases = {
-        'Pendiente':  'badge-pendiente',
-        'En Proceso': 'badge-en-proceso',
-        'Atendido':   'badge-atendido',
-        'Cerrado':    'badge-cerrado',
-    };
-
-    const iconosEstado = {
-        'Pendiente':  'bi-hourglass-split',
-        'En Proceso': 'bi-arrow-repeat',
-        'Atendido':   'bi-check-circle-fill',
-        'Cerrado':    'bi-lock-fill',
-    };
+    // Los diccionarios badgeClases e iconosEstado han sido movidos a window.FichaUI en fichas_comun.js
+    // para habilitar su reutilización en el módulo de reportes.
 
 
     // 2. INICIALIZACIÓN DE DATATABLE DE FICHAS (SERVER-SIDE)
@@ -50,7 +38,7 @@ $(document).ready(function () {
         serverSide: true,
         processing: true,
         ajax: {
-            url:  `index.php?url=ficha/obtenerDatos&estado=${estadoFiltro}`,
+            url: `index.php?url=ficha/obtenerDatos&estado=${estadoFiltro}`,
             type: 'POST',
             error: function () {
                 Swal.fire('Error', 'No se pudo cargar la tabla de fichas.', 'error');
@@ -88,9 +76,8 @@ $(document).ready(function () {
                 // Columna: Estado Operativo (Badge dinámico)
                 data: 'estado_ficha',
                 render: (d) => {
-                    const cls  = badgeClases[d]  || 'badge-cerrado';
-
-                    const icon = iconosEstado[d] || 'bi-question-circle';
+                    const cls = window.FichaUI.badgeClases[d] || 'badge-cerrado';
+                    const icon = window.FichaUI.iconosEstado[d] || 'bi-question-circle';
                     return `<span class="badge-ficha-estado ${cls}"><i class="bi ${icon}"></i>${escapeHTML(d)}</span>`;
                 }
             },
@@ -111,7 +98,7 @@ $(document).ready(function () {
                                 data-id="${row.id}" title="Ver detalle" id="btnDetalle-${row.id}">
                             <i class="bi bi-eye-fill"></i>
                         </button>`;
-                    
+
                     // Solo permitir edición en estados no terminales
                     if (puedeEditar && row.estado_ficha !== 'Cerrado' && row.estado_ficha !== 'Atendido') {
 
@@ -125,8 +112,8 @@ $(document).ready(function () {
                 }
             }
         ],
-        language:   window.Ven911DataTablesLang,
-        order:      [[5, 'desc']], // Ordenar por fecha de creación (desc)
+        language: window.Ven911DataTablesLang,
+        order: [[5, 'desc']], // Ordenar por fecha de creación (desc)
         responsive: true,
         pageLength: 15,
         searchDelay: 600, // Debounce de 600ms para evitar múltiples consultas SQL al escribir
@@ -149,12 +136,12 @@ $(document).ready(function () {
 
         const datos = new FormData(document.getElementById('formCrearFicha'));
         $.ajax({
-            url:         'index.php?url=ficha/guardar',
-            method:      'POST',
-            data:        datos,
+            url: 'index.php?url=ficha/guardar',
+            method: 'POST',
+            data: datos,
             processData: false,
             contentType: false,
-            dataType:    'json',
+            dataType: 'json',
             success: function (res) {
                 if (res.success) {
                     bootstrap.Modal.getOrCreateInstance(document.getElementById('modalCrearFicha')).hide();
@@ -230,108 +217,9 @@ $(document).ready(function () {
     }
 
     // 5. VISUALIZACIÓN DE DETALLES Y GESTIÓN DE FLUJO (ESTADOS)
-
-    // Carga asíncrona de la "Ficha de Vida" del incidente
-    $(document).on('click', '.btn-ver-detalle', function () {
-        const fichaId = $(this).data('id');
-        $('#detalleFichaIdLabel').text(`#${fichaId}`);
-        $('#contenidoDetalleFicha').html('<div class="text-center py-4"><div class="spinner-border text-success"></div></div>');
-
-
-        bootstrap.Modal.getOrCreateInstance(document.getElementById('modalDetalleFicha')).show();
-
-        $.get(`index.php?url=ficha/detalle&id=${fichaId}`, function (res) {
-            if (!res.success || !res.data) {
-                $('#contenidoDetalleFicha').html('<p class="text-danger text-center">No se pudo cargar el detalle.</p>');
-                return;
-            }
-            const f = res.data;
-            const badgeCls = badgeClases[f.estado_ficha] || 'badge-cerrado';
-
-
-            // Renderizado de la cuadrícula de información detallada
-            $('#contenidoDetalleFicha').html(`
-                <div class="mb-3">
-                    <span class="badge-ficha-estado ${badgeCls} fs-6 mb-3 d-inline-block">
-                        <i class="bi ${iconosEstado[f.estado_ficha] || 'bi-question-circle'}"></i> ${escapeHTML(f.estado_ficha)}
-                    </span>
-                </div>
-                <div class="ficha-detalle-grid">
-                    <div class="ficha-detalle-item"><label>Solicitante</label><span>${escapeHTML(f.nombre_solicitante)}</span></div>
-                    <div class="ficha-detalle-item"><label>Cédula</label><span>${f.cedula_solicitante ? 'V-' + escapeHTML(f.cedula_solicitante) : '<em class="text-muted">S/D</em>'}</span></div>
-                    <div class="ficha-detalle-item"><label>Teléfono 1</label><span>${escapeHTML(f.telefono1)}</span></div>
-                    <div class="ficha-detalle-item"><label>Teléfono 2</label><span>${f.telefono2 ? escapeHTML(f.telefono2) : '<em class="text-muted">N/A</em>'}</span></div>
-                    <div class="ficha-detalle-item"><label>Municipio</label><span>${escapeHTML(f.nombre_municipio)}</span></div>
-                    <div class="ficha-detalle-item"><label>Parroquia</label><span>${escapeHTML(f.nombre_parroquia)}</span></div>
-                    <div class="ficha-detalle-item" style="grid-column:1/-1"><label>Dirección</label><span>${escapeHTML(f.direccion_exacta)}</span></div>
-                    <div class="ficha-detalle-item"><label>Tipo de Emergencia</label><span>${escapeHTML(f.tipo_emergencia)}</span></div>
-                    <div class="ficha-detalle-item"><label>Caso</label><span>${escapeHTML(f.nombre_caso)}</span></div>
-                    <div class="ficha-detalle-item" style="grid-column:1/-1"><label>Descripción</label><span>${escapeHTML(f.descripcion_caso)}</span></div>
-                    <div class="ficha-detalle-item"><label>Fecha Creación</label><span>${escapeHTML(f.fecha_creacion)}</span></div>
-                    <div class="ficha-detalle-item"><label>Creado por</label><span>${escapeHTML(f.nombre_creador || 'Sistema')}</span></div>
-                    ${f.motivo_cierre || f.tipo_motivo_cierre ? `
-                    <div class="ficha-detalle-item" style="grid-column:1/-1; background-color: var(--ven-green-light, #f0fdf4); border-left: 4px solid #dc2626; border-radius: 4px;">
-                        <label class="text-danger"><i class="bi bi-exclamation-octagon-fill me-1"></i>Motivo del Cierre</label>
-                        <span class="text-dark fw-bold">
-                            ${f.tipo_motivo_cierre ? `<span class="badge bg-danger me-2">${escapeHTML(f.tipo_motivo_cierre)}</span>` : ''}
-                            ${escapeHTML(f.motivo_cierre || '')}
-                        </span>
-                    </div>` : ''}
-                </div>
-
-                ${res.despachos && res.despachos.length > 0 ? `
-                <div class="detalle-organismos-section mt-4">
-                    <h6 class="fw-bold text-success mb-3">
-                        <i class="bi bi-shield-shaded me-2"></i>Organismos Asignados
-                    </h6>
-                    <div class="organismos-lista">
-                        ${res.despachos.map(d => {
-                            const estatusCls = {
-                                'Asignado':  'badge bg-secondary-subtle text-secondary border border-secondary-subtle',
-                                'En Camino': 'badge bg-warning-subtle text-warning-emphasis border border-warning-subtle',
-                                'En Sitio':  'badge bg-info-subtle text-info-emphasis border border-info-subtle',
-                                'Liberado':  'badge bg-success-subtle text-success border border-success-subtle',
-                                'Cancelado': 'badge bg-danger-subtle text-danger border border-danger-subtle'
-                            }[d.estatus_despacho] || 'badge bg-light text-dark border';
-
-                            return `
-                            <div class="organismo-item p-3 mb-2 rounded-3 border bg-light-subtle shadow-sm">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <span class="fw-bold text-dark"><i class="bi bi-building me-2"></i>${escapeHTML(d.nombre_organismo)}</span>
-                                    <span class="${estatusCls} py-1 px-2" style="font-size:0.7rem;">${escapeHTML(d.estatus_despacho)}</span>
-                                </div>
-                                <div class="row g-2 small text-muted">
-                                    <div class="col-sm-6">
-                                        <i class="bi bi-truck me-1"></i><strong>Unidad:</strong> ${escapeHTML(d.unidad_designada)}
-                                    </div>
-                                    <div class="col-sm-6 text-sm-end">
-                                        <i class="bi bi-person-badge me-1"></i><strong>Mando:</strong> ${escapeHTML(d.mando_acargo)}
-                                    </div>
-                                    <div class="col-12 mt-1">
-                                        <i class="bi bi-clock me-1"></i><strong>Despacho:</strong> ${escapeHTML(d.hora_despacho)}
-                                        ${d.nombre_despachador ? ` | <i class="bi bi-person-check me-1"></i>${escapeHTML(d.nombre_despachador)}` : ''}
-                                    </div>
-                                    ${d.motivo_cancelacion ? `
-                                    <div class="col-12 mt-2 pt-2 border-top text-danger fw-semibold">
-                                        <i class="bi bi-x-circle-fill me-1"></i>Cancelación: ${escapeHTML(d.motivo_cancelacion)}
-                                    </div>` : ''}
-                                </div>
-                            </div>`;
-                        }).join('')}
-                    </div>
-                </div>` : (res.despachos ? `
-                <div class="detalle-organismos-section mt-4 text-center py-3 bg-light rounded-3 border border-dashed">
-                    <p class="text-muted mb-0 small"><i class="bi bi-info-circle me-1"></i>No hay organismos asignados a esta ficha aún.</p>
-                </div>` : '')}
-            `);
-        }, 'json');
-    });
-
-
+    // El manejador .btn-ver-detalle ha sido movido a fichas_comun.js para reutilización global.
 
     // 6. GESTIÓN DE EDICIÓN
-
-
 
     // Carga de datos para edición
     $(document).on('click', '.btn-editar-ficha', function () {
@@ -367,12 +255,12 @@ $(document).ready(function () {
 
         const datos = new FormData(document.getElementById('formEditarFicha'));
         $.ajax({
-            url:         'index.php?url=ficha/actualizar',
-            method:      'POST',
-            data:         datos,
+            url: 'index.php?url=ficha/actualizar',
+            method: 'POST',
+            data: datos,
             processData: false,
             contentType: false,
-            dataType:    'json',
+            dataType: 'json',
             success: function (res) {
                 if (res.success) {
                     bootstrap.Modal.getOrCreateInstance(document.getElementById('modalEditarFicha')).hide();

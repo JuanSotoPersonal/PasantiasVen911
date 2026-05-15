@@ -14,17 +14,15 @@
  * 8. obtenerOrganismos()      → Catálogo de organismos para selectores
  */
 
-require_once 'app/modelos/DespachoModelo.php';
-require_once 'app/modelos/FichaModelo.php';
-require_once 'app/modelos/EventoModelo.php';
-require_once 'app/Helpers/Validador.php';
-require_once 'app/Helpers/Notificador.php';
-
 use App\modelos\DespachoModelo;
 use App\modelos\FichaModelo;
-use App\modelos\EventoModelo;
 use App\Helpers\Validador;
-use App\Helpers\Notificador;
+use App\Servicios\DespachoServicio;
+
+require_once 'app/modelos/DespachoModelo.php';
+require_once 'app/modelos/FichaModelo.php';
+require_once 'app/Helpers/Validador.php';
+require_once 'app/Servicios/DespachoServicio.php';
 
 
 class DespachoControlador {
@@ -34,8 +32,8 @@ class DespachoControlador {
     // ///////////////////////////////////////////////////////////////////
 
     private DespachoModelo $modelo;
-    private EventoModelo   $modeloEvento;
     private FichaModelo    $modeloFicha;
+    private DespachoServicio $servicio;
 
     /**
      * Valida sesión activa e instancia los modelos necesarios.
@@ -46,8 +44,8 @@ class DespachoControlador {
             exit;
         }
         $this->modelo       = new DespachoModelo();
-        $this->modeloEvento = new EventoModelo();
         $this->modeloFicha  = new FichaModelo();
+        $this->servicio     = new DespachoServicio();
     }
 
     // ///////////////////////////////////////////////////////////////////
@@ -187,50 +185,8 @@ class DespachoControlador {
                 return;
             }
 
-            // 4.1 Verificar que la ficha exista y esté en estado operable
-            $infoFicha = $this->modelo->obtenerInfoFicha($fichaId);
-            if (!$infoFicha) {
-                echo json_encode(['success' => false, 'message' => 'Ficha no encontrada.']);
-                return;
-            }
-            if (!in_array($infoFicha['estado_ficha'], ['Pendiente', 'En Proceso'], true)) {
-                echo json_encode(['success' => false, 'message' => "La ficha está en estado '{$infoFicha['estado_ficha']}' y no puede ser tomada."]);
-                return;
-            }
-
-            $usuarioId      = (int)$_SESSION['user_id'];
-            $estadoAnterior = $infoFicha['estado_ficha'];
-            $exito          = $this->modelo->tomarFicha($fichaId, $usuarioId);
-
-            if ($exito) {
-                // 4.2 Auditoría: registrar el evento de toma de ficha
-                $this->modeloEvento->registrarEventoFicha(
-                    $fichaId,
-                    $usuarioId,
-                    'CAMBIO_ESTADO',
-                    $estadoAnterior,
-                    'En Proceso',
-                    null,
-                    ['id_owner' => $usuarioId],
-                    "Ficha tomada por despachador. Estado: '{$estadoAnterior}' → 'En Proceso'."
-                );
-                // NOTIFICACIONES: Al operador creador de la ficha + Jefatura + Admin
-                if (!empty($infoFicha['id_user'])) {
-                    Notificador::enviarAUsuario(
-                        (int)$infoFicha['id_user'],
-                        'info',
-                        'Ficha en Proceso',
-                        "Tu Ficha #{$fichaId} ha pasado de 'Pendiente' a 'En Proceso' y está siendo atendida por {$_SESSION['user_name']}.",
-                        $fichaId
-                    );
-                }
-                Notificador::enviarPorRol(4, 'info', 'Ficha Tomada: Inicio de Gestión', "El despachador {$_SESSION['user_name']} ha tomado la Ficha #{$fichaId}, pasando su estado de 'Pendiente' a 'En Proceso'.", $fichaId);
-                Notificador::enviarPorRol(1, 'info', 'Auditoría: Ficha Tomada', "Ficha #{$fichaId} tomada por {$_SESSION['user_name']}. Estado: Pendiente → En Proceso.", $fichaId);
-
-                echo json_encode(['success' => true, 'message' => "Ficha #{$fichaId} tomada correctamente.", 'ficha_id' => $fichaId]);
-            } else {
-                echo json_encode(['success' => false, 'message' => 'No se pudo tomar la ficha. Es posible que ya no esté disponible.']);
-            }
+            $resultado = $this->servicio->tomarFicha($fichaId, (int)$_SESSION['user_id'], $_SESSION['user_name']);
+            echo json_encode($resultado);
         } catch (\Exception $e) {
             echo json_encode(['success' => false, 'message' => 'Error inesperado: ' . $e->getMessage()]);
         }
@@ -287,74 +243,26 @@ class DespachoControlador {
                 return;
             }
 
-            $fichaId         = (int)($_POST['ficha_id']       ?? 0);
-            $organismoId     = (int)($_POST['organismo_id']   ?? 0);
-            $unidadDesignada = trim($_POST['unidad_designada'] ?? '');
-            $mandoAcargo     = trim($_POST['mando_acargo']    ?? '');
-            $personaAtiende  = trim($_POST['persona_atiende']  ?? '');
+            $datos = [
+                'ficha_id'         => (int)($_POST['ficha_id']       ?? 0),
+                'organismo_id'     => (int)($_POST['organismo_id']   ?? 0),
+                'unidad_designada' => trim($_POST['unidad_designada'] ?? ''),
+                'mando_acargo'     => trim($_POST['mando_acargo']    ?? ''),
+                'persona_atiende'  => trim($_POST['persona_atiende']  ?? ''),
+            ];
 
-            $valFicha     = Validador::validarId($fichaId,    'Ficha de Emergencia');
-            $valOrganismo = Validador::validarId($organismoId, 'Organismo');
-            $valUnidad    = Validador::validarTextoLibre($unidadDesignada, 'Unidad Designada', 2, 100);
-            $valMando     = Validador::validarTextoLibre($mandoAcargo,     'Mando a Cargo',     2, 100);
+            $valFicha     = Validador::validarId($datos['ficha_id'],    'Ficha de Emergencia');
+            $valOrganismo = Validador::validarId($datos['organismo_id'], 'Organismo');
+            $valUnidad    = Validador::validarTextoLibre($datos['unidad_designada'], 'Unidad Designada', 2, 100);
+            $valMando     = Validador::validarTextoLibre($datos['mando_acargo'],     'Mando a Cargo',     2, 100);
 
             if (!$valFicha['valido'])     { echo json_encode(['success' => false, 'message' => $valFicha['mensaje']]);    return; }
             if (!$valOrganismo['valido']) { echo json_encode(['success' => false, 'message' => $valOrganismo['mensaje']]); return; }
             if (!$valUnidad['valido'])    { echo json_encode(['success' => false, 'message' => $valUnidad['mensaje']]);   return; }
             if (!$valMando['valido'])     { echo json_encode(['success' => false, 'message' => $valMando['mensaje']]);    return; }
 
-            if ($personaAtiende !== '') {
-                $valPersona = Validador::validarTextoLibre($personaAtiende, 'Persona que Atiende', 2, 100);
-                if (!$valPersona['valido']) { echo json_encode(['success' => false, 'message' => $valPersona['mensaje']]); return; }
-            }
-
-            // 6.1 Validar que la ficha esté en estado "En Proceso"
-            $infoFicha = $this->modelo->obtenerInfoFicha($fichaId);
-            if (!$infoFicha || $infoFicha['estado_ficha'] !== 'En Proceso') {
-                $estado = $infoFicha['estado_ficha'] ?? 'desconocido';
-                echo json_encode(['success' => false, 'message' => "Solo se pueden asignar organismos a fichas En Proceso. Estado actual: '{$estado}'."]);
-                return;
-            }
-
-            $usuarioId  = (int)$_SESSION['user_id'];
-            $despachoId = $this->modelo->crear([
-                'ficha_id'        => $fichaId,
-                'organismo_id'    => $organismoId,
-                'unidad_designada' => $unidadDesignada,
-                'mando_acargo'    => $mandoAcargo,
-                'persona_atiende' => $personaAtiende ?: null,
-                'despachador_id'  => $usuarioId,
-            ]);
-
-            if (!$despachoId) {
-                echo json_encode(['success' => false, 'message' => 'No se pudo registrar el despacho.']);
-                return;
-            }
-
-            // 6.2 Auditoría del evento de despacho en la trazabilidad de la ficha
-            $this->modeloEvento->registrarEventoFicha(
-                $fichaId,
-                $usuarioId,
-                'DESPACHO',
-                null, null, null,
-                ['despacho_id' => $despachoId, 'organismo_id' => $organismoId, 'unidad' => $unidadDesignada],
-                "Despacho #{$despachoId}: Organismo ID {$organismoId} — Unidad '{$unidadDesignada}'."
-            );
-
-            // NOTIFICACIONES: Al operador creador + Jefatura + Admin
-            if (!empty($infoFicha['id_user'])) {
-                Notificador::enviarAUsuario(
-                    (int)$infoFicha['id_user'],
-                    'info',
-                    'Organismo Despachado',
-                    "Se ha despachado un organismo a tu Ficha #{$fichaId}.",
-                    $fichaId
-                );
-            }
-            Notificador::enviarPorRol(4, 'alerta', 'Nuevo Despacho de Organismo', "Organismo asignado a la Ficha #{$fichaId}. Despacho #{$despachoId}.", $fichaId);
-            Notificador::enviarPorRol(1, 'info', 'Sistema: Organismo Despachado', "Despacho #{$despachoId} registrado en Ficha #{$fichaId}.", $fichaId);
-
-            echo json_encode(['success' => true, 'message' => "Despacho registrado correctamente.", 'id' => $despachoId]);
+            $resultado = $this->servicio->asignarOrganismo($datos, (int)$_SESSION['user_id']);
+            echo json_encode($resultado);
         } catch (\Exception $e) {
             echo json_encode(['success' => false, 'message' => 'Error inesperado: ' . $e->getMessage()]);
         }
@@ -388,37 +296,8 @@ class DespachoControlador {
                 return;
             }
 
-            $anterior = $this->modelo->obtenerPorId($despachoId);
-            if (!$anterior) {
-                echo json_encode(['success' => false, 'message' => 'Despacho no encontrado.']);
-                return;
-            }
-            if ($anterior['estatus_despacho'] === 'Liberado') {
-                echo json_encode(['success' => false, 'message' => 'Este despacho ya fue Liberado y no puede ser modificado.']);
-                return;
-            }
-
-            $exito = $this->modelo->cambiarEstado($despachoId, $nuevoEstado);
-            if ($exito) {
-                $this->modeloEvento->registrarEventoFicha(
-                    (int)$anterior['ficha_id'],
-                    (int)$_SESSION['user_id'],
-                    'DESPACHO',
-                    $anterior['estatus_despacho'],
-                    $nuevoEstado,
-                    ['estatus' => $anterior['estatus_despacho']],
-                    ['estatus' => $nuevoEstado],
-                    "Despacho #{$despachoId}: '{$anterior['estatus_despacho']}' → '{$nuevoEstado}'."
-                );
-                // NOTIFICACIONES: Jefatura + Admin (el cambio de estatus de organismo es auditoría operativa)
-                $fichaIdDespacho = (int)$anterior['ficha_id'];
-                Notificador::enviarPorRol(4, 'info', 'Avance de Organismo', "Despacho #{$despachoId}: '{$anterior['estatus_despacho']}' → '{$nuevoEstado}' en Ficha #{$fichaIdDespacho}.", $fichaIdDespacho);
-                Notificador::enviarPorRol(1, 'info', 'Sistema: Avance Despacho', "Despacho #{$despachoId} cambió a '{$nuevoEstado}'.", $fichaIdDespacho);
-
-                echo json_encode(['success' => true, 'message' => "Estatus actualizado a '{$nuevoEstado}'.", 'nuevo_estado' => $nuevoEstado]);
-            } else {
-                echo json_encode(['success' => false, 'message' => 'No se pudo cambiar el estatus.']);
-            }
+            $resultado = $this->servicio->cambiarEstadoDespacho($despachoId, $nuevoEstado, (int)$_SESSION['user_id']);
+            echo json_encode($resultado);
         } catch (\Exception $e) {
             echo json_encode(['success' => false, 'message' => 'Error inesperado: ' . $e->getMessage()]);
         }
@@ -472,40 +351,8 @@ class DespachoControlador {
                 }
             }
 
-            // Verificar que el despacho exista y sea cancelable
-            $despacho = $this->modelo->obtenerPorId($despachoId);
-            if (!$despacho) {
-                echo json_encode(['success' => false, 'message' => 'Despacho no encontrado.']);
-                return;
-            }
-            if (in_array($despacho['estatus_despacho'], ['Liberado', 'Cancelado'], true)) {
-                echo json_encode(['success' => false, 'message' => "El despacho ya está en estado terminal ('{$despacho['estatus_despacho']}') y no puede cancelarse."]);
-                return;
-            }
-
-            $exito = $this->modelo->cancelar($despachoId, $tipoMotivo, $descripcion);
-
-            if ($exito) {
-                // Auditoría del evento de cancelación
-                $this->modeloEvento->registrarEventoFicha(
-                    (int)$despacho['ficha_id'],
-                    (int)$_SESSION['user_id'],
-                    'DESPACHO',
-                    $despacho['estatus_despacho'],
-                    'Cancelado',
-                    ['estatus' => $despacho['estatus_despacho']],
-                    ['estatus' => 'Cancelado', 'motivo' => "{$tipoMotivo}: {$descripcion}"],
-                    "Despacho #{$despachoId} ({$despacho['nombre_organismo']}) cancelado. Motivo: {$tipoMotivo}."
-                );
-                // NOTIFICACIONES: Jefatura + Admin
-                $fichaIdCancelacion = (int)$despacho['ficha_id'];
-                Notificador::enviarPorRol(4, 'alerta', 'Organismo Cancelado', "El organismo '{$despacho['nombre_organismo']}' fue cancelado en Ficha #{$fichaIdCancelacion}. Motivo: {$tipoMotivo}.", $fichaIdCancelacion);
-                Notificador::enviarPorRol(1, 'info', 'Sistema: Despacho Cancelado', "Despacho #{$despachoId} ({$despacho['nombre_organismo']}) cancelado.", $fichaIdCancelacion);
-
-                echo json_encode(['success' => true, 'message' => "Despacho de '{$despacho['nombre_organismo']}' cancelado correctamente."]);
-            } else {
-                echo json_encode(['success' => false, 'message' => 'No se pudo cancelar el despacho.']);
-            }
+            $resultado = $this->servicio->cancelarDespacho($despachoId, $tipoMotivo, $descripcion, (int)$_SESSION['user_id']);
+            echo json_encode($resultado);
         } catch (\Exception $e) {
             echo json_encode(['success' => false, 'message' => 'Error inesperado: ' . $e->getMessage()]);
         }
@@ -648,66 +495,8 @@ class DespachoControlador {
                 }
             }
 
-            $infoFicha = $this->modelo->obtenerInfoFicha($fichaId);
-            if (!$infoFicha) {
-                echo json_encode(['success' => false, 'message' => 'Ficha no encontrada.']);
-                return;
-            }
-
-            // Atendido y Cerrado son ambos estados terminales
-            if (in_array($infoFicha['estado_ficha'], ['Cerrado', 'Atendido'], true)) {
-                echo json_encode(['success' => false, 'message' => "La ficha ya está en estado terminal '{$infoFicha['estado_ficha']}' y no puede ser modificada."]);
-                return;
-            }
-
-            // Blindaje de integridad: verificar que no haya organismos despachados sin resolver (Liberado/Cancelado)
-            if (in_array($nuevoEstado, ['Cerrado', 'Atendido'])) {
-                $despachosActivos = $this->modelo->contarDespachosActivos($fichaId);
-                if ($despachosActivos > 0) {
-                    echo json_encode([
-                        'success' => false,
-                        'message' => "No se puede marcar como {$nuevoEstado}: hay {$despachosActivos} organismo(s) en curso. Libere o cancele todos los organismos antes de finalizar.",
-                    ]);
-                    return;
-                }
-            }
-
-            $usuarioId      = (int)$_SESSION['user_id'];
-            $estadoAnterior = $infoFicha['estado_ficha'];
-
-            // Delegar al FichaModelo centralizado (gestiona hora_cierre, motivo_cierre y tipo_motivo_cierre)
-            $exito = $this->modeloFicha->cambiarEstado($fichaId, $nuevoEstado, $usuarioId, $motivoCierre, $tipoMotivo);
-
-            if ($exito) {
-                $descripcion = "Estado cambiado desde Centro de Despacho: '{$estadoAnterior}' → '{$nuevoEstado}'.";
-                if ($motivoCierre !== '') {
-                    $descripcion .= " Motivo: {$motivoCierre}";
-                }
-
-                $this->modeloEvento->registrarEventoFicha(
-                    $fichaId, $usuarioId, 'CAMBIO_ESTADO',
-                    $estadoAnterior, $nuevoEstado,
-                    ['estado' => $estadoAnterior],
-                    ['estado' => $nuevoEstado, 'motivo' => $motivoCierre],
-                    $descripcion
-                );
-                // NOTIFICACIONES: Al operador creador de la ficha + Jefatura + Admin
-                if (!empty($infoFicha['id_user'])) {
-                    Notificador::enviarAUsuario(
-                        (int)$infoFicha['id_user'],
-                        'cambio_estado',
-                        'Estado de Ficha Actualizado',
-                        "Tu Ficha #{$fichaId} cambió de '{$estadoAnterior}' a '{$nuevoEstado}' por {$_SESSION['user_name']}.",
-                        $fichaId
-                    );
-                }
-                Notificador::enviarPorRol(4, 'info', 'Actualización de Emergencia', "La Ficha #{$fichaId} fue actualizada a '{$nuevoEstado}' por {$_SESSION['user_name']}.", $fichaId);
-                Notificador::enviarPorRol(1, 'info', 'Sistema: Cambio de Estado', "Ficha #{$fichaId} cambió a '{$nuevoEstado}'.", $fichaId);
-
-                echo json_encode(['success' => true, 'message' => "Estado de la ficha actualizado a '{$nuevoEstado}'.", 'nuevo_estado' => $nuevoEstado]);
-            } else {
-                echo json_encode(['success' => false, 'message' => 'No se pudo actualizar el estado.']);
-            }
+            $resultado = $this->servicio->cambiarEstadoFicha($fichaId, $nuevoEstado, (int)$_SESSION['user_id'], $_SESSION['user_name'], $motivoCierre, $tipoMotivo);
+            echo json_encode($resultado);
         } catch (\Exception $e) {
             echo json_encode(['success' => false, 'message' => 'Error inesperado: ' . $e->getMessage()]);
         }

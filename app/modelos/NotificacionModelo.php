@@ -39,9 +39,9 @@ class NotificacionModelo {
      */
     public function obtenerNoLeidas(int $usuario_id): array {
         try {
-            $sql = "SELECT id, tipo, titulo, mensaje, leido, fecha_creacion
+            $sql = "SELECT id, ficha_id, tipo, titulo, mensaje, leido, fecha_creacion
                     FROM {$this->tabla}
-                    WHERE usuario_recibe_id = :uid AND leido = 0
+                    WHERE usuario_recibe_id = :uid
                     ORDER BY fecha_creacion DESC
                     LIMIT 20";
 

@@ -4,8 +4,10 @@ namespace App\modelos;
 
 use App\Config\Database;
 use PDO;
+use App\Helpers\Cache;
 
 require_once 'app/Config/Database.php';
+require_once 'app/Helpers/Cache.php';
 
 /**
  * ReporteModelo - Gestión de consultas avanzadas y filtrado dinámico
@@ -137,5 +139,16 @@ class ReporteModelo {
             'cerradas'    => (int)($row['cerradas']   ?? 0),
             'efectividad' => $total > 0 ? round(($atendidas / $total) * 100, 1) : 0
         ];
+    }
+
+    /**
+     * Obtener lista de usuarios con rol Operador (Rol ID: 2)
+     */
+    public function obtenerOperadores(): array {
+        return Cache::remember('operadores_lista', 3600, function() {
+            $sql = "SELECT id, nombre_completo FROM usuarios WHERE rol_id = 2 ORDER BY nombre_completo ASC";
+            $stmt = $this->conexion->query($sql);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        });
     }
 }

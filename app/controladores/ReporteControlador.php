@@ -38,7 +38,7 @@ class ReporteControlador {
             'municipios'       => $this->fichaModelo->obtenerMunicipios(),
             'tipos_emergencia' => $this->fichaModelo->obtenerTiposEmergencia(),
             'casos'            => $this->fichaModelo->obtenerCasos(), // Todos los casos activos
-            'operadores'       => $this->obtenerOperadores(),
+            'operadores'       => $this->reporteModelo->obtenerOperadores(),
             'js'               => ['reportes/reportes.js']
         ];
 
@@ -75,17 +75,6 @@ class ReporteControlador {
             'resumen' => $resumen
         ]);
     }
-
-    /**
-     * Auxiliar: Obtener lista de usuarios con rol Operador
-     */
-    private function obtenerOperadores() {
-        $sql = "SELECT id, nombre_completo FROM usuarios WHERE rol_id = 2 ORDER BY nombre_completo ASC";
-        $stmt = $this->reporteModelo->getConexion()->query($sql);
-        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
-    }
-
-
 
     /**
      * Genera el reporte de forma síncrona y lo envía directamente al navegador.

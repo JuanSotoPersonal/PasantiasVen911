@@ -5,17 +5,15 @@
  * autenticación, perfiles, permisos y seguridad avanzada (preguntas/respuestas).
  */
 
-require_once 'app/modelos/UsuarioModelo.php';
-require_once 'app/modelos/RegistroModelo.php';
-require_once 'app/modelos/EventoModelo.php';
-require_once 'app/Helpers/Validador.php';
-require_once 'app/Helpers/Notificador.php';
-
 use App\modelos\UsuarioModelo;
 use App\modelos\RegistroModelo;
-use App\modelos\EventoModelo;
 use App\Helpers\Validador;
-use App\Helpers\Notificador;
+use App\Servicios\UsuarioServicio;
+
+require_once 'app/modelos/UsuarioModelo.php';
+require_once 'app/modelos/RegistroModelo.php';
+require_once 'app/Helpers/Validador.php';
+require_once 'app/Servicios/UsuarioServicio.php';
 
 class UsuarioControlador {
 
@@ -24,8 +22,8 @@ class UsuarioControlador {
     // ///////////////////////////////////////////////////////////////////
 
     private UsuarioModelo  $modelo;
-    private EventoModelo   $log;
     private RegistroModelo $modeloRegistro;
+    private UsuarioServicio $servicio;
 
     /**
      * Valida la sesión y los permisos de acceso al módulo antes de instanciar.
@@ -36,8 +34,8 @@ class UsuarioControlador {
             exit;
         }
         $this->modelo          = new UsuarioModelo();
-        $this->log             = new EventoModelo();
         $this->modeloRegistro  = new RegistroModelo();
+        $this->servicio        = new UsuarioServicio();
     }
 
     // ///////////////////////////////////////////////////////////////////
@@ -203,71 +201,15 @@ class UsuarioControlador {
                 return;
             }
 
-            // 4.3 Verificación de duplicidad
-            if ($this->modelo->existeUsuario($usuario)) {
-                echo json_encode(['success' => false, 'message' => "El usuario '{$usuario}' ya está registrado."]);
-                return;
-            }
-            if ($this->modelo->existeCedula($cedula)) {
-                echo json_encode(['success' => false, 'message' => "La cédula 'V-{$cedula}' ya está registrada por otro usuario."]);
-                return;
-            }
-
-            // 4.4 Lógica para SuperAdmin Único y sus preguntas de seguridad
-            if ($rolId === 1) {
-                echo json_encode(['success' => false, 'message' => 'Solo puede existir un SuperAdministrador en el sistema.']);
-                return;
-            }
-
-            $p1 = (int)($_POST['pregunta_1'] ?? 0);
-            $p2 = (int)($_POST['pregunta_2'] ?? 0);
-            $r1 = trim($_POST['respuesta_1'] ?? '');
-            $r2 = trim($_POST['respuesta_2'] ?? '');
-
-            if ($rolId === 1) {
-                if ($p1 === 0 || $p2 === 0 || empty($r1) || empty($r2)) {
-                    echo json_encode(['success' => false, 'message' => 'Los SuperAdministradores deben configurar sus preguntas de seguridad.']);
-                    return;
-                }
-                // 5. Validación del contenido y longitud de respuestas
-                $valR1 = Validador::validarRespuestaSeguridad($r1);
-                if (!$valR1['valido']) { echo json_encode(['success' => false, 'message' => $valR1['mensaje']]); return; }
-                $valR2 = Validador::validarRespuestaSeguridad($r2);
-                if (!$valR2['valido']) { echo json_encode(['success' => false, 'message' => $valR2['mensaje']]); return; }
-                if ($p1 === $p2) {
-                    echo json_encode(['success' => false, 'message' => 'Debes elegir dos preguntas diferentes.']);
-                    return;
-                }
-            }
-
-            // 4.5 Persistencia y Auditoría
-            $datos = [
+            $resultado = $this->servicio->crearUsuario([
                 'usuario'         => $usuario,
-                'password'        => password_hash($contrasena, PASSWORD_DEFAULT),
+                'password'        => $contrasena,
                 'nombre_completo' => $nombreCompleto,
-                'cedula'          => $cedula ?: null,
-                'rol_id'          => $rolId,
-                'estado'          => $estado,
-                'pregunta_1_id'   => ($rolId === 1) ? $p1 : null,
-                'pregunta_2_id'   => ($rolId === 1) ? $p2 : null,
-                'respuesta_1'     => ($rolId === 1) ? password_hash(strtolower($r1), PASSWORD_DEFAULT) : null,
-                'respuesta_2'     => ($rolId === 1) ? password_hash(strtolower($r2), PASSWORD_DEFAULT) : null,
-            ];
-            
-            if ($this->modelo->crear($datos)) {
-                $admin_id = (int)$_SESSION['user_id'];
-                $this->log->registrarEvento($admin_id, 'INSERT', 'usuarios', null, null, [
-                    'usuario' => $usuario, 'nombre_completo' => $nombreCompleto, 
-                    'cedula' => $cedula, 'rol_id' => $rolId
-                ], "Usuario '{$usuario}' creado.");
+                'cedula'          => $cedula,
+                'rol_id'          => $rolId
+            ], (int)$_SESSION['user_id']);
 
-                // NOTIFICACIÓN AL ADMINISTRADOR (Rol 1)
-                Notificador::enviarPorRol(1, 'info', 'Seguridad: Nuevo Usuario', "Se ha registrado el usuario '{$usuario}' en el sistema.", null);
-
-                echo json_encode(['success' => true, 'message' => 'Usuario creado correctamente.']);
-            } else {
-                echo json_encode(['success' => false, 'message' => 'Error al crear el usuario.']);
-            }
+            echo json_encode($resultado);
         } catch (\Exception $e) {
             error_log("[UsuarioControlador] Error en guardar: " . $e->getMessage());
             echo json_encode(['success' => false, 'message' => 'Ocurrió un error inesperado en el servidor.']);
@@ -315,31 +257,6 @@ class UsuarioControlador {
                 return;
             }
 
-            // Verificación de duplicidad excluyendo el ID actual
-            if ($this->modelo->existeUsuario($usuario, $id)) {
-                echo json_encode(['success' => false, 'message' => "El usuario '{$usuario}' ya está registrado por otro usuario."]);
-                return;
-            }
-            if ($this->modelo->existeCedula($cedula, $id)) {
-                echo json_encode(['success' => false, 'message' => "la cedula '{$cedula}' ya esta registrada por otro usuario."]);
-                return;
-            }
-
-            $usuarioAnterior = $this->modelo->obtenerPorId($id);
-
-            // 4.6 Restricciones de Cambio de Rol para SuperAdmin
-            if ($usuarioAnterior) {
-                $oldRol = (int)$usuarioAnterior['rol_id'];
-                if ($rolId === 1 && $oldRol !== 1) {
-                    echo json_encode(['success' => false, 'message' => 'No se puede promover a un usuario al rol de SuperAdministrador.']);
-                    return;
-                }
-                if ($oldRol === 1 && $rolId !== 1) {
-                    echo json_encode(['success' => false, 'message' => 'El SuperAdministrador no puede cambiar su propio rol.']);
-                    return;
-                }
-            }
-
             $datos = [
                 'nombre_completo' => $nombreCompleto,
                 'cedula'          => $cedula ?: null,
@@ -347,22 +264,8 @@ class UsuarioControlador {
                 'rol_id'          => $rolId,
             ];
 
-            if ($this->modelo->actualizarInformacion($id, $datos)) {
-                $admin_id = (int)$_SESSION['user_id'];
-                $this->log->registrarEvento($admin_id, 'UPDATE', 'usuarios', $id, 
-                    $usuarioAnterior ? [
-                        'usuario'         => $usuarioAnterior['usuario'],
-                        'nombre_completo' => $usuarioAnterior['nombre_completo'],
-                        'cedula'          => $usuarioAnterior['cedula'],
-                        'rol_id'          => $usuarioAnterior['rol_id'],
-                    ] : null,
-                    $datos,
-                    "Usuario ID {$id} editado."
-                );
-                echo json_encode(['success' => true, 'message' => 'Usuario actualizado correctamente.']);
-            } else {
-                echo json_encode(['success' => false, 'message' => 'Error al actualizar el usuario.']);
-            }
+            $resultado = $this->servicio->actualizarUsuario($id, $datos, (int)$_SESSION['user_id']);
+            echo json_encode($resultado);
         } catch (\Exception $e) {
             error_log("[UsuarioControlador] Error en actualizar: " . $e->getMessage());
             echo json_encode(['success' => false, 'message' => 'Ocurrió un error inesperado en el servidor.']);
@@ -404,37 +307,12 @@ class UsuarioControlador {
                 return;
             }
 
-            $usuarioAnterior = $this->modelo->obtenerPorId($id);
+            $resultado = $this->servicio->cambiarContrasena($id, $nuevaContrasena, (int)$_SESSION['user_id'], [
+                'ans_1' => trim($_POST['ans_1'] ?? ''),
+                'ans_2' => trim($_POST['ans_2'] ?? '')
+            ]);
 
-            // 5.1 Desafío de Seguridad para SuperAdmin
-            if ($usuarioAnterior && (int)$usuarioAnterior['rol_id'] === 1) {
-                $res1 = trim($_POST['ans_1'] ?? '');
-                $res2 = trim($_POST['ans_2'] ?? '');
-                
-                if (empty($res1) || empty($res2)) {
-                    echo json_encode(['success' => false, 'message' => 'Debes responder las preguntas de seguridad.']);
-                    return;
-                }
-
-                if (!$this->modelo->verificarRespuestasSeguridad($id, $res1, $res2)) {
-                    echo json_encode(['success' => false, 'message' => 'Respuestas de seguridad incorrectas. Acceso denegado.']);
-                    return;
-                }
-            }
-
-            $contrasena_hash = password_hash($nuevaContrasena, PASSWORD_DEFAULT);
-
-            if ($this->modelo->actualizarContrasena($id, $contrasena_hash)) {
-                $admin_id = (int)$_SESSION['user_id'];
-                $this->log->registrarEvento($admin_id, 'UPDATE', 'usuarios', $id, 
-                    $usuarioAnterior ? ['usuario' => $usuarioAnterior['usuario'], 'nombre_completo' => $usuarioAnterior['nombre_completo']] : null,
-                    null, 
-                    "Contraseña del usuario ID {$id} actualizada."
-                );
-                echo json_encode(['success' => true, 'message' => 'Contraseña actualizada correctamente.']);
-            } else {
-                echo json_encode(['success' => false, 'message' => 'Error al actualizar la contraseña.']);
-            }
+            echo json_encode($resultado);
         } catch (\Exception $e) {
             error_log("[UsuarioControlador] Error en actualizarContrasena: " . $e->getMessage());
             echo json_encode(['success' => false, 'message' => 'Ocurrió un error inesperado en el servidor.']);
@@ -458,36 +336,8 @@ class UsuarioControlador {
                 return;
             }
 
-            if ($id === (int)$_SESSION['user_id']) {
-                echo json_encode(['success' => false, 'message' => 'No puedes cambiar tu propio estado.']);
-                return;
-            }
-
-            $usuarioAfectado = $this->modelo->obtenerPorId($id);
-            if ($usuarioAfectado && (int)$usuarioAfectado['rol_id'] === 1) {
-                echo json_encode(['success' => false, 'message' => 'El SuperAdministrador no puede ser desactivado.']);
-                return;
-            }
-
-            $estadoAnterior = $usuarioAfectado ? $usuarioAfectado['estado'] : null;
-            $resultado = $this->modelo->alternarEstado($id);
-
-            if ($resultado !== false) {
-                $admin_id    = (int)$_SESSION['user_id'];
-                $nuevoEstado = $resultado['nuevo_estado'];
-                $this->log->registrarEvento($admin_id, 'CAMBIO_ESTADO', 'usuarios', $id, 
-                    ['estado' => $estadoAnterior], ['estado' => $nuevoEstado], 
-                    "Usuario ID {$id} cambiado a '{$nuevoEstado}'."
-                );
-
-                // NOTIFICACIÓN AL ADMINISTRADOR (Rol 1)
-                $txtAccion = ($nuevoEstado === 'activo') ? 'activado' : 'deshabilitado';
-                Notificador::enviarPorRol(1, 'alerta', 'Seguridad: Estado de Usuario', "El usuario '{$usuarioAfectado['usuario']}' ha sido {$txtAccion} por {$_SESSION['user_name']}.", null);
-
-                echo json_encode(['success' => true, 'message' => 'Estado actualizado correctamente.', 'nuevo_estado' => $nuevoEstado]);
-            } else {
-                echo json_encode(['success' => false, 'message' => 'Usuario no encontrado.']);
-            }
+            $resultado = $this->servicio->alternarEstado($id, (int)$_SESSION['user_id'], $_SESSION['user_name']);
+            echo json_encode($resultado);
         } catch (\Exception $e) {
             error_log("[UsuarioControlador] Error en alternarEstado: " . $e->getMessage());
             echo json_encode(['success' => false, 'message' => 'Ocurrió un error inesperado en el servidor.']);
@@ -546,26 +396,11 @@ class UsuarioControlador {
             $valR2 = Validador::validarRespuestaSeguridad($r2);
             if (!$valR2['valido']) { echo json_encode(['success' => false, 'message' => $valR2['mensaje']]); return; }
 
-            // 6.1 Validación del Código de Fábrica (Key de Activación)
-            if (!$this->modeloRegistro->validarLlaveActivacion($codigoFabrica)) {
-                echo json_encode(['success' => false, 'message' => 'Código de Fábrica inválido. No tienes permiso para esta acción.']);
-                return;
-            }
+            $resultado = $this->servicio->actualizarPreguntas($id, [
+                'p1' => $p1, 'p2' => $p2, 'r1' => $r1, 'r2' => $r2
+            ], $codigoFabrica, (int)$_SESSION['user_id']);
 
-            $datos = [
-                'pregunta_1_id' => $p1,
-                'pregunta_2_id' => $p2,
-                'respuesta_1'   => password_hash(strtolower($r1), PASSWORD_DEFAULT),
-                'respuesta_2'   => password_hash(strtolower($r2), PASSWORD_DEFAULT)
-            ];
-
-            if ($this->modelo->actualizarCamposSeguridad($id, $datos)) {
-                $admin_id = (int)$_SESSION['user_id'];
-                $this->log->registrarEvento($admin_id, 'UPDATE', 'usuarios', $id, null, null, "Preguntas de seguridad del usuario ID {$id} actualizadas.");
-                echo json_encode(['success' => true, 'message' => 'Preguntas de seguridad actualizadas correctamente.']);
-            } else {
-                echo json_encode(['success' => false, 'message' => 'Error al actualizar las preguntas.']);
-            }
+            echo json_encode($resultado);
         } catch (\Exception $e) {
             error_log("[UsuarioControlador] Error en actualizarPreguntasSeguridad: " . $e->getMessage());
             echo json_encode(['success' => false, 'message' => 'Ocurrió un error inesperado en el servidor.']);

@@ -10,8 +10,10 @@ namespace App\modelos;
 use App\Config\Database;
 use PDO;
 use Exception;
+use App\Helpers\Cache;
 
 require_once 'app/Config/Database.php';
+require_once 'app/Helpers/Cache.php';
 
 class UsuarioModelo {
 
@@ -88,14 +90,11 @@ class UsuarioModelo {
      * Retorna todos los roles registrados en el sistema.
      */
     public function obtenerRoles(): array {
-        try {
+        return Cache::remember('roles_lista', 86400, function() {
             $stmt = $this->conexion->prepare("SELECT id, nombre FROM roles ORDER BY id ASC");
             $stmt->execute();
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
-        } catch (Exception $e) {
-            error_log("[UsuarioModelo] Error en obtenerRoles: " . $e->getMessage());
-            return [];
-        }
+        });
     }
 
     /**
@@ -201,6 +200,7 @@ class UsuarioModelo {
             $stmt->bindValue(':r1', $datos['respuesta_1'] ?? null, PDO::PARAM_STR);
             $stmt->bindValue(':r2', $datos['respuesta_2'] ?? null, PDO::PARAM_STR);
             
+            Cache::borrar('operadores_lista');
             return $stmt->execute();
         } catch (Exception $e) {
             error_log("[UsuarioModelo] Error en crear: " . $e->getMessage());
@@ -226,6 +226,8 @@ class UsuarioModelo {
             $stmt->bindValue(':usuario',         $datos['usuario'],         PDO::PARAM_STR);
             $stmt->bindValue(':rol_id',          $datos['rol_id'],          PDO::PARAM_INT);
             $stmt->bindValue(':id',              $id,                       PDO::PARAM_INT);
+            
+            Cache::borrar('operadores_lista');
             return $stmt->execute();
         } catch (Exception $e) {
             error_log("[UsuarioModelo] Error en actualizarInformacion: " . $e->getMessage());
@@ -271,6 +273,7 @@ class UsuarioModelo {
             $stmt2->bindValue(':id',     $id,          PDO::PARAM_INT);
             $stmt2->execute();
 
+            Cache::borrar('operadores_lista');
             return ['nuevo_estado' => $nuevoEstado];
         } catch (Exception $e) {
             error_log("[UsuarioModelo] Error en alternarEstado: " . $e->getMessage());

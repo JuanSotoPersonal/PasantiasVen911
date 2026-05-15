@@ -10,6 +10,7 @@ $pageName = 'reporte';
 <head>
     <title>Ven911 | Reportes e Inteligencia</title>
     <?php require __DIR__ . '/../partials/head.php'; ?>
+    <link rel="stylesheet" href="public/css/fichas.css">
     <link rel="stylesheet" href="public/css/reportes.css">
 </head>
 
@@ -91,6 +92,10 @@ $pageName = 'reporte';
         </main>
         <?php require __DIR__ . '/../partials/footer.php'; ?>
     </div>
+
+    <!-- 5. CAPA DE SEGURIDAD Y ACCIONES (MODALES) -->
+    <?php require __DIR__ . '/../fichas/componentes/_modal_detalle.php'; ?>
+
     <?php require __DIR__ . '/../partials/scripts.php'; ?>
     
     <!-- Librerías de datos y utilidades (DataTables, SweetAlert) -->
@@ -99,6 +104,7 @@ $pageName = 'reporte';
     
     <!-- Lógica de comportamiento del módulo -->
     <script src="public/js/comun/datatables_config.js"></script>
+    <script src="public/js/comun/fichas_comun.js"></script>
     <script src="public/js/reportes/reportes.js"></script>
 </body>
 </html>
