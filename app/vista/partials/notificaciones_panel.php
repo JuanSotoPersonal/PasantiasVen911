@@ -41,7 +41,7 @@
 
         <!-- Pie: Enlace al historial completo -->
         <div class="notif-panel-footer text-center border-top py-2">
-            <a href="#" class="text-success text-decoration-none small fw-semibold">
+            <a href="index.php?url=notificacion" class="text-success text-decoration-none small fw-semibold">
                 <i class="bi bi-list-ul me-1"></i>Ver todas
             </a>
         </div>

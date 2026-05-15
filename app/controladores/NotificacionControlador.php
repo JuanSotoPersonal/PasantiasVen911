@@ -36,8 +36,75 @@ class NotificacionControlador {
     }
 
     // ///////////////////////////////////////////////////////////////////
-    // 2. GESTIÓN DE ESTADO (PERSISTENCIA Y LECTURA)
+    // 2. VISTAS Y GESTIÓN DE ESTADO (LECTURA)
     // ///////////////////////////////////////////////////////////////////
+
+    /**
+     * Renderiza la vista principal del Buzón de Notificaciones.
+     */
+    public function index(): void {
+        try {
+            $seccion = 'notificacion';
+            require_once 'app/vista/notificaciones/index.php';
+        } catch (\Exception $e) {
+            error_log("[NotificacionControlador] Error en index: " . $e->getMessage());
+            die("Error al cargar la vista de notificaciones.");
+        }
+    }
+
+    /**
+     * Endpoint para DataTables: Recupera el historial completo de 
+     * notificaciones del usuario de forma paginada y optimizada.
+     */
+    public function obtenerPaginado(): void {
+        header('Content-Type: application/json');
+        
+        try {
+            $usuario_id = (int)$_SESSION['user_id'];
+            
+            // Parámetros DataTables
+            $draw   = isset($_POST['draw']) ? intval($_POST['draw']) : 1;
+            $start  = isset($_POST['start']) ? intval($_POST['start']) : 0;
+            $length = isset($_POST['length']) ? intval($_POST['length']) : 10;
+            $search = isset($_POST['search']['value']) ? trim($_POST['search']['value']) : '';
+
+            // Mapeo de columnas para ordenamiento
+            $columnas = [
+                0 => 'leido',
+                1 => 'tipo',
+                2 => 'titulo',
+                3 => 'mensaje',
+                4 => 'ficha_id',
+                5 => 'fecha_creacion'
+            ];
+
+            $orderColIdx = isset($_POST['order'][0]['column']) ? intval($_POST['order'][0]['column']) : 5;
+            $orderCol = $columnas[$orderColIdx] ?? 'fecha_creacion';
+            $orderDir = isset($_POST['order'][0]['dir']) && strtolower($_POST['order'][0]['dir']) === 'asc' ? 'ASC' : 'DESC';
+
+            // Consultas al modelo
+            $totalRecords = $this->modelo->contarPorUsuario($usuario_id);
+            $totalFiltered = empty($search) ? $totalRecords : $this->modelo->contarPorUsuario($usuario_id, $search);
+            
+            $notificaciones = $this->modelo->obtenerPaginadoPorUsuario($usuario_id, $start, $length, $search, $orderCol, $orderDir);
+
+            echo json_encode([
+                "draw"            => $draw,
+                "recordsTotal"    => $totalRecords,
+                "recordsFiltered" => $totalFiltered,
+                "data"            => $notificaciones
+            ]);
+        } catch (\Exception $e) {
+            error_log("[NotificacionControlador] Error en obtenerPaginado: " . $e->getMessage());
+            echo json_encode([
+                "draw"            => intval($_POST['draw'] ?? 1),
+                "recordsTotal"    => 0,
+                "recordsFiltered" => 0,
+                "data"            => [],
+                "error"           => "Error al procesar la solicitud."
+            ]);
+        }
+    }
 
     /**
      * Recupera las notificaciones no leídas del usuario en sesión.

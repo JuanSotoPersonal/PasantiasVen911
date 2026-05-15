@@ -55,6 +55,64 @@ class NotificacionModelo {
         }
     }
 
+    /**
+     * Recupera las notificaciones paginadas para DataTables.
+     */
+    public function obtenerPaginadoPorUsuario(int $usuario_id, int $start, int $length, string $search, string $orderCol, string $orderDir): array {
+        try {
+            $sql = "SELECT id, ficha_id, tipo, titulo, mensaje, leido, fecha_creacion
+                    FROM {$this->tabla}
+                    WHERE usuario_recibe_id = :uid ";
+            
+            if (!empty($search)) {
+                $sql .= " AND (titulo LIKE :search OR mensaje LIKE :search OR tipo LIKE :search) ";
+            }
+
+            $sql .= " ORDER BY {$orderCol} {$orderDir} LIMIT :start, :length";
+
+            $stmt = $this->conexion->prepare($sql);
+            $stmt->bindParam(':uid', $usuario_id, PDO::PARAM_INT);
+            if (!empty($search)) {
+                $searchTerm = "%{$search}%";
+                $stmt->bindParam(':search', $searchTerm, PDO::PARAM_STR);
+            }
+            $stmt->bindParam(':start', $start, PDO::PARAM_INT);
+            $stmt->bindParam(':length', $length, PDO::PARAM_INT);
+            $stmt->execute();
+
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            error_log("[NotificacionModelo] Error en obtenerPaginadoPorUsuario: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Cuenta el total de notificaciones de un usuario, con o sin filtro de búsqueda.
+     */
+    public function contarPorUsuario(int $usuario_id, string $search = ''): int {
+        try {
+            $sql = "SELECT COUNT(id) FROM {$this->tabla} WHERE usuario_recibe_id = :uid ";
+            
+            if (!empty($search)) {
+                $sql .= " AND (titulo LIKE :search OR mensaje LIKE :search OR tipo LIKE :search) ";
+            }
+
+            $stmt = $this->conexion->prepare($sql);
+            $stmt->bindParam(':uid', $usuario_id, PDO::PARAM_INT);
+            if (!empty($search)) {
+                $searchTerm = "%{$search}%";
+                $stmt->bindParam(':search', $searchTerm, PDO::PARAM_STR);
+            }
+            $stmt->execute();
+
+            return (int)$stmt->fetchColumn();
+        } catch (Exception $e) {
+            error_log("[NotificacionModelo] Error en contarPorUsuario: " . $e->getMessage());
+            return 0;
+        }
+    }
+
     // ///////////////////////////////////////////////////////////////////
     // 3. MÉTODOS DE ACTUALIZACIÓN (ESTADO)
     // ///////////////////////////////////////////////////////////////////
