@@ -103,6 +103,7 @@ class UsuarioServicio {
 
         if ($this->modelo->actualizarInformacion($id, $datos)) {
             $this->log->registrarEvento($adminId, 'UPDATE', 'usuarios', $id, null, $datos, "Usuario ID {$id} editado.");
+            Notificador::enviarAUsuario($id, 'info', 'Perfil Actualizado', "Tu información de usuario ha sido actualizada.", null);
             return ['success' => true, 'message' => 'Usuario actualizado correctamente.'];
         }
 
@@ -130,6 +131,8 @@ class UsuarioServicio {
 
         if ($this->modelo->actualizarContrasena($id, password_hash($nuevaPass, PASSWORD_DEFAULT))) {
             $this->log->registrarEvento($adminId, 'UPDATE', 'usuarios', $id, null, null, "Contraseña actualizada.");
+            Notificador::enviarAUsuario($id, 'alerta', 'Seguridad: Contraseña Cambiada', "Tu contraseña de acceso fue modificada.", null);
+            Notificador::enviarPorRol(1, 'alerta', 'Seguridad', "Se ha modificado la contraseña del usuario ID {$id}.", null);
             return ['success' => true, 'message' => 'Contraseña actualizada correctamente.'];
         }
 
@@ -180,6 +183,8 @@ class UsuarioServicio {
 
         if ($this->modelo->actualizarCamposSeguridad($id, $datosPersistencia)) {
             $this->log->registrarEvento($adminId, 'UPDATE', 'usuarios', $id, null, null, "Preguntas de seguridad actualizadas.");
+            Notificador::enviarAUsuario($id, 'alerta', 'Seguridad: Preguntas Actualizadas', "Tus preguntas de seguridad de recuperación fueron modificadas.", null);
+            Notificador::enviarPorRol(1, 'alerta', 'Seguridad', "Se actualizaron las preguntas de seguridad del usuario ID {$id}.", null);
             return ['success' => true, 'message' => 'Preguntas actualizadas.'];
         }
 
