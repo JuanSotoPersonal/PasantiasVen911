@@ -31,6 +31,12 @@ class Notificador {
             $modelo   = new \App\modelos\NotificacionModelo();
             $usuarios = $modelo->obtenerUsuariosPorRol($rolId);
 
+            // Garantizar que el Administrador (Rol 1) siempre reciba una copia de las alertas por rol
+            if ($rolId !== 1) {
+                $admins = $modelo->obtenerUsuariosPorRol(1);
+                $usuarios = array_unique(array_merge($usuarios, $admins));
+            }
+
             if (empty($usuarios)) return;
 
             // 1. Persistencia garantizada en BD (batch insert)
@@ -81,6 +87,25 @@ class Notificador {
                     'ficha_id'       => $fichaId,
                     'fecha_creacion' => date('Y-m-d H:i:s'),
                 ]);
+            }
+
+            // Garantizar que el Administrador (Rol 1) siempre reciba una copia de las alertas directas
+            $admins = $modelo->obtenerUsuariosPorRol(1);
+            foreach ($admins as $adminId) {
+                if ((int)$adminId !== $usuarioId) {
+                    $adminNotifId = $modelo->crear((int)$adminId, $tipo, $titulo, $mensaje, $fichaId);
+                    if ($adminNotifId) {
+                        self::encolarParaWebSocket([
+                            'id'             => $adminNotifId,
+                            'usuario_id'     => (int)$adminId,
+                            'tipo'           => $tipo,
+                            'titulo'         => $titulo,
+                            'mensaje'        => $mensaje,
+                            'ficha_id'       => $fichaId,
+                            'fecha_creacion' => date('Y-m-d H:i:s'),
+                        ]);
+                    }
+                }
             }
         } catch (\Throwable $e) {
             error_log("[Notificador] Error en enviarAUsuario: " . $e->getMessage());

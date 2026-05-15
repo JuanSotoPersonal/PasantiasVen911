@@ -84,7 +84,6 @@ class FichaServicio {
         // 5. Notificaciones
         Notificador::enviarPorRol(3, 'alerta', 'Nueva Emergencia', "Ficha #{$fichaId} generada.", $fichaId);
         Notificador::enviarPorRol(4, 'info', 'Nueva Ficha', "{$usuarioNombre} registró la Ficha #{$fichaId}.", $fichaId);
-        Notificador::enviarPorRol(1, 'info', 'Sistema', "Ficha #{$fichaId} creada.", $fichaId);
 
         return ['success' => true, 'id' => $fichaId, 'message' => "Ficha #{$fichaId} registrada correctamente."];
     }
@@ -118,7 +117,6 @@ class FichaServicio {
                 Notificador::enviarAUsuario((int)$anterior['id_user'], 'info', 'Ficha Modificada', "Tu Ficha #{$fichaId} fue modificada por {$usuarioNombre}.", $fichaId);
             }
             Notificador::enviarPorRol(4, 'info', 'Edición de Emergencia', "Ficha #{$fichaId} editada por {$usuarioNombre}.", $fichaId);
-            Notificador::enviarPorRol(1, 'info', 'Sistema', "Ficha #{$fichaId} editada por {$usuarioNombre}.", $fichaId);
 
             return ['success' => true, 'message' => "Ficha #{$fichaId} actualizada."];
         }
@@ -170,7 +168,6 @@ class FichaServicio {
                 Notificador::enviarAUsuario((int)$anterior['id_user'], 'cambio_estado', 'Ficha Actualizada', "Ficha #{$fichaId} pasó a '{$nuevoEstado}'.", $fichaId);
             }
             Notificador::enviarPorRol(4, 'info', 'Actualización Operativa', "Ficha #{$fichaId} actualizada a '{$nuevoEstado}' por {$usuarioNombre}.", $fichaId);
-            Notificador::enviarPorRol(1, 'info', 'Sistema', "Cambio de estado en Ficha #{$fichaId}.", $fichaId);
 
             return ['success' => true, 'message' => "Estado actualizado a '{$nuevoEstado}'.", 'nuevo_estado' => $nuevoEstado];
         }
