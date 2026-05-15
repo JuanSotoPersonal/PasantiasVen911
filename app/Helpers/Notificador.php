@@ -1,14 +1,16 @@
 <?php
 /**
  * HELPER: Notificador
- * Propósito: Centralizar la emisión de notificaciones en el sistema, manejando
- * la persistencia en base de datos y el envío en tiempo real vía WebSockets.
+ * Propósito: Centralizar la emisión de notificaciones en el sistema.
  *
- * ARQUITECTURA ASÍNCRONA CON FALLBACK SÍNCRONO:
- * - Prioridad: Intentar encolar en RabbitMQ para procesamiento asíncrono.
- * - Fallback: Si RabbitMQ no está disponible (ej. entorno XAMPP local sin Docker),
- *   persiste la notificación directamente en la BD para garantizar que nunca se pierda.
- * - Escalabilidad: Permite manejar picos de tráfico sin degradar la respuesta del frontend.
+ * ARQUITECTURA DESACOPLADA:
+ * - Persistencia en BD: SIEMPRE síncrona e inmediata. No depende de ningún servicio externo.
+ * - Tiempo real (WebSocket): Best-effort vía RabbitMQ. Si el broker no está disponible o el
+ *   worker no corre, la notificación ya está en BD y se verá al recargar.
+ *
+ * FLUJO:
+ *   enviar*() → guardar en BD (directo) → intentar encolar payload en RabbitMQ (para WS)
+ *   Worker → recibe de RabbitMQ → reenvía al servidor WebSocket (sin tocar BD)
  */
 
 namespace App\Helpers;
@@ -16,47 +18,88 @@ namespace App\Helpers;
 class Notificador {
 
     // ///////////////////////////////////////////////////////////////////
-    // 1. ENVÍO MASIVO POR ROL (Asíncrono vía RabbitMQ)
-    // ///////////////////////////////////////////////////////////////////
-
-    public static function enviarPorRol(int $rolId, string $tipo, string $titulo, string $mensaje, ?int $fichaId = null): void {
-        self::encolarTrabajo([
-            'action'   => 'guardar_notificacion_rol',
-            'rol_id'   => $rolId,
-            'tipo'     => $tipo,
-            'titulo'   => $titulo,
-            'mensaje'  => $mensaje,
-            'ficha_id' => $fichaId
-        ]);
-    }
-
-    // ///////////////////////////////////////////////////////////////////
-    // 2. ENVÍO INDIVIDUAL (Asíncrono vía RabbitMQ)
-    // ///////////////////////////////////////////////////////////////////
-
-    public static function enviarAUsuario(int $usuarioId, string $tipo, string $titulo, string $mensaje, ?int $fichaId = null): void {
-        self::encolarTrabajo([
-            'action'     => 'guardar_notificacion_usuario',
-            'usuario_id' => $usuarioId,
-            'tipo'       => $tipo,
-            'titulo'     => $titulo,
-            'mensaje'    => $mensaje,
-            'ficha_id'   => $fichaId
-        ]);
-    }
-
-    // ///////////////////////////////////////////////////////////////////
-    // 3. COMUNICACIÓN ASÍNCRONA CON RABBITMQ
+    // 1. ENVÍO MASIVO POR ROL
     // ///////////////////////////////////////////////////////////////////
 
     /**
-     * Publica un trabajo arbitrario en RabbitMQ de forma asíncrona.
-     * Útil para tareas pesadas como generación de reportes en segundo plano.
+     * Persiste notificaciones para todos los usuarios de un rol
+     * y luego intenta notificarlos en tiempo real vía WebSocket.
      */
-    public static function encolarTrabajo(array $payload): void {
+    public static function enviarPorRol(int $rolId, string $tipo, string $titulo, string $mensaje, ?int $fichaId = null): void {
+        try {
+            require_once dirname(__DIR__) . '/modelos/NotificacionModelo.php';
+            $modelo   = new \App\modelos\NotificacionModelo();
+            $usuarios = $modelo->obtenerUsuariosPorRol($rolId);
+
+            if (empty($usuarios)) return;
+
+            // 1. Persistencia garantizada en BD (batch insert)
+            $insertados = $modelo->crearBatch($usuarios, $tipo, $titulo, $mensaje, $fichaId);
+
+            // 2. Best-effort: encolar cada notificación para envío WebSocket
+            $fechaActual = date('Y-m-d H:i:s');
+            foreach ($insertados as $item) {
+                self::encolarParaWebSocket([
+                    'id'             => $item['id'],
+                    'usuario_id'     => $item['usuario_id'],
+                    'tipo'           => $tipo,
+                    'titulo'         => $titulo,
+                    'mensaje'        => $mensaje,
+                    'ficha_id'       => $fichaId,
+                    'fecha_creacion' => $fechaActual,
+                ]);
+            }
+        } catch (\Throwable $e) {
+            error_log("[Notificador] Error en enviarPorRol: " . $e->getMessage());
+        }
+    }
+
+    // ///////////////////////////////////////////////////////////////////
+    // 2. ENVÍO INDIVIDUAL
+    // ///////////////////////////////////////////////////////////////////
+
+    /**
+     * Persiste una notificación para un usuario específico
+     * y luego intenta notificarlo en tiempo real vía WebSocket.
+     */
+    public static function enviarAUsuario(int $usuarioId, string $tipo, string $titulo, string $mensaje, ?int $fichaId = null): void {
+        try {
+            require_once dirname(__DIR__) . '/modelos/NotificacionModelo.php';
+            $modelo  = new \App\modelos\NotificacionModelo();
+
+            // 1. Persistencia garantizada en BD
+            $notifId = $modelo->crear($usuarioId, $tipo, $titulo, $mensaje, $fichaId);
+
+            // 2. Best-effort: encolar para envío WebSocket
+            if ($notifId) {
+                self::encolarParaWebSocket([
+                    'id'             => $notifId,
+                    'usuario_id'     => $usuarioId,
+                    'tipo'           => $tipo,
+                    'titulo'         => $titulo,
+                    'mensaje'        => $mensaje,
+                    'ficha_id'       => $fichaId,
+                    'fecha_creacion' => date('Y-m-d H:i:s'),
+                ]);
+            }
+        } catch (\Throwable $e) {
+            error_log("[Notificador] Error en enviarAUsuario: " . $e->getMessage());
+        }
+    }
+
+    // ///////////////////////////////////////////////////////////////////
+    // 3. REENVÍO AL WEBSOCKET VÍA RABBITMQ (Best-effort, sin BD)
+    // ///////////////////////////////////////////////////////////////////
+
+    /**
+     * Encola un payload ya persistido en BD para que el Worker lo reenvíe
+     * al servidor WebSocket. Falla silenciosamente si RabbitMQ no está disponible;
+     * la notificación ya fue guardada en BD, así que no hay pérdida de datos.
+     */
+    private static function encolarParaWebSocket(array $payloadWS): void {
         try {
             require_once dirname(dirname(__DIR__)) . '/vendor/autoload.php';
-            
+
             $rabbitHost = getenv('RABBITMQ_HOST') ?: '127.0.0.1';
             $rabbitPort = getenv('RABBITMQ_PORT') ?: 5672;
             $rabbitUser = getenv('RABBITMQ_USER') ?: 'ven911';
@@ -64,59 +107,50 @@ class Notificador {
             $queueName  = getenv('RABBITMQ_QUEUE') ?: 'notificaciones';
 
             $connection = new \PhpAmqpLib\Connection\AMQPStreamConnection($rabbitHost, $rabbitPort, $rabbitUser, $rabbitPass);
-            $channel = $connection->channel();
-            
+            $channel    = $connection->channel();
             $channel->queue_declare($queueName, false, true, false, false);
-            
-            $msg = new \PhpAmqpLib\Message\AMQPMessage(json_encode($payload), ['delivery_mode' => 2]);
+
+            // El payload ya tiene el ID de BD — el worker solo reenvía al WS sin tocar BD
+            $msg = new \PhpAmqpLib\Message\AMQPMessage(
+                json_encode(['action' => 'ws_forward', 'payload' => $payloadWS]),
+                ['delivery_mode' => 2]
+            );
             $channel->basic_publish($msg, '', $queueName);
-            
             $channel->close();
             $connection->close();
-        } catch (\Exception $e) {
-            error_log("[Notificador AMQP] Fallo encolando trabajo: " . $e->getMessage() . " — Usando fallback síncrono.");
-            // Fallback: RabbitMQ no disponible, persistir directamente en BD
-            self::procesarDirectamente($payload);
+        } catch (\Throwable $e) {
+            // RabbitMQ no disponible: sin tiempo real, pero BD ya fue guardada
+            error_log("[Notificador] WebSocket best-effort falló: " . $e->getMessage());
         }
     }
 
     // ///////////////////////////////////////////////////////////////////
-    // 4. FALLBACK SÍNCRONO (Persistencia directa sin RabbitMQ)
+    // 4. ENCOLAR TRABAJO GENÉRICO (auditoría, etc.)
     // ///////////////////////////////////////////////////////////////////
 
     /**
-     * Procesa el payload directamente contra la BD cuando RabbitMQ no está disponible.
-     * Garantiza que las notificaciones siempre se persistan (entorno XAMPP local, etc.).
+     * Publica un trabajo arbitrario en RabbitMQ (usado por EventoModelo para auditoría).
      */
-    private static function procesarDirectamente(array $payload): void {
+    public static function encolarTrabajo(array $payload): void {
         try {
-            require_once dirname(__DIR__) . '/modelos/NotificacionModelo.php';
-            $modelo = new \App\modelos\NotificacionModelo();
-            $accion = $payload['action'] ?? '';
+            require_once dirname(dirname(__DIR__)) . '/vendor/autoload.php';
 
-            if ($accion === 'guardar_notificacion_usuario') {
-                $modelo->crear(
-                    (int)$payload['usuario_id'],
-                    $payload['tipo'],
-                    $payload['titulo'],
-                    $payload['mensaje'],
-                    $payload['ficha_id'] ?? null
-                );
+            $rabbitHost = getenv('RABBITMQ_HOST') ?: '127.0.0.1';
+            $rabbitPort = getenv('RABBITMQ_PORT') ?: 5672;
+            $rabbitUser = getenv('RABBITMQ_USER') ?: 'ven911';
+            $rabbitPass = getenv('RABBITMQ_PASS') ?: 'ven911_mq_pass';
+            $queueName  = getenv('RABBITMQ_QUEUE') ?: 'notificaciones';
 
-            } elseif ($accion === 'guardar_notificacion_rol') {
-                $usuarios = $modelo->obtenerUsuariosPorRol((int)$payload['rol_id']);
-                if (!empty($usuarios)) {
-                    $modelo->crearBatch(
-                        $usuarios,
-                        $payload['tipo'],
-                        $payload['titulo'],
-                        $payload['mensaje'],
-                        $payload['ficha_id'] ?? null
-                    );
-                }
-            }
-        } catch (\Exception $e) {
-            error_log("[Notificador Fallback] Error en persistencia directa: " . $e->getMessage());
+            $connection = new \PhpAmqpLib\Connection\AMQPStreamConnection($rabbitHost, $rabbitPort, $rabbitUser, $rabbitPass);
+            $channel    = $connection->channel();
+            $channel->queue_declare($queueName, false, true, false, false);
+
+            $msg = new \PhpAmqpLib\Message\AMQPMessage(json_encode($payload), ['delivery_mode' => 2]);
+            $channel->basic_publish($msg, '', $queueName);
+            $channel->close();
+            $connection->close();
+        } catch (\Throwable $e) {
+            error_log("[Notificador] Error encolando trabajo genérico: " . $e->getMessage());
         }
     }
 }

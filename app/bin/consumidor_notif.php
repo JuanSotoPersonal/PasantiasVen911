@@ -54,7 +54,14 @@ $callback = function (AMQPMessage $msg) use ($wsHost) {
 
     $action = $datos['action'] ?? 'notificacion';
 
-    // RabbitMQ ya no procesa reportes, todo el módulo es síncrono.
+    // ///////////////////////////////////////////////////////////////
+    // ws_forward: Payload ya persistido en BD, solo reenviar al WS
+    // ///////////////////////////////////////////////////////////////
+    if ($action === 'ws_forward') {
+        $payload = json_encode($datos['payload']);
+        echo "[*] ws_forward: reenviando al WebSocket...\n";
+        // Cae al bloque cURL al final del callback
+    }
 
     if ($action === 'registrar_auditoria_sistema') {
         echo "[*] Registrando auditoría de sistema en BD...\n";
@@ -121,11 +128,11 @@ $callback = function (AMQPMessage $msg) use ($wsHost) {
                 return [
                     'id'             => $item['id'],
                     'usuario_id'     => $item['usuario_id'],
-                    'tipo'           => $datos['tipo'],
-                    'titulo'         => $datos['titulo'],
-                    'mensaje'        => $datos['mensaje'],
+                    'tipo'           => $datos['tipo']    ?? 'info',
+                    'titulo'         => $datos['titulo']  ?? 'Notificación',
+                    'mensaje'        => $datos['mensaje'] ?? 'Nueva actividad registrada.',
                     'fecha_creacion' => $fechaActual,
-                    'ficha_id'       => $datos['ficha_id'],
+                    'ficha_id'       => $datos['ficha_id'] ?? null,
                 ];
             }, $insertados);
 
