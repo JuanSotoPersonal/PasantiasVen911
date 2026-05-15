@@ -92,7 +92,7 @@ class FichaServicio {
     /**
      * Procesa la actualización de una ficha con blindaje de estados terminales.
      */
-    public function actualizarFicha(int $fichaId, array $datos, int $usuarioId): array {
+    public function actualizarFicha(int $fichaId, array $datos, int $usuarioId, string $usuarioNombre = 'Sistema'): array {
         $anterior = $this->modelo->obtenerPorId($fichaId);
         if (!$anterior) return ['success' => false, 'message' => 'Ficha no encontrada.'];
 
@@ -112,6 +112,13 @@ class FichaServicio {
                 $anterior['estado_ficha'], $anterior['estado_ficha'],
                 $anterior, $datos, "Ficha #{$fichaId} actualizada."
             );
+
+            // Notificaciones de edición
+            if (!empty($anterior['id_user']) && $anterior['id_user'] != $usuarioId) {
+                Notificador::enviarAUsuario((int)$anterior['id_user'], 'info', 'Ficha Modificada', "Tu Ficha #{$fichaId} fue modificada por {$usuarioNombre}.", $fichaId);
+            }
+            Notificador::enviarPorRol(4, 'info', 'Edición de Emergencia', "Ficha #{$fichaId} editada por {$usuarioNombre}.", $fichaId);
+
             return ['success' => true, 'message' => "Ficha #{$fichaId} actualizada."];
         }
 

@@ -161,7 +161,8 @@ class FichaControlador {
                 'telefono2'          => trim($_POST['telefono2'] ?? ''),
             ];
 
-            $respuesta = $this->servicio->actualizarFicha($fichaId, $datos, (int)$_SESSION['user_id']);
+            $usuarioNombre = $_SESSION['username'] ?? $_SESSION['nombre'] ?? 'Usuario';
+            $respuesta = $this->servicio->actualizarFicha($fichaId, $datos, (int)$_SESSION['user_id'], $usuarioNombre);
             echo json_encode($respuesta);
 
         } catch (\Exception $e) {
