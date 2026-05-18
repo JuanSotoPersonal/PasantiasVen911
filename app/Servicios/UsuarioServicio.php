@@ -70,8 +70,6 @@ class UsuarioServicio {
             $this->log->registrarEvento($adminId, 'INSERT', 'usuarios', null, null, [
                 'usuario' => $usuario, 'rol_id' => $rolId
             ], "Usuario '{$usuario}' creado.");
-
-            Notificador::enviarPorRol(1, 'info', 'Seguridad: Nuevo Usuario', "Usuario '{$usuario}' registrado.", null);
             return ['success' => true, 'message' => 'Usuario creado correctamente.'];
         }
 
@@ -132,7 +130,6 @@ class UsuarioServicio {
         if ($this->modelo->actualizarContrasena($id, password_hash($nuevaPass, PASSWORD_DEFAULT))) {
             $this->log->registrarEvento($adminId, 'UPDATE', 'usuarios', $id, null, null, "Contraseña actualizada.");
             Notificador::enviarAUsuario($id, 'alerta', 'Seguridad: Contraseña Cambiada', "Tu contraseña de acceso fue modificada.", null);
-            Notificador::enviarPorRol(1, 'alerta', 'Seguridad', "Se ha modificado la contraseña del usuario ID {$id}.", null);
             return ['success' => true, 'message' => 'Contraseña actualizada correctamente.'];
         }
 
@@ -156,10 +153,6 @@ class UsuarioServicio {
         if ($resultado !== false) {
             $nuevoEstado = $resultado['nuevo_estado'];
             $this->log->registrarEvento($adminId, 'CAMBIO_ESTADO', 'usuarios', $id, null, ['estado' => $nuevoEstado], "Estado cambiado a {$nuevoEstado}.");
-            
-            $txtAccion = ($nuevoEstado === 'activo') ? 'activado' : 'deshabilitado';
-            Notificador::enviarPorRol(1, 'alerta', 'Seguridad: Estado de Usuario', "Usuario '{$usuarioAfectado['usuario']}' {$txtAccion} por {$adminNombre}.", null);
-
             return ['success' => true, 'message' => 'Estado actualizado.', 'nuevo_estado' => $nuevoEstado];
         }
 
@@ -184,7 +177,6 @@ class UsuarioServicio {
         if ($this->modelo->actualizarCamposSeguridad($id, $datosPersistencia)) {
             $this->log->registrarEvento($adminId, 'UPDATE', 'usuarios', $id, null, null, "Preguntas de seguridad actualizadas.");
             Notificador::enviarAUsuario($id, 'alerta', 'Seguridad: Preguntas Actualizadas', "Tus preguntas de seguridad de recuperación fueron modificadas.", null);
-            Notificador::enviarPorRol(1, 'alerta', 'Seguridad', "Se actualizaron las preguntas de seguridad del usuario ID {$id}.", null);
             return ['success' => true, 'message' => 'Preguntas actualizadas.'];
         }
 

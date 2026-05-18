@@ -17,6 +17,7 @@ $seccion = 'notificacion';
     
     <!-- Estilos específicos para notificaciones -->
     <link rel="stylesheet" href="public/css/notificaciones.css" />
+    <link rel="stylesheet" href="public/libs/datatables/dataTables.bootstrap5.min.css" />
     <style>
     .notif-row-unread {
         background-color: rgba(25, 135, 84, 0.05) !important;
@@ -61,16 +62,17 @@ $seccion = 'notificacion';
         </div>
     </div>
 
-    <section class="content">
-        <div class="container-fluid">
-            <!-- Tabla Principal -->
-            <div class="card shadow-sm border-0 border-top-success">
-                <div class="card-body p-4">
-                    <?php require_once __DIR__ . '/componentes/_tabla_principal.php'; ?>
+        <section class="content">
+            <div class="container-fluid">
+                <!-- Tabla Principal -->
+                <div class="card shadow-sm border-0 border-top-success">
+                    <div class="card-body p-4">
+                        <?php require_once __DIR__ . '/componentes/_tabla_principal.php'; ?>
+                    </div>
                 </div>
             </div>
-        </div>
-        </main>
+        </section>
+    </main>
 
         <!-- Pie de página Institucional -->
         <?php require __DIR__ . '/../partials/footer.php'; ?>
@@ -79,7 +81,13 @@ $seccion = 'notificacion';
 
     <!-- CARGA DE ASSETS JAVASCRIPT -->
     <?php require __DIR__ . '/../partials/scripts.php'; ?>
-<!-- Script principal de DataTables para el Buzón -->
-<script src="public/js/notificaciones/index.js?v=<?= time() ?>"></script>
+
+    <!-- Librerías de datos (DataTables) -->
+    <script src="public/libs/datatables/dataTables.min.js"></script>
+    <script src="public/libs/datatables/dataTables.bootstrap5.min.js"></script>
+    <script src="public/js/comun/datatables_config.js"></script>
+
+    <!-- Script principal de DataTables para el Buzón -->
+    <script src="public/js/notificaciones/index.js?v=<?= time() ?>"></script>
 </body>
 </html>
