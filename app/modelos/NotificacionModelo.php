@@ -42,6 +42,7 @@ class NotificacionModelo {
             $sql = "SELECT id, ficha_id, tipo, titulo, mensaje, leido, fecha_creacion
                     FROM {$this->tabla}
                     WHERE usuario_recibe_id = :uid
+                      AND leido = 0
                     ORDER BY fecha_creacion DESC
                     LIMIT 20";
 
@@ -195,6 +196,9 @@ class NotificacionModelo {
         if (empty($usuarioIds)) {
             return [];
         }
+
+        // Garantizar índices secuenciales 0,1,2,... para el bucre de recuperación de IDs
+        $usuarioIds = array_values($usuarioIds);
 
         try {
             // Construir placeholders: (?,?,?,?,?), (?,?,?,?,?), ...

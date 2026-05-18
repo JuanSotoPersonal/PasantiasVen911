@@ -34,7 +34,7 @@ class Notificador {
             // Garantizar que el Administrador (Rol 1) siempre reciba una copia de las alertas por rol
             if ($rolId !== 1) {
                 $admins = $modelo->obtenerUsuariosPorRol(1);
-                $usuarios = array_unique(array_merge($usuarios, $admins));
+                $usuarios = array_values(array_unique(array_merge($usuarios, $admins)));
             }
 
             if (empty($usuarios)) return;
