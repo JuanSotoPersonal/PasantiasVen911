@@ -8,10 +8,12 @@
 require_once 'app/modelos/FichaModelo.php';
 require_once 'app/modelos/DespachoModelo.php';
 require_once 'app/Servicios/FichaServicio.php';
+require_once 'app/Helpers/Validador.php';
 
 use App\modelos\FichaModelo;
 use App\modelos\DespachoModelo;
 use App\Servicios\FichaServicio;
+use App\Helpers\Validador;
 
 class FichaControlador {
 
