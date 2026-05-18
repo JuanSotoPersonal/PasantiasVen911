@@ -269,11 +269,13 @@ class FichaModelo {
             }
 
             $query = "INSERT INTO fichas_emergencia
-                        (parroquia_id, direccion_exacta, caso_id, descripcion_caso, solicitante_id, id_user, estado_ficha)
+                        (parroquia_id, comuna_id, sector_id, direccion_exacta, caso_id, descripcion_caso, solicitante_id, id_user, estado_ficha)
                       VALUES
-                        (:parroquia_id, :direccion, :caso_id, :descripcion, :solicitante_id, :id_user, 'Pendiente')";
+                        (:parroquia_id, :comuna_id, :sector_id, :direccion, :caso_id, :descripcion, :solicitante_id, :id_user, 'Pendiente')";
             $stmt = $this->conexion->prepare($query);
             $stmt->bindValue(':parroquia_id',   $datos['parroquia_id'],   PDO::PARAM_INT);
+            $stmt->bindValue(':comuna_id',      $datos['comuna_id'] ?: null, PDO::PARAM_INT);
+            $stmt->bindValue(':sector_id',      $datos['sector_id'] ?: null, PDO::PARAM_INT);
             $stmt->bindValue(':direccion',       $datos['direccion_exacta'], PDO::PARAM_STR);
             $stmt->bindValue(':caso_id',         $datos['caso_id'],        PDO::PARAM_INT);
             $stmt->bindValue(':descripcion',     $datos['descripcion_caso'], PDO::PARAM_STR);
@@ -306,6 +308,8 @@ class FichaModelo {
 
             $query = "UPDATE fichas_emergencia SET
                         parroquia_id    = :parroquia_id,
+                        comuna_id       = :comuna_id,
+                        sector_id       = :sector_id,
                         direccion_exacta = :direccion,
                         caso_id          = :caso_id,
                         descripcion_caso = :descripcion,
@@ -314,6 +318,8 @@ class FichaModelo {
                       WHERE id = :id";
             $stmt = $this->conexion->prepare($query);
             $stmt->bindValue(':parroquia_id',  $datos['parroquia_id'],    PDO::PARAM_INT);
+            $stmt->bindValue(':comuna_id',     $datos['comuna_id'] ?: null, PDO::PARAM_INT);
+            $stmt->bindValue(':sector_id',     $datos['sector_id'] ?: null, PDO::PARAM_INT);
             $stmt->bindValue(':direccion',      $datos['direccion_exacta'], PDO::PARAM_STR);
             $stmt->bindValue(':caso_id',        $datos['caso_id'],         PDO::PARAM_INT);
             $stmt->bindValue(':descripcion',    $datos['descripcion_caso'], PDO::PARAM_STR);
@@ -532,14 +538,20 @@ class FichaModelo {
         if (isset(self::$cacheMunicipios[$cacheKey])) return self::$cacheMunicipios[$cacheKey];
 
         return self::$cacheMunicipios[$cacheKey] = Cache::remember($cacheKey, 86400, function() use ($estado) {
-            $stmt = $this->conexion->prepare("SELECT id, nombre_municipio, descripcion, estado FROM municipios WHERE estado = :estado ORDER BY nombre_municipio ASC");
-            $stmt->execute([':estado' => $estado]);
+            $sql = "SELECT id, nombre_municipio, descripcion, estado 
+                    FROM municipios 
+                    WHERE estado = :estado 
+                    ORDER BY nombre_municipio ASC";
+            
+            $stmt = $this->conexion->prepare($sql);
+            $stmt->bindValue(':estado', $estado, PDO::PARAM_INT);
+            $stmt->execute();
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         });
     }
 
     public function crearMunicipio(string $nombre, string $descripcion = ''): bool {
-        Cache::borrar("m_1"); Cache::borrar("m_0");
+        Cache::limpiarTodo();
         $stmt = $this->conexion->prepare("INSERT INTO municipios (nombre_municipio, descripcion, estado) VALUES (:nombre, :descripcion, 1)");
         $stmt->bindValue(':nombre',      $nombre,      PDO::PARAM_STR);
         $stmt->bindValue(':descripcion', $descripcion, PDO::PARAM_STR);
@@ -547,7 +559,7 @@ class FichaModelo {
     }
 
     public function actualizarMunicipio(int $id, string $nombre, string $descripcion = ''): bool {
-        Cache::borrar("m_1"); Cache::borrar("m_0");
+        Cache::limpiarTodo();
         $stmt = $this->conexion->prepare("UPDATE municipios SET nombre_municipio = :nombre, descripcion = :descripcion WHERE id = :id");
         $stmt->bindValue(':nombre',      $nombre,      PDO::PARAM_STR);
         $stmt->bindValue(':descripcion', $descripcion, PDO::PARAM_STR);
@@ -556,7 +568,7 @@ class FichaModelo {
     }
 
     public function toggleEstadoMunicipio(int $id): bool {
-        Cache::borrar("m_1"); Cache::borrar("m_0");
+        Cache::limpiarTodo();
         $stmt = $this->conexion->prepare("UPDATE municipios SET estado = 1 - estado WHERE id = :id");
         return $stmt->execute([':id' => $id]);
     }
@@ -607,6 +619,143 @@ class FichaModelo {
     public function toggleEstadoParroquia(int $id): bool {
         Cache::limpiarTodo();
         $stmt = $this->conexion->prepare("UPDATE parroquias SET estado = 1 - estado WHERE id = :id");
+        return $stmt->execute([':id' => $id]);
+    }
+
+    // --- Comunas ---
+    public function obtenerComunas(?int $parroquiaId = null, int $estado = 1): array {
+        $cacheKey = "com_{$parroquiaId}_{$estado}";
+        return Cache::remember($cacheKey, 86400, function() use ($parroquiaId, $estado) {
+            $sql = "SELECT c.id, c.nombre_comuna, c.descripcion, c.estado, c.parroquia_id, p.nombre_parroquia 
+                    FROM comunas c 
+                    INNER JOIN parroquias p ON c.parroquia_id = p.id 
+                    WHERE c.estado = :estado ";
+            if ($parroquiaId) $sql .= " AND c.parroquia_id = :parroquia_id ";
+            $sql .= " ORDER BY p.nombre_parroquia ASC, c.nombre_comuna ASC";
+            
+            $stmt = $this->conexion->prepare($sql);
+            $stmt->bindValue(':estado', $estado, PDO::PARAM_INT);
+            if ($parroquiaId) $stmt->bindValue(':parroquia_id', $parroquiaId, PDO::PARAM_INT);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        });
+    }
+
+    public function crearComuna(int $parroquiaId, string $nombre, string $descripcion = ''): bool {
+        Cache::limpiarTodo();
+        $stmt = $this->conexion->prepare("INSERT INTO comunas (parroquia_id, nombre_comuna, descripcion, estado) VALUES (:parroquia_id, :nombre, :descripcion, 1)");
+        $stmt->bindValue(':parroquia_id', $parroquiaId, PDO::PARAM_INT);
+        $stmt->bindValue(':nombre',       $nombre,      PDO::PARAM_STR);
+        $stmt->bindValue(':descripcion',  $descripcion, PDO::PARAM_STR);
+        return $stmt->execute();
+    }
+
+    public function actualizarComuna(int $id, int $parroquiaId, string $nombre, string $descripcion = ''): bool {
+        Cache::limpiarTodo();
+        $stmt = $this->conexion->prepare("UPDATE comunas SET parroquia_id = :parroquia_id, nombre_comuna = :nombre, descripcion = :descripcion WHERE id = :id");
+        $stmt->bindValue(':parroquia_id', $parroquiaId, PDO::PARAM_INT);
+        $stmt->bindValue(':nombre',       $nombre,      PDO::PARAM_STR);
+        $stmt->bindValue(':descripcion',  $descripcion, PDO::PARAM_STR);
+        $stmt->bindValue(':id',           $id,          PDO::PARAM_INT);
+        return $stmt->execute();
+    }
+
+    public function toggleEstadoComuna(int $id): bool {
+        Cache::limpiarTodo();
+        $stmt = $this->conexion->prepare("UPDATE comunas SET estado = 1 - estado WHERE id = :id");
+        return $stmt->execute([':id' => $id]);
+    }
+
+    // --- Sectores ---
+    public function obtenerSectores(?int $comunaId = null, int $estado = 1): array {
+        $cacheKey = "sec_{$comunaId}_{$estado}";
+        return Cache::remember($cacheKey, 86400, function() use ($comunaId, $estado) {
+            $sql = "SELECT s.id, s.nombre_sector, s.descripcion, s.estado, s.comuna_id, c.nombre_comuna 
+                    FROM sectores s 
+                    INNER JOIN comunas c ON s.comuna_id = c.id 
+                    WHERE s.estado = :estado ";
+            if ($comunaId) $sql .= " AND s.comuna_id = :comuna_id ";
+            $sql .= " ORDER BY c.nombre_comuna ASC, s.nombre_sector ASC";
+            
+            $stmt = $this->conexion->prepare($sql);
+            $stmt->bindValue(':estado', $estado, PDO::PARAM_INT);
+            if ($comunaId) $stmt->bindValue(':comuna_id', $comunaId, PDO::PARAM_INT);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        });
+    }
+
+    public function crearSector(int $comunaId, string $nombre, string $descripcion = ''): bool {
+        Cache::limpiarTodo();
+        $stmt = $this->conexion->prepare("INSERT INTO sectores (comuna_id, nombre_sector, descripcion, estado) VALUES (:comuna_id, :nombre, :descripcion, 1)");
+        $stmt->bindValue(':comuna_id',   $comunaId,    PDO::PARAM_INT);
+        $stmt->bindValue(':nombre',      $nombre,      PDO::PARAM_STR);
+        $stmt->bindValue(':descripcion', $descripcion, PDO::PARAM_STR);
+        return $stmt->execute();
+    }
+
+    public function actualizarSector(int $id, int $comunaId, string $nombre, string $descripcion = ''): bool {
+        Cache::limpiarTodo();
+        $stmt = $this->conexion->prepare("UPDATE sectores SET comuna_id = :comuna_id, nombre_sector = :nombre, descripcion = :descripcion WHERE id = :id");
+        $stmt->bindValue(':comuna_id',   $comunaId,    PDO::PARAM_INT);
+        $stmt->bindValue(':nombre',      $nombre,      PDO::PARAM_STR);
+        $stmt->bindValue(':descripcion', $descripcion, PDO::PARAM_STR);
+        $stmt->bindValue(':id',          $id,          PDO::PARAM_INT);
+        return $stmt->execute();
+    }
+
+    public function toggleEstadoSector(int $id): bool {
+        Cache::limpiarTodo();
+        $stmt = $this->conexion->prepare("UPDATE sectores SET estado = 1 - estado WHERE id = :id");
+        return $stmt->execute([':id' => $id]);
+    }
+
+    // --- Cuadrantes de Paz ---
+    public function obtenerCuadrantesPaz(?int $sectorId = null, int $estado = 1, ?int $organismoId = null): array {
+        $cacheKey = "cuad_{$sectorId}_{$estado}_{$organismoId}";
+        return Cache::remember($cacheKey, 86400, function() use ($sectorId, $estado, $organismoId) {
+            $sql = "SELECT cp.id, cp.nombre_cuadrante, cp.descripcion, cp.estado, cp.sector_id, cp.organismo_id, s.nombre_sector, o.nombre_organismo 
+                    FROM cuadrantes_paz cp 
+                    INNER JOIN sectores s ON cp.sector_id = s.id 
+                    LEFT JOIN organismos o ON cp.organismo_id = o.id
+                    WHERE cp.estado = :estado ";
+            if ($sectorId) $sql .= " AND cp.sector_id = :sector_id ";
+            if ($organismoId) $sql .= " AND cp.organismo_id = :organismo_id ";
+            $sql .= " ORDER BY s.nombre_sector ASC, cp.nombre_cuadrante ASC";
+            
+            $stmt = $this->conexion->prepare($sql);
+            $stmt->bindValue(':estado', $estado, PDO::PARAM_INT);
+            if ($sectorId) $stmt->bindValue(':sector_id', $sectorId, PDO::PARAM_INT);
+            if ($organismoId) $stmt->bindValue(':organismo_id', $organismoId, PDO::PARAM_INT);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        });
+    }
+
+    public function crearCuadrantePaz(int $sectorId, ?int $organismoId, string $nombre, string $descripcion = ''): bool {
+        Cache::limpiarTodo();
+        $stmt = $this->conexion->prepare("INSERT INTO cuadrantes_paz (sector_id, organismo_id, nombre_cuadrante, descripcion, estado) VALUES (:sector_id, :organismo_id, :nombre, :descripcion, 1)");
+        $stmt->bindValue(':sector_id',    $sectorId,    PDO::PARAM_INT);
+        $stmt->bindValue(':organismo_id', $organismoId, $organismoId ? PDO::PARAM_INT : PDO::PARAM_NULL);
+        $stmt->bindValue(':nombre',       $nombre,      PDO::PARAM_STR);
+        $stmt->bindValue(':descripcion',  $descripcion, PDO::PARAM_STR);
+        return $stmt->execute();
+    }
+
+    public function actualizarCuadrantePaz(int $id, int $sectorId, ?int $organismoId, string $nombre, string $descripcion = ''): bool {
+        Cache::limpiarTodo();
+        $stmt = $this->conexion->prepare("UPDATE cuadrantes_paz SET sector_id = :sector_id, organismo_id = :organismo_id, nombre_cuadrante = :nombre, descripcion = :descripcion WHERE id = :id");
+        $stmt->bindValue(':sector_id',    $sectorId,    PDO::PARAM_INT);
+        $stmt->bindValue(':organismo_id', $organismoId, $organismoId ? PDO::PARAM_INT : PDO::PARAM_NULL);
+        $stmt->bindValue(':nombre',       $nombre,      PDO::PARAM_STR);
+        $stmt->bindValue(':descripcion',  $descripcion, PDO::PARAM_STR);
+        $stmt->bindValue(':id',           $id,          PDO::PARAM_INT);
+        return $stmt->execute();
+    }
+
+    public function toggleEstadoCuadrantePaz(int $id): bool {
+        Cache::limpiarTodo();
+        $stmt = $this->conexion->prepare("UPDATE cuadrantes_paz SET estado = 1 - estado WHERE id = :id");
         return $stmt->execute([':id' => $id]);
     }
 

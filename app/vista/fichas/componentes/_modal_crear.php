@@ -77,6 +77,20 @@
                             </select>
                             <div class="form-text mt-1" style="font-size: 0.75rem;">Habilitado al seleccionar un municipio.</div>
                         </div>
+                        <div class="col-md-6">
+                            <label for="crear_comuna_id" class="form-label fw-semibold small text-secondary">Comuna (Opcional)</label>
+                            <select class="form-select shadow-sm border-2" id="crear_comuna_id" name="comuna_id" disabled>
+                                <option value="">-- Seleccionar Comuna --</option>
+                            </select>
+                            <div class="form-text mt-1" style="font-size: 0.75rem;">Habilitado al seleccionar una parroquia.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="crear_sector_id" class="form-label fw-semibold small text-secondary">Sector (Opcional)</label>
+                            <select class="form-select shadow-sm border-2" id="crear_sector_id" name="sector_id" disabled>
+                                <option value="">-- Seleccionar Sector --</option>
+                            </select>
+                            <div class="form-text mt-1" style="font-size: 0.75rem;">Habilitado al seleccionar una comuna.</div>
+                        </div>
                         <div class="col-12">
                             <label for="crear_direccion_exacta" class="form-label fw-semibold small text-secondary">Referencia o Dirección Exacta <span class="text-danger">*</span></label>
                             <textarea class="form-control shadow-sm border-2" id="crear_direccion_exacta" name="direccion_exacta" rows="2" placeholder="Sector, calle, casa, puntos de referencia..."></textarea>

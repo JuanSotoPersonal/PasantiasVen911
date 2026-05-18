@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.1
+-- version 5.2.3
 -- https://www.phpmyadmin.net/
 --
--- Servidor: 127.0.0.1
--- Tiempo de generación: 08-05-2026 a las 20:19:27
--- Versión del servidor: 10.4.32-MariaDB
--- Versión de PHP: 8.2.12
+-- Servidor: ven911_db
+-- Tiempo de generación: 18-05-2026 a las 17:06:53
+-- Versión del servidor: 10.11.16-MariaDB-ubu2204
+-- Versión de PHP: 8.3.31
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -114,24 +114,8 @@ CREATE TABLE `eventos_fichas` (
 --
 
 INSERT INTO `eventos_fichas` (`id`, `ficha_id`, `usuario_id`, `tipo_evento`, `estado_anterior`, `estado_nuevo`, `valor_anterior`, `valor_nuevo`, `descripcion`, `fecha`) VALUES
-(1, 1, 4, 'CREACION', NULL, 'Pendiente', NULL, '{\"id\":1,\"caso\":2,\"estado\":\"Pendiente\"}', 'Ficha de emergencia #1 creada.', '2026-05-08 16:46:41'),
-(2, 2, 4, 'CREACION', NULL, 'Pendiente', NULL, '{\"id\":2,\"caso\":1,\"estado\":\"Pendiente\"}', 'Ficha de emergencia #2 creada.', '2026-05-08 16:47:11'),
-(3, 3, 4, 'CREACION', NULL, 'Pendiente', NULL, '{\"id\":3,\"caso\":2,\"estado\":\"Pendiente\"}', 'Ficha de emergencia #3 creada.', '2026-05-08 16:47:31'),
-(4, 1, 3, 'CAMBIO_ESTADO', 'Pendiente', 'En Proceso', NULL, '{\"id_owner\":3}', 'Ficha tomada por despachador. Estado: \'Pendiente\' → \'En Proceso\'.', '2026-05-08 16:48:46'),
-(5, 3, 3, 'CAMBIO_ESTADO', 'Pendiente', 'En Proceso', NULL, '{\"id_owner\":3}', 'Ficha tomada por despachador. Estado: \'Pendiente\' → \'En Proceso\'.', '2026-05-08 16:48:55'),
-(6, 2, 3, 'CAMBIO_ESTADO', 'Pendiente', 'En Proceso', NULL, '{\"id_owner\":3}', 'Ficha tomada por despachador. Estado: \'Pendiente\' → \'En Proceso\'.', '2026-05-08 16:48:57'),
-(7, 1, 3, 'CAMBIO_ESTADO', 'En Proceso', 'Cerrado', '{\"estado\":\"En Proceso\"}', '{\"estado\":\"Cerrado\",\"motivo\":\"xxxxxxxxxxxx\"}', 'Estado cambiado desde Centro de Despacho: \'En Proceso\' → \'Cerrado\'. Motivo: xxxxxxxxxxxx', '2026-05-08 16:49:07'),
-(8, 2, 3, 'CAMBIO_ESTADO', 'En Proceso', 'Atendido', '{\"estado\":\"En Proceso\"}', '{\"estado\":\"Atendido\",\"motivo\":\"\"}', 'Estado cambiado desde Centro de Despacho: \'En Proceso\' → \'Atendido\'.', '2026-05-08 16:49:16'),
-(9, 3, 3, 'DESPACHO', NULL, NULL, NULL, '{\"despacho_id\":1,\"organismo_id\":3,\"unidad\":\"XXXXXX\"}', 'Despacho #1: Organismo ID 3 — Unidad \'XXXXXX\'.', '2026-05-08 16:49:26'),
-(10, 3, 3, 'DESPACHO', NULL, NULL, NULL, '{\"despacho_id\":2,\"organismo_id\":2,\"unidad\":\"XXXXXX\"}', 'Despacho #2: Organismo ID 2 — Unidad \'XXXXXX\'.', '2026-05-08 16:49:55'),
-(11, 3, 3, 'DESPACHO', NULL, NULL, NULL, '{\"despacho_id\":3,\"organismo_id\":2,\"unidad\":\"XXXXXX\"}', 'Despacho #3: Organismo ID 2 — Unidad \'XXXXXX\'.', '2026-05-08 16:50:04'),
-(12, 4, 4, 'CREACION', NULL, 'Pendiente', NULL, '{\"id\":4,\"caso\":2,\"estado\":\"Pendiente\"}', 'Ficha de emergencia #4 creada.', '2026-05-08 17:56:03'),
-(13, 3, 3, 'DESPACHO', 'Asignado', 'Cancelado', '{\"estatus\":\"Asignado\"}', '{\"estatus\":\"Cancelado\",\"motivo\":\"Sin respuesta: \"}', 'Despacho #2 (Policía Nacional Bolivariana) cancelado. Motivo: Sin respuesta.', '2026-05-08 17:56:53'),
-(14, 3, 3, 'DESPACHO', 'Asignado', 'En Camino', '{\"estatus\":\"Asignado\"}', '{\"estatus\":\"En Camino\"}', 'Despacho #3: \'Asignado\' → \'En Camino\'.', '2026-05-08 17:56:55'),
-(15, 3, 3, 'DESPACHO', 'En Camino', 'En Sitio', '{\"estatus\":\"En Camino\"}', '{\"estatus\":\"En Sitio\"}', 'Despacho #3: \'En Camino\' → \'En Sitio\'.', '2026-05-08 17:56:56'),
-(16, 3, 3, 'DESPACHO', 'En Sitio', 'Liberado', '{\"estatus\":\"En Sitio\"}', '{\"estatus\":\"Liberado\"}', 'Despacho #3: \'En Sitio\' → \'Liberado\'.', '2026-05-08 17:57:08'),
-(17, 3, 3, 'DESPACHO', 'Asignado', 'Cancelado', '{\"estatus\":\"Asignado\"}', '{\"estatus\":\"Cancelado\",\"motivo\":\"Sin respuesta: \"}', 'Despacho #1 (Guardia Nacional Bolivariana) cancelado. Motivo: Sin respuesta.', '2026-05-08 17:58:05'),
-(18, 3, 3, 'CAMBIO_ESTADO', 'En Proceso', 'Cerrado', '{\"estado\":\"En Proceso\"}', '{\"estado\":\"Cerrado\",\"motivo\":\"xxxxxxxxxxxxxxx\"}', 'Estado cambiado desde Centro de Despacho: \'En Proceso\' → \'Cerrado\'. Motivo: xxxxxxxxxxxxxxx', '2026-05-08 17:58:12');
+(1, 7, 2, 'MODIFICACION', 'Pendiente', 'Pendiente', '{\"id\":7,\"parroquia_id\":2,\"direccion_exacta\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"caso_id\":1,\"descripcion_caso\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"solicitante_id\":26,\"id_user\":2,\"id_owner\":2,\"fecha_creacion\":\"2026-05-18 16:59:26\",\"hora_cierre\":null,\"motivo_cierre\":null,\"tipo_motivo_cierre\":null,\"estado_ficha\":\"Pendiente\",\"fecha_actualizacion\":\"2026-05-18 16:59:49\",\"nombre_solicitante\":\"Juan Soto\",\"cedula_solicitante\":\"310341387\",\"telefono1\":\"04145779060\",\"telefono2\":\"\",\"nombre_caso\":\"Caida De Arbol\",\"tipo_emergencia_id\":2,\"tipo_emergencia\":\"Robo\",\"nombre_parroquia\":\"Naguanagua\",\"municipio_id\":2,\"nombre_municipio\":\"Naguanagua\"}', '{\"parroquia_id\":2,\"direccion_exacta\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"caso_id\":1,\"descripcion_caso\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"nombre_solicitante\":\"Juan Soto\",\"cedula_solicitante\":\"310341380\",\"telefono1\":\"04145779060\",\"telefono2\":\"\"}', 'Ficha #7 actualizada.', '2026-05-18 17:03:02'),
+(2, 7, 2, 'CAMBIO_ESTADO', 'Pendiente', 'En Proceso', NULL, '{\"id_owner\":2}', 'Ficha tomada por despachador. Estado: \'Pendiente\' → \'En Proceso\'.', '2026-05-18 17:04:23');
 
 -- --------------------------------------------------------
 
@@ -156,27 +140,9 @@ CREATE TABLE `eventos_sistema` (
 --
 
 INSERT INTO `eventos_sistema` (`id`, `usuario_id`, `tipo_accion`, `tabla_afectada`, `registro_id`, `valor_anterior`, `valor_nuevo`, `descripcion`, `fecha`) VALUES
-(1, 3, 'LOGOUT', 'usuarios', 3, NULL, NULL, 'Usuario \'Miguel Fernandez\' cerró sesión.', '2026-05-08 16:32:10'),
-(2, 6, 'LOGIN', 'usuarios', 6, NULL, NULL, 'Usuario \'Jefatura\' inició sesión.', '2026-05-08 16:32:14'),
-(3, 6, 'LOGOUT', 'usuarios', 6, NULL, NULL, 'Usuario \'Jefatura\' cerró sesión.', '2026-05-08 16:37:17'),
-(4, 2, 'LOGIN', 'usuarios', 2, NULL, NULL, 'Usuario \'Admin2024\' inició sesión.', '2026-05-08 16:37:22'),
-(5, 2, 'LOGOUT', 'usuarios', 2, NULL, NULL, 'Usuario \'juan\' cerró sesión.', '2026-05-08 16:46:11'),
-(6, 4, 'LOGIN', 'usuarios', 4, NULL, NULL, 'Usuario \'operador\' inició sesión.', '2026-05-08 16:46:15'),
-(7, 4, 'LOGOUT', 'usuarios', 4, NULL, NULL, 'Usuario \'operador\' cerró sesión.', '2026-05-08 16:48:31'),
-(8, 3, 'LOGIN', 'usuarios', 3, NULL, NULL, 'Usuario \'despachador\' inició sesión.', '2026-05-08 16:48:34'),
-(9, 2, 'LOGIN', 'usuarios', 2, NULL, NULL, 'Usuario \'Admin2024\' inició sesión.', '2026-05-08 17:29:45'),
-(10, 2, 'LOGOUT', 'usuarios', 2, NULL, NULL, 'Usuario \'juan\' cerró sesión.', '2026-05-08 17:37:53'),
-(11, 6, 'LOGIN', 'usuarios', 6, NULL, NULL, 'Usuario \'Jefatura\' inició sesión.', '2026-05-08 17:37:58'),
-(12, 6, 'LOGOUT', 'usuarios', 6, NULL, NULL, 'Usuario \'Jefatura\' cerró sesión.', '2026-05-08 17:51:51'),
-(13, 2, 'LOGIN', 'usuarios', 2, NULL, NULL, 'Usuario \'Admin2024\' inició sesión.', '2026-05-08 17:52:09'),
-(14, 2, 'LOGOUT', 'usuarios', 2, NULL, NULL, 'Usuario \'juan\' cerró sesión.', '2026-05-08 17:54:09'),
-(15, 2, 'LOGIN', 'usuarios', 2, NULL, NULL, 'Usuario \'Admin2024\' inició sesión.', '2026-05-08 17:54:22'),
-(16, 2, 'LOGOUT', 'usuarios', 2, NULL, NULL, 'Usuario \'juan\' cerró sesión.', '2026-05-08 17:55:04'),
-(17, 4, 'LOGIN', 'usuarios', 4, NULL, NULL, 'Usuario \'operador\' inició sesión.', '2026-05-08 17:55:08'),
-(18, 4, 'LOGOUT', 'usuarios', 4, NULL, NULL, 'Usuario \'operador\' cerró sesión.', '2026-05-08 17:56:22'),
-(19, 3, 'LOGIN', 'usuarios', 3, NULL, NULL, 'Usuario \'despachador\' inició sesión.', '2026-05-08 17:56:25'),
-(20, 3, 'LOGOUT', 'usuarios', 3, NULL, NULL, 'Usuario \'Miguel Fernandez\' cerró sesión.', '2026-05-08 17:58:38'),
-(21, 6, 'LOGIN', 'usuarios', 6, NULL, NULL, 'Usuario \'Jefatura\' inició sesión.', '2026-05-08 17:58:42');
+(1, 2, 'CAMBIO_ESTADO', 'usuarios', 4, NULL, '{\"estado\":\"inactivo\"}', 'Estado cambiado a inactivo.', '2026-05-18 17:03:13'),
+(2, 2, 'CAMBIO_ESTADO', 'usuarios', 4, NULL, '{\"estado\":\"activo\"}', 'Estado cambiado a activo.', '2026-05-18 17:03:30'),
+(3, 2, 'CAMBIO_ESTADO', 'usuarios', 3, NULL, '{\"estado\":\"activo\"}', 'Estado cambiado a activo.', '2026-05-18 17:03:34');
 
 -- --------------------------------------------------------
 
@@ -209,7 +175,10 @@ INSERT INTO `fichas_emergencia` (`id`, `parroquia_id`, `direccion_exacta`, `caso
 (1, 2, 'xxxxxxxxxxxxxxxxxxxxxxxxxx', 2, 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', 1, 4, 3, '2026-05-08 16:46:41', '2026-05-08 12:49:07', 'xxxxxxxxxxxx', 'Registro Duplicado', 'Cerrado', '2026-05-08 16:49:07'),
 (2, 2, 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxx', 1, 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', 1, 4, 3, '2026-05-08 16:47:11', NULL, NULL, NULL, 'Atendido', '2026-05-08 16:49:16'),
 (3, 1, 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', 2, 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', 3, 4, 3, '2026-05-08 16:47:31', '2026-05-08 13:58:12', 'xxxxxxxxxxxxxxx', 'Registro Duplicado', 'Cerrado', '2026-05-08 17:58:12'),
-(4, 2, 'xxxxxxxxxxxxxxxxxxx', 2, 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', 1, 4, NULL, '2026-05-08 17:56:03', NULL, NULL, NULL, 'Pendiente', '2026-05-08 17:56:03');
+(4, 2, 'xxxxxxxxxxxxxxxxxxx', 2, 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', 7, 4, 2, '2026-05-08 17:56:03', NULL, NULL, NULL, 'Atendido', '2026-05-15 14:49:47'),
+(5, 2, 'xxxxxxxxxxxxxxxxxxx', 1, 'xxxxxxxxxxxxxxxxxxxxx', 7, 4, 2, '2026-05-14 14:47:33', NULL, NULL, NULL, 'Atendido', '2026-05-18 16:09:08'),
+(6, 2, 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', 1, 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', 1, 4, 2, '2026-05-15 17:27:57', '2026-05-15 18:00:00', 'xxxxxxx', 'Otro', 'Cerrado', '2026-05-15 18:00:00'),
+(7, 2, 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', 1, 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', 27, 2, 2, '2026-05-18 16:59:26', NULL, NULL, NULL, 'En Proceso', '2026-05-18 17:04:23');
 
 -- --------------------------------------------------------
 
@@ -308,77 +277,35 @@ CREATE TABLE `notificaciones` (
 --
 
 INSERT INTO `notificaciones` (`id`, `usuario_recibe_id`, `ficha_id`, `tipo`, `titulo`, `mensaje`, `leido`, `fecha_creacion`) VALUES
-(1, 3, 1, 'alerta', 'Nueva Emergencia', 'Se ha generado la Ficha #1. Requiere atención inmediata.', 1, '2026-05-08 16:46:41'),
-(2, 7, 1, 'alerta', 'Nueva Emergencia', 'Se ha generado la Ficha #1. Requiere atención inmediata.', 0, '2026-05-08 16:46:41'),
-(3, 5, 1, 'info', 'Nueva Ficha Registrada', 'El Operador operador ha registrado la Ficha #1.', 0, '2026-05-08 16:46:41'),
-(4, 6, 1, 'info', 'Nueva Ficha Registrada', 'El Operador operador ha registrado la Ficha #1.', 0, '2026-05-08 16:46:41'),
-(5, 2, 1, 'info', 'Sistema: Registro de Ficha', 'Se ha creado la Ficha de Emergencia #1.', 0, '2026-05-08 16:46:41'),
-(6, 3, 2, 'alerta', 'Nueva Emergencia', 'Se ha generado la Ficha #2. Requiere atención inmediata.', 1, '2026-05-08 16:47:11'),
-(7, 7, 2, 'alerta', 'Nueva Emergencia', 'Se ha generado la Ficha #2. Requiere atención inmediata.', 0, '2026-05-08 16:47:11'),
-(8, 5, 2, 'info', 'Nueva Ficha Registrada', 'El Operador operador ha registrado la Ficha #2.', 0, '2026-05-08 16:47:11'),
-(9, 6, 2, 'info', 'Nueva Ficha Registrada', 'El Operador operador ha registrado la Ficha #2.', 0, '2026-05-08 16:47:11'),
-(10, 2, 2, 'info', 'Sistema: Registro de Ficha', 'Se ha creado la Ficha de Emergencia #2.', 0, '2026-05-08 16:47:11'),
-(11, 3, 3, 'alerta', 'Nueva Emergencia', 'Se ha generado la Ficha #3. Requiere atención inmediata.', 1, '2026-05-08 16:47:31'),
-(12, 7, 3, 'alerta', 'Nueva Emergencia', 'Se ha generado la Ficha #3. Requiere atención inmediata.', 0, '2026-05-08 16:47:31'),
-(13, 5, 3, 'info', 'Nueva Ficha Registrada', 'El Operador operador ha registrado la Ficha #3.', 0, '2026-05-08 16:47:31'),
-(14, 6, 3, 'info', 'Nueva Ficha Registrada', 'El Operador operador ha registrado la Ficha #3.', 0, '2026-05-08 16:47:31'),
-(15, 2, 3, 'info', 'Sistema: Registro de Ficha', 'Se ha creado la Ficha de Emergencia #3.', 0, '2026-05-08 16:47:31'),
-(16, 4, 1, 'info', 'Ficha en Proceso', 'Tu Ficha #1 ha pasado de \'Pendiente\' a \'En Proceso\' y está siendo atendida por Miguel Fernandez.', 1, '2026-05-08 16:48:46'),
-(17, 5, 1, 'info', 'Ficha Tomada: Inicio de Gestión', 'El despachador Miguel Fernandez ha tomado la Ficha #1, pasando su estado de \'Pendiente\' a \'En Proceso\'.', 0, '2026-05-08 16:48:46'),
-(18, 6, 1, 'info', 'Ficha Tomada: Inicio de Gestión', 'El despachador Miguel Fernandez ha tomado la Ficha #1, pasando su estado de \'Pendiente\' a \'En Proceso\'.', 0, '2026-05-08 16:48:46'),
-(19, 2, 1, 'info', 'Auditoría: Ficha Tomada', 'Ficha #1 tomada por Miguel Fernandez. Estado: Pendiente → En Proceso.', 0, '2026-05-08 16:48:46'),
-(20, 4, 3, 'info', 'Ficha en Proceso', 'Tu Ficha #3 ha pasado de \'Pendiente\' a \'En Proceso\' y está siendo atendida por Miguel Fernandez.', 1, '2026-05-08 16:48:55'),
-(21, 5, 3, 'info', 'Ficha Tomada: Inicio de Gestión', 'El despachador Miguel Fernandez ha tomado la Ficha #3, pasando su estado de \'Pendiente\' a \'En Proceso\'.', 0, '2026-05-08 16:48:55'),
-(22, 6, 3, 'info', 'Ficha Tomada: Inicio de Gestión', 'El despachador Miguel Fernandez ha tomado la Ficha #3, pasando su estado de \'Pendiente\' a \'En Proceso\'.', 0, '2026-05-08 16:48:55'),
-(23, 2, 3, 'info', 'Auditoría: Ficha Tomada', 'Ficha #3 tomada por Miguel Fernandez. Estado: Pendiente → En Proceso.', 0, '2026-05-08 16:48:55'),
-(24, 4, 2, 'info', 'Ficha en Proceso', 'Tu Ficha #2 ha pasado de \'Pendiente\' a \'En Proceso\' y está siendo atendida por Miguel Fernandez.', 1, '2026-05-08 16:48:57'),
-(25, 5, 2, 'info', 'Ficha Tomada: Inicio de Gestión', 'El despachador Miguel Fernandez ha tomado la Ficha #2, pasando su estado de \'Pendiente\' a \'En Proceso\'.', 0, '2026-05-08 16:48:57'),
-(26, 6, 2, 'info', 'Ficha Tomada: Inicio de Gestión', 'El despachador Miguel Fernandez ha tomado la Ficha #2, pasando su estado de \'Pendiente\' a \'En Proceso\'.', 0, '2026-05-08 16:48:57'),
-(27, 2, 2, 'info', 'Auditoría: Ficha Tomada', 'Ficha #2 tomada por Miguel Fernandez. Estado: Pendiente → En Proceso.', 0, '2026-05-08 16:48:57'),
-(28, 4, 1, 'cambio_estado', 'Estado de Ficha Actualizado', 'Tu Ficha #1 cambió de \'En Proceso\' a \'Cerrado\' por Miguel Fernandez.', 1, '2026-05-08 16:49:07'),
-(29, 5, 1, 'info', 'Actualización de Emergencia', 'La Ficha #1 fue actualizada a \'Cerrado\' por Miguel Fernandez.', 0, '2026-05-08 16:49:07'),
-(30, 6, 1, 'info', 'Actualización de Emergencia', 'La Ficha #1 fue actualizada a \'Cerrado\' por Miguel Fernandez.', 0, '2026-05-08 16:49:07'),
-(31, 2, 1, 'info', 'Sistema: Cambio de Estado', 'Ficha #1 cambió a \'Cerrado\'.', 0, '2026-05-08 16:49:07'),
-(32, 4, 2, 'cambio_estado', 'Estado de Ficha Actualizado', 'Tu Ficha #2 cambió de \'En Proceso\' a \'Atendido\' por Miguel Fernandez.', 1, '2026-05-08 16:49:16'),
-(33, 5, 2, 'info', 'Actualización de Emergencia', 'La Ficha #2 fue actualizada a \'Atendido\' por Miguel Fernandez.', 0, '2026-05-08 16:49:16'),
-(34, 6, 2, 'info', 'Actualización de Emergencia', 'La Ficha #2 fue actualizada a \'Atendido\' por Miguel Fernandez.', 0, '2026-05-08 16:49:16'),
-(35, 2, 2, 'info', 'Sistema: Cambio de Estado', 'Ficha #2 cambió a \'Atendido\'.', 0, '2026-05-08 16:49:16'),
-(36, 4, 3, 'info', 'Organismo Despachado', 'Se ha despachado un organismo a tu Ficha #3.', 1, '2026-05-08 16:49:26'),
-(37, 5, 3, 'alerta', 'Nuevo Despacho de Organismo', 'Organismo asignado a la Ficha #3. Despacho #1.', 0, '2026-05-08 16:49:26'),
-(38, 6, 3, 'alerta', 'Nuevo Despacho de Organismo', 'Organismo asignado a la Ficha #3. Despacho #1.', 0, '2026-05-08 16:49:26'),
-(39, 2, 3, 'info', 'Sistema: Organismo Despachado', 'Despacho #1 registrado en Ficha #3.', 0, '2026-05-08 16:49:26'),
-(40, 4, 3, 'info', 'Organismo Despachado', 'Se ha despachado un organismo a tu Ficha #3.', 1, '2026-05-08 16:49:55'),
-(41, 5, 3, 'alerta', 'Nuevo Despacho de Organismo', 'Organismo asignado a la Ficha #3. Despacho #2.', 0, '2026-05-08 16:49:55'),
-(42, 6, 3, 'alerta', 'Nuevo Despacho de Organismo', 'Organismo asignado a la Ficha #3. Despacho #2.', 0, '2026-05-08 16:49:55'),
-(43, 2, 3, 'info', 'Sistema: Organismo Despachado', 'Despacho #2 registrado en Ficha #3.', 0, '2026-05-08 16:49:55'),
-(44, 4, 3, 'info', 'Organismo Despachado', 'Se ha despachado un organismo a tu Ficha #3.', 1, '2026-05-08 16:50:04'),
-(45, 5, 3, 'alerta', 'Nuevo Despacho de Organismo', 'Organismo asignado a la Ficha #3. Despacho #3.', 0, '2026-05-08 16:50:04'),
-(46, 6, 3, 'alerta', 'Nuevo Despacho de Organismo', 'Organismo asignado a la Ficha #3. Despacho #3.', 0, '2026-05-08 16:50:04'),
-(47, 2, 3, 'info', 'Sistema: Organismo Despachado', 'Despacho #3 registrado en Ficha #3.', 0, '2026-05-08 16:50:04'),
-(48, 3, 4, 'alerta', 'Nueva Emergencia', 'Se ha generado la Ficha #4. Requiere atención inmediata.', 1, '2026-05-08 17:56:03'),
-(49, 7, 4, 'alerta', 'Nueva Emergencia', 'Se ha generado la Ficha #4. Requiere atención inmediata.', 0, '2026-05-08 17:56:03'),
-(50, 5, 4, 'info', 'Nueva Ficha Registrada', 'El Operador operador ha registrado la Ficha #4.', 0, '2026-05-08 17:56:03'),
-(51, 6, 4, 'info', 'Nueva Ficha Registrada', 'El Operador operador ha registrado la Ficha #4.', 0, '2026-05-08 17:56:03'),
-(52, 2, 4, 'info', 'Sistema: Registro de Ficha', 'Se ha creado la Ficha de Emergencia #4.', 0, '2026-05-08 17:56:03'),
-(53, 5, 3, 'alerta', 'Organismo Cancelado', 'El organismo \'Policía Nacional Bolivariana\' fue cancelado en Ficha #3. Motivo: Sin respuesta.', 0, '2026-05-08 17:56:53'),
-(54, 6, 3, 'alerta', 'Organismo Cancelado', 'El organismo \'Policía Nacional Bolivariana\' fue cancelado en Ficha #3. Motivo: Sin respuesta.', 0, '2026-05-08 17:56:53'),
-(55, 2, 3, 'info', 'Sistema: Despacho Cancelado', 'Despacho #2 (Policía Nacional Bolivariana) cancelado.', 0, '2026-05-08 17:56:53'),
-(56, 5, 3, 'info', 'Avance de Organismo', 'Despacho #3: \'Asignado\' → \'En Camino\' en Ficha #3.', 0, '2026-05-08 17:56:55'),
-(57, 6, 3, 'info', 'Avance de Organismo', 'Despacho #3: \'Asignado\' → \'En Camino\' en Ficha #3.', 0, '2026-05-08 17:56:55'),
-(58, 2, 3, 'info', 'Sistema: Avance Despacho', 'Despacho #3 cambió a \'En Camino\'.', 0, '2026-05-08 17:56:55'),
-(59, 5, 3, 'info', 'Avance de Organismo', 'Despacho #3: \'En Camino\' → \'En Sitio\' en Ficha #3.', 0, '2026-05-08 17:56:56'),
-(60, 6, 3, 'info', 'Avance de Organismo', 'Despacho #3: \'En Camino\' → \'En Sitio\' en Ficha #3.', 0, '2026-05-08 17:56:56'),
-(61, 2, 3, 'info', 'Sistema: Avance Despacho', 'Despacho #3 cambió a \'En Sitio\'.', 0, '2026-05-08 17:56:56'),
-(62, 5, 3, 'info', 'Avance de Organismo', 'Despacho #3: \'En Sitio\' → \'Liberado\' en Ficha #3.', 0, '2026-05-08 17:57:08'),
-(63, 6, 3, 'info', 'Avance de Organismo', 'Despacho #3: \'En Sitio\' → \'Liberado\' en Ficha #3.', 0, '2026-05-08 17:57:08'),
-(64, 2, 3, 'info', 'Sistema: Avance Despacho', 'Despacho #3 cambió a \'Liberado\'.', 0, '2026-05-08 17:57:08'),
-(65, 5, 3, 'alerta', 'Organismo Cancelado', 'El organismo \'Guardia Nacional Bolivariana\' fue cancelado en Ficha #3. Motivo: Sin respuesta.', 0, '2026-05-08 17:58:05'),
-(66, 6, 3, 'alerta', 'Organismo Cancelado', 'El organismo \'Guardia Nacional Bolivariana\' fue cancelado en Ficha #3. Motivo: Sin respuesta.', 0, '2026-05-08 17:58:05'),
-(67, 2, 3, 'info', 'Sistema: Despacho Cancelado', 'Despacho #1 (Guardia Nacional Bolivariana) cancelado.', 0, '2026-05-08 17:58:05'),
-(68, 4, 3, 'cambio_estado', 'Estado de Ficha Actualizado', 'Tu Ficha #3 cambió de \'En Proceso\' a \'Cerrado\' por Miguel Fernandez.', 0, '2026-05-08 17:58:12'),
-(69, 5, 3, 'info', 'Actualización de Emergencia', 'La Ficha #3 fue actualizada a \'Cerrado\' por Miguel Fernandez.', 0, '2026-05-08 17:58:12'),
-(70, 6, 3, 'info', 'Actualización de Emergencia', 'La Ficha #3 fue actualizada a \'Cerrado\' por Miguel Fernandez.', 0, '2026-05-08 17:58:12'),
-(71, 2, 3, 'info', 'Sistema: Cambio de Estado', 'Ficha #3 cambió a \'Cerrado\'.', 0, '2026-05-08 17:58:12');
+(1, 4, 5, 'info', 'Ficha Modificada', 'Tu Ficha #5 fue modificada por juan.', 0, '2026-05-18 16:08:10'),
+(2, 2, 5, 'info', 'Ficha Modificada', 'Tu Ficha #5 fue modificada por juan.', 1, '2026-05-18 16:08:10'),
+(3, 5, 5, 'info', 'Edición de Emergencia', 'Ficha #5 editada por juan.', 0, '2026-05-18 16:08:11'),
+(4, 6, 5, 'info', 'Edición de Emergencia', 'Ficha #5 editada por juan.', 0, '2026-05-18 16:08:11'),
+(5, 2, 5, 'info', 'Edición de Emergencia', 'Ficha #5 editada por juan.', 1, '2026-05-18 16:08:11'),
+(6, 4, 5, 'cambio_estado', 'Estado de Ficha Actualizado', 'Tu Ficha #5 cambió a \'Atendido\'.', 0, '2026-05-18 16:09:08'),
+(7, 2, 5, 'cambio_estado', 'Estado de Ficha Actualizado', 'Tu Ficha #5 cambió a \'Atendido\'.', 1, '2026-05-18 16:09:08'),
+(8, 5, 5, 'info', 'Actualización de Emergencia', 'Ficha #5 actualizada a \'Atendido\'.', 0, '2026-05-18 16:09:08'),
+(9, 6, 5, 'info', 'Actualización de Emergencia', 'Ficha #5 actualizada a \'Atendido\'.', 0, '2026-05-18 16:09:08'),
+(10, 2, 5, 'info', 'Actualización de Emergencia', 'Ficha #5 actualizada a \'Atendido\'.', 1, '2026-05-18 16:09:08'),
+(11, 7, 7, 'alerta', 'Nueva Emergencia', 'Ficha #7 generada.', 0, '2026-05-18 16:59:26'),
+(12, 2, 7, 'alerta', 'Nueva Emergencia', 'Ficha #7 generada.', 1, '2026-05-18 16:59:26'),
+(13, 5, 7, 'info', 'Nueva Ficha', 'juan registró la Ficha #7.', 0, '2026-05-18 16:59:26'),
+(14, 6, 7, 'info', 'Nueva Ficha', 'juan registró la Ficha #7.', 0, '2026-05-18 16:59:26'),
+(15, 5, 7, 'info', 'Edición de Emergencia', 'Ficha #7 editada por juan.', 0, '2026-05-18 16:59:50'),
+(16, 6, 7, 'info', 'Edición de Emergencia', 'Ficha #7 editada por juan.', 0, '2026-05-18 16:59:50'),
+(17, 2, 7, 'info', 'Edición de Emergencia', 'Ficha #7 editada por juan.', 1, '2026-05-18 16:59:50'),
+(18, 5, 7, 'info', 'Edición de Emergencia', 'Ficha #7 editada por juan.', 0, '2026-05-18 17:03:02'),
+(19, 6, 7, 'info', 'Edición de Emergencia', 'Ficha #7 editada por juan.', 0, '2026-05-18 17:03:02'),
+(20, 2, 7, 'info', 'Edición de Emergencia', 'Ficha #7 editada por juan.', 1, '2026-05-18 17:03:02'),
+(21, 4, NULL, 'alerta', 'Seguridad: Estado de Usuario', 'El usuario \'operador\' ha sido deshabilitado por juan.', 0, '2026-05-18 17:03:13'),
+(22, 2, NULL, 'alerta', 'Seguridad: Estado de Usuario', 'El usuario \'operador\' ha sido deshabilitado por juan.', 1, '2026-05-18 17:03:13'),
+(23, 4, NULL, 'alerta', 'Seguridad: Estado de Usuario', 'El usuario \'operador\' ha sido activado por juan.', 0, '2026-05-18 17:03:30'),
+(24, 2, NULL, 'alerta', 'Seguridad: Estado de Usuario', 'El usuario \'operador\' ha sido activado por juan.', 1, '2026-05-18 17:03:31'),
+(25, 3, NULL, 'alerta', 'Seguridad: Estado de Usuario', 'El usuario \'despachador\' ha sido activado por juan.', 0, '2026-05-18 17:03:34'),
+(26, 2, NULL, 'alerta', 'Seguridad: Estado de Usuario', 'El usuario \'despachador\' ha sido activado por juan.', 1, '2026-05-18 17:03:35'),
+(27, 2, 7, 'info', 'Ficha en Proceso', 'Tu Ficha #7 ha pasado a \'En Proceso\' y está siendo atendida por juan.', 0, '2026-05-18 17:04:23'),
+(28, 5, 7, 'info', 'Ficha Tomada: Inicio de Gestión', 'El despachador juan ha tomado la Ficha #7.', 0, '2026-05-18 17:04:24'),
+(29, 6, 7, 'info', 'Ficha Tomada: Inicio de Gestión', 'El despachador juan ha tomado la Ficha #7.', 0, '2026-05-18 17:04:24');
 
 -- --------------------------------------------------------
 
@@ -569,8 +496,12 @@ CREATE TABLE `solicitantes` (
 --
 
 INSERT INTO `solicitantes` (`id`, `cedula`, `nombre_solicitante`, `telefono1`, `telefono2`) VALUES
-(1, '31034138', 'JOSE JOSESSSSSS', '04145779077', ''),
-(3, '31034135', 'Juan Soto', '04145779060', '');
+(1, '31034138', 'Juan Soto', '04145779060', ''),
+(3, '31034135', 'Juan Soto', '04145779060', ''),
+(7, '31034137', 'JOSE JOSES', '04145779060', ''),
+(11, '31034134', 'Juan Soto', '04145779060', ''),
+(26, '310341387', 'Juan Soto', '04145779060', ''),
+(27, '310341380', 'Juan Soto', '04145779060', '');
 
 -- --------------------------------------------------------
 
@@ -807,19 +738,19 @@ ALTER TABLE `despachos_organismos`
 -- AUTO_INCREMENT de la tabla `eventos_fichas`
 --
 ALTER TABLE `eventos_fichas`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de la tabla `eventos_sistema`
 --
 ALTER TABLE `eventos_sistema`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de la tabla `fichas_emergencia`
 --
 ALTER TABLE `fichas_emergencia`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT de la tabla `modulos`
@@ -843,7 +774,7 @@ ALTER TABLE `municipios`
 -- AUTO_INCREMENT de la tabla `notificaciones`
 --
 ALTER TABLE `notificaciones`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=72;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
 
 --
 -- AUTO_INCREMENT de la tabla `organismos`
@@ -879,7 +810,7 @@ ALTER TABLE `roles`
 -- AUTO_INCREMENT de la tabla `solicitantes`
 --
 ALTER TABLE `solicitantes`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
 
 --
 -- AUTO_INCREMENT de la tabla `tipos_emergencia`

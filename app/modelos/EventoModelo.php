@@ -35,7 +35,8 @@ class EventoModelo {
     // ///////////////////////////////////////////////////////////////////
 
     /**
-     * Proxy Asíncrono: Encola un evento general del sistema en RabbitMQ.
+     * Registra un evento general del sistema.
+     * Estrategia: inserción directa en BD (síncrona). Si falla, encola en RabbitMQ como fallback.
      */
     public function registrarEvento(
         ?int    $usuario_id,
@@ -46,19 +47,25 @@ class EventoModelo {
         ?array  $nuevo       = null,
         ?string $descripcion = null
     ): void {
-        require_once 'app/Helpers/Notificador.php';
-        \App\Helpers\Notificador::encolarTrabajo([
-            'action' => 'registrar_auditoria_sistema',
-            'datos' => [
-                'usuario_id'  => $usuario_id,
-                'tipo_accion' => $tipo_accion,
-                'tabla'       => $tabla,
-                'registro_id' => $registro_id,
-                'anterior'    => $anterior,
-                'nuevo'       => $nuevo,
-                'descripcion' => $descripcion
-            ]
-        ]);
+        try {
+            $this->insertarEventoSistemaReal($usuario_id, $tipo_accion, $tabla, $registro_id, $anterior, $nuevo, $descripcion);
+        } catch (\Throwable $e) {
+            // Fallback asíncrono si la inserción directa falla
+            error_log("[EventoModelo] Inserción directa falló, encolando: " . $e->getMessage());
+            require_once 'app/Helpers/Notificador.php';
+            \App\Helpers\Notificador::encolarTrabajo([
+                'action' => 'registrar_auditoria_sistema',
+                'datos' => [
+                    'usuario_id'  => $usuario_id,
+                    'tipo_accion' => $tipo_accion,
+                    'tabla'       => $tabla,
+                    'registro_id' => $registro_id,
+                    'anterior'    => $anterior,
+                    'nuevo'       => $nuevo,
+                    'descripcion' => $descripcion
+                ]
+            ]);
+        }
     }
 
     /**
@@ -94,7 +101,8 @@ class EventoModelo {
     }
 
     /**
-     * Proxy Asíncrono: Encola un evento de ficha en RabbitMQ.
+     * Registra un evento de ficha.
+     * Estrategia: inserción directa en BD (síncrona). Si falla, encola en RabbitMQ como fallback.
      */
     public function registrarEventoFicha(
         int     $ficha_id,
@@ -106,20 +114,26 @@ class EventoModelo {
         ?array  $nuevo           = null,
         ?string $descripcion     = null
     ): void {
-        require_once 'app/Helpers/Notificador.php';
-        \App\Helpers\Notificador::encolarTrabajo([
-            'action' => 'registrar_auditoria_ficha',
-            'datos' => [
-                'ficha_id'        => $ficha_id,
-                'usuario_id'      => $usuario_id,
-                'tipo_evento'     => $tipo_evento,
-                'estado_anterior' => $estado_anterior,
-                'estado_nuevo'    => $estado_nuevo,
-                'anterior'        => $anterior,
-                'nuevo'           => $nuevo,
-                'descripcion'     => $descripcion
-            ]
-        ]);
+        try {
+            $this->insertarEventoFichaReal($ficha_id, $usuario_id, $tipo_evento, $estado_anterior, $estado_nuevo, $anterior, $nuevo, $descripcion);
+        } catch (\Throwable $e) {
+            // Fallback asíncrono si la inserción directa falla
+            error_log("[EventoModelo] Inserción directa de ficha falló, encolando: " . $e->getMessage());
+            require_once 'app/Helpers/Notificador.php';
+            \App\Helpers\Notificador::encolarTrabajo([
+                'action' => 'registrar_auditoria_ficha',
+                'datos' => [
+                    'ficha_id'        => $ficha_id,
+                    'usuario_id'      => $usuario_id,
+                    'tipo_evento'     => $tipo_evento,
+                    'estado_anterior' => $estado_anterior,
+                    'estado_nuevo'    => $estado_nuevo,
+                    'anterior'        => $anterior,
+                    'nuevo'           => $nuevo,
+                    'descripcion'     => $descripcion
+                ]
+            ]);
+        }
     }
 
     /**

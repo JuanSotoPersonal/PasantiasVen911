@@ -82,8 +82,8 @@ class FichaServicio {
         );
 
         // 5. Notificaciones
-        Notificador::enviarPorRol(3, 'alerta', 'Nueva Emergencia', "Ficha #{$fichaId} generada.", $fichaId);
-        Notificador::enviarPorRol(4, 'info', 'Nueva Ficha', "{$usuarioNombre} registró la Ficha #{$fichaId}.", $fichaId);
+        $notificados = Notificador::enviarPorRol(3, 'alerta', 'Nueva Emergencia', "Ficha #{$fichaId} generada.", $fichaId);
+        Notificador::enviarPorRol(4, 'info', 'Nueva Ficha', "{$usuarioNombre} registró la Ficha #{$fichaId}.", $fichaId, $notificados);
 
         return ['success' => true, 'id' => $fichaId, 'message' => "Ficha #{$fichaId} registrada correctamente."];
     }
@@ -113,10 +113,11 @@ class FichaServicio {
             );
 
             // Notificaciones de edición
+            $excluir = [];
             if (!empty($anterior['id_user']) && $anterior['id_user'] != $usuarioId) {
-                Notificador::enviarAUsuario((int)$anterior['id_user'], 'info', 'Ficha Modificada', "Tu Ficha #{$fichaId} fue modificada por {$usuarioNombre}.", $fichaId);
+                $excluir = Notificador::enviarAUsuario((int)$anterior['id_user'], 'info', 'Ficha Modificada', "Tu Ficha #{$fichaId} fue modificada por {$usuarioNombre}.", $fichaId);
             }
-            Notificador::enviarPorRol(4, 'info', 'Edición de Emergencia', "Ficha #{$fichaId} editada por {$usuarioNombre}.", $fichaId);
+            Notificador::enviarPorRol(4, 'info', 'Edición de Emergencia', "Ficha #{$fichaId} editada por {$usuarioNombre}.", $fichaId, $excluir);
 
             return ['success' => true, 'message' => "Ficha #{$fichaId} actualizada."];
         }
@@ -164,10 +165,11 @@ class FichaServicio {
             );
 
             // Notificaciones
+            $excluir = [];
             if (isset($anterior['id_user'])) {
-                Notificador::enviarAUsuario((int)$anterior['id_user'], 'cambio_estado', 'Ficha Actualizada', "Ficha #{$fichaId} pasó a '{$nuevoEstado}'.", $fichaId);
+                $excluir = Notificador::enviarAUsuario((int)$anterior['id_user'], 'cambio_estado', 'Ficha Actualizada', "Ficha #{$fichaId} pasó a '{$nuevoEstado}'.", $fichaId);
             }
-            Notificador::enviarPorRol(4, 'info', 'Actualización Operativa', "Ficha #{$fichaId} actualizada a '{$nuevoEstado}' por {$usuarioNombre}.", $fichaId);
+            Notificador::enviarPorRol(4, 'info', 'Actualización Operativa', "Ficha #{$fichaId} actualizada a '{$nuevoEstado}' por {$usuarioNombre}.", $fichaId, $excluir);
 
             return ['success' => true, 'message' => "Estado actualizado a '{$nuevoEstado}'.", 'nuevo_estado' => $nuevoEstado];
         }

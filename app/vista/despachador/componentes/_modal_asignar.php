@@ -29,20 +29,32 @@
                     <!-- Campo oculto: ficha_id inyectado por el botón que abre el modal -->
                     <input type="hidden" id="asignar_ficha_id" name="ficha_id">
 
-                    <!-- Sección 1: Selector de organismo -->
+                    <!-- Sección 1: Selector de organismo y cuadrante -->
                     <div class="section-title-container mb-4">
                         <h6 class="fw-bold text-success text-uppercase small border-bottom pb-2">
-                            <i class="bi bi-building-fill me-2"></i>1. Organismo de Respuesta
+                            <i class="bi bi-building-fill me-2"></i>1. Organismo de Respuesta y Cuadrante
                         </h6>
                     </div>
 
-                    <div class="mb-4">
-                        <label for="asignar_organismo_id" class="form-label fw-semibold small text-secondary">
-                            Organismo <span class="text-danger">*</span>
-                        </label>
-                        <select id="asignar_organismo_id" name="organismo_id" class="form-select shadow-sm border-2">
-                            <option value="">-- Seleccione organismo --</option>
-                        </select>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label for="asignar_organismo_id" class="form-label fw-semibold small text-secondary">
+                                Organismo <span class="text-danger">*</span>
+                            </label>
+                            <select id="asignar_organismo_id" name="organismo_id" class="form-select shadow-sm border-2">
+                                <option value="">-- Seleccione organismo --</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="asignar_cuadrante_id" class="form-label fw-semibold small text-secondary">
+                                Cuadrante de Paz <span class="text-danger">*</span>
+                            </label>
+                            <select id="asignar_cuadrante_id" name="cuadrante_id" class="form-select shadow-sm border-2" disabled>
+                                <option value="">-- Seleccione cuadrante --</option>
+                            </select>
+                            <div class="form-text mt-1 text-muted" style="font-size: 0.75rem;">Filtrado automáticamente por organismo.</div>
+                        </div>
                     </div>
 
                     <!-- Sección 2: Datos de campo -->

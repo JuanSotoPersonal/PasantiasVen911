@@ -124,6 +124,8 @@ $(document).ready(function () {
         $('#formCrearFicha')[0].reset();
         // Reset de cascadas
         $('#crear_parroquia_id').prop('disabled', true).html('<option value="">-- Primero seleccione municipio --</option>');
+        $('#crear_comuna_id').prop('disabled', true).html('<option value="">-- Seleccionar Comuna --</option>');
+        $('#crear_sector_id').prop('disabled', true).html('<option value="">-- Seleccionar Sector --</option>');
         $('#crear_caso_id').prop('disabled', true).html('<option value="">-- Primero seleccione tipo --</option>');
         new bootstrap.Modal(document.getElementById('modalCrearFicha')).show();
     });
@@ -190,6 +192,72 @@ $(document).ready(function () {
         }, 'json');
     }
 
+    // Cascada: Parroquias -> Comunas (Opcional)
+    $('#crear_parroquia_id').on('change', function () {
+        const parroquiaId = $(this).val();
+        const sel = $('#crear_comuna_id');
+        const selSec = $('#crear_sector_id');
+        if (!parroquiaId) { 
+            sel.prop('disabled', true).html('<option value="">-- Seleccionar Comuna --</option>').trigger('change'); 
+            selSec.prop('disabled', true).html('<option value="">-- Seleccionar Sector --</option>').trigger('change'); 
+            return; 
+        }
+        cargarComunas(parroquiaId, sel, null);
+    });
+
+    $('#editar_parroquia_id').on('change', function () {
+        const parroquiaId = $(this).val();
+        const sel = $('#editar_comuna_id');
+        const selSec = $('#editar_sector_id');
+        if (!parroquiaId) { 
+            sel.prop('disabled', true).html('<option value="">-- Seleccionar Comuna --</option>').trigger('change'); 
+            selSec.prop('disabled', true).html('<option value="">-- Seleccionar Sector --</option>').trigger('change'); 
+            return; 
+        }
+        cargarComunas(parroquiaId, sel, null);
+    });
+
+    function cargarComunas(parroquiaId, $sel, valorActual) {
+        $.get(`index.php?url=ficha/obtenerCatalogo&cat=comuna&estado=1&parroquia_id=${parroquiaId}`, function (res) {
+            let opts = '<option value="">-- Seleccione comuna --</option>';
+            if (res.data) {
+                res.data.forEach(c => {
+                    const sel = valorActual == c.id ? 'selected' : '';
+                    opts += `<option value="${c.id}" ${sel}>${escapeHTML(c.nombre_comuna)}</option>`;
+                });
+            }
+            $sel.prop('disabled', false).html(opts).trigger('change');
+        }, 'json');
+    }
+
+    // Cascada: Comunas -> Sectores (Opcional)
+    $('#crear_comuna_id').on('change', function () {
+        const comunaId = $(this).val();
+        const sel = $('#crear_sector_id');
+        if (!comunaId) { sel.prop('disabled', true).html('<option value="">-- Seleccionar Sector --</option>').trigger('change'); return; }
+        cargarSectores(comunaId, sel, null);
+    });
+
+    $('#editar_comuna_id').on('change', function () {
+        const comunaId = $(this).val();
+        const sel = $('#editar_sector_id');
+        if (!comunaId) { sel.prop('disabled', true).html('<option value="">-- Seleccionar Sector --</option>').trigger('change'); return; }
+        cargarSectores(comunaId, sel, null);
+    });
+
+    function cargarSectores(comunaId, $sel, valorActual) {
+        $.get(`index.php?url=ficha/obtenerCatalogo&cat=sector&estado=1&comuna_id=${comunaId}`, function (res) {
+            let opts = '<option value="">-- Seleccione sector --</option>';
+            if (res.data) {
+                res.data.forEach(s => {
+                    const sel = valorActual == s.id ? 'selected' : '';
+                    opts += `<option value="${s.id}" ${sel}>${escapeHTML(s.nombre_sector)}</option>`;
+                });
+            }
+            $sel.prop('disabled', false).html(opts).trigger('change');
+        }, 'json');
+    }
+
     // Cascada: Tipo Emergencia -> Casos (Soporta Crear/Editar)
     $('#crear_tipo_emergencia_id').on('change', function () {
         const tipoId = $(this).val();
@@ -241,6 +309,12 @@ $(document).ready(function () {
 
             // Re-hidratación de cascadas en el modal de edición
             cargarParroquias(f.municipio_id, $('#editar_parroquia_id'), f.parroquia_id);
+            if (f.parroquia_id) {
+                cargarComunas(f.parroquia_id, $('#editar_comuna_id'), f.comuna_id);
+            }
+            if (f.comuna_id) {
+                cargarSectores(f.comuna_id, $('#editar_sector_id'), f.sector_id);
+            }
             cargarCasos(f.tipo_emergencia_id, $('#editar_caso_id'), f.caso_id);
 
             bootstrap.Modal.getOrCreateInstance(document.getElementById('modalEditarFicha')).show();

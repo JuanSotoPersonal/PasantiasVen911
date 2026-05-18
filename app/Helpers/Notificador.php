@@ -25,7 +25,8 @@ class Notificador {
      * Persiste notificaciones para todos los usuarios de un rol
      * y luego intenta notificarlos en tiempo real vía WebSocket.
      */
-    public static function enviarPorRol(int $rolId, string $tipo, string $titulo, string $mensaje, ?int $fichaId = null): void {
+    public static function enviarPorRol(int $rolId, string $tipo, string $titulo, string $mensaje, ?int $fichaId = null, array $excluirUsuarios = []): array {
+        $notificados = [];
         try {
             require_once dirname(__DIR__) . '/modelos/NotificacionModelo.php';
             $modelo   = new \App\modelos\NotificacionModelo();
@@ -37,7 +38,15 @@ class Notificador {
                 $usuarios = array_values(array_unique(array_merge($usuarios, $admins)));
             }
 
-            if (empty($usuarios)) return;
+            // Excluir los usuarios solicitados
+            if (!empty($excluirUsuarios)) {
+                $usuarios = array_filter($usuarios, function($uid) use ($excluirUsuarios) {
+                    return !in_array((int)$uid, $excluirUsuarios, true);
+                });
+                $usuarios = array_values($usuarios);
+            }
+
+            if (empty($usuarios)) return [];
 
             // 1. Persistencia garantizada en BD (batch insert)
             $insertados = $modelo->crearBatch($usuarios, $tipo, $titulo, $mensaje, $fichaId);
@@ -45,9 +54,11 @@ class Notificador {
             // 2. Best-effort: encolar cada notificación para envío WebSocket
             $fechaActual = date('Y-m-d H:i:s');
             foreach ($insertados as $item) {
+                $uid = (int)$item['usuario_id'];
+                $notificados[] = $uid;
                 self::encolarParaWebSocket([
                     'id'             => $item['id'],
-                    'usuario_id'     => $item['usuario_id'],
+                    'usuario_id'     => $uid,
                     'tipo'           => $tipo,
                     'titulo'         => $titulo,
                     'mensaje'        => $mensaje,
@@ -58,6 +69,7 @@ class Notificador {
         } catch (\Throwable $e) {
             error_log("[Notificador] Error en enviarPorRol: " . $e->getMessage());
         }
+        return $notificados;
     }
 
     // ///////////////////////////////////////////////////////////////////
@@ -68,36 +80,42 @@ class Notificador {
      * Persiste una notificación para un usuario específico
      * y luego intenta notificarlo en tiempo real vía WebSocket.
      */
-    public static function enviarAUsuario(int $usuarioId, string $tipo, string $titulo, string $mensaje, ?int $fichaId = null): void {
+    public static function enviarAUsuario(int $usuarioId, string $tipo, string $titulo, string $mensaje, ?int $fichaId = null, array $excluirUsuarios = []): array {
+        $notificados = [];
         try {
             require_once dirname(__DIR__) . '/modelos/NotificacionModelo.php';
             $modelo  = new \App\modelos\NotificacionModelo();
 
-            // 1. Persistencia garantizada en BD
-            $notifId = $modelo->crear($usuarioId, $tipo, $titulo, $mensaje, $fichaId);
+            // 1. Persistencia garantizada en BD para el usuario destinatario (si no está excluido)
+            if (!in_array($usuarioId, $excluirUsuarios, true)) {
+                $notifId = $modelo->crear($usuarioId, $tipo, $titulo, $mensaje, $fichaId);
 
-            // 2. Best-effort: encolar para envío WebSocket
-            if ($notifId) {
-                self::encolarParaWebSocket([
-                    'id'             => $notifId,
-                    'usuario_id'     => $usuarioId,
-                    'tipo'           => $tipo,
-                    'titulo'         => $titulo,
-                    'mensaje'        => $mensaje,
-                    'ficha_id'       => $fichaId,
-                    'fecha_creacion' => date('Y-m-d H:i:s'),
-                ]);
+                // 2. Best-effort: encolar para envío WebSocket
+                if ($notifId) {
+                    $notificados[] = $usuarioId;
+                    self::encolarParaWebSocket([
+                        'id'             => $notifId,
+                        'usuario_id'     => $usuarioId,
+                        'tipo'           => $tipo,
+                        'titulo'         => $titulo,
+                        'mensaje'        => $mensaje,
+                        'ficha_id'       => $fichaId,
+                        'fecha_creacion' => date('Y-m-d H:i:s'),
+                    ]);
+                }
             }
 
-            // Garantizar que el Administrador (Rol 1) siempre reciba una copia de las alertas directas
+            // Garantizar que el Administrador (Rol 1) siempre reciba una copia de las alertas directas (si no está excluido)
             $admins = $modelo->obtenerUsuariosPorRol(1);
             foreach ($admins as $adminId) {
-                if ((int)$adminId !== $usuarioId) {
-                    $adminNotifId = $modelo->crear((int)$adminId, $tipo, $titulo, $mensaje, $fichaId);
+                $adminIdInt = (int)$adminId;
+                if ($adminIdInt !== $usuarioId && !in_array($adminIdInt, $excluirUsuarios, true) && !in_array($adminIdInt, $notificados, true)) {
+                    $adminNotifId = $modelo->crear($adminIdInt, $tipo, $titulo, $mensaje, $fichaId);
                     if ($adminNotifId) {
+                        $notificados[] = $adminIdInt;
                         self::encolarParaWebSocket([
                             'id'             => $adminNotifId,
-                            'usuario_id'     => (int)$adminId,
+                            'usuario_id'     => $adminIdInt,
                             'tipo'           => $tipo,
                             'titulo'         => $titulo,
                             'mensaje'        => $mensaje,
@@ -110,6 +128,7 @@ class Notificador {
         } catch (\Throwable $e) {
             error_log("[Notificador] Error en enviarAUsuario: " . $e->getMessage());
         }
+        return $notificados;
     }
 
     // ///////////////////////////////////////////////////////////////////

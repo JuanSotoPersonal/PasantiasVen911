@@ -67,9 +67,14 @@ class UsuarioServicio {
         ];
 
         if ($this->modelo->crear($datosPersistencia)) {
-            $this->log->registrarEvento($adminId, 'INSERT', 'usuarios', null, null, [
+            $nuevoId = $this->modelo->obtenerUltimoId();
+            $this->log->registrarEvento($adminId, 'INSERT', 'usuarios', $nuevoId, null, [
                 'usuario' => $usuario, 'rol_id' => $rolId
             ], "Usuario '{$usuario}' creado.");
+            
+            // Notificación de bienvenida al nuevo usuario (y copia automática al Admin)
+            Notificador::enviarAUsuario($nuevoId, 'info', 'Bienvenido al Sistema', "Tu cuenta '{$usuario}' ha sido creada exitosamente.", null);
+            
             return ['success' => true, 'message' => 'Usuario creado correctamente.'];
         }
 
@@ -153,6 +158,12 @@ class UsuarioServicio {
         if ($resultado !== false) {
             $nuevoEstado = $resultado['nuevo_estado'];
             $this->log->registrarEvento($adminId, 'CAMBIO_ESTADO', 'usuarios', $id, null, ['estado' => $nuevoEstado], "Estado cambiado a {$nuevoEstado}.");
+            
+            $usuarioAfectadoNombre = $usuarioAfectado ? $usuarioAfectado['usuario'] : 'Usuario';
+            $estadoTexto = $nuevoEstado === 'activo' ? 'activado' : 'deshabilitado';
+            
+            Notificador::enviarAUsuario($id, 'alerta', 'Seguridad: Estado de Usuario', "El usuario '{$usuarioAfectadoNombre}' ha sido {$estadoTexto} por {$adminNombre}.", null);
+            
             return ['success' => true, 'message' => 'Estado actualizado.', 'nuevo_estado' => $nuevoEstado];
         }
 

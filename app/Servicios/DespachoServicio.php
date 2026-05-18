@@ -58,14 +58,15 @@ class DespachoServicio {
             );
 
             // Notificaciones
+            $excluir = [];
             if (!empty($infoFicha['id_user'])) {
-                Notificador::enviarAUsuario(
+                $excluir = Notificador::enviarAUsuario(
                     (int)$infoFicha['id_user'], 'info', 'Ficha en Proceso',
                     "Tu Ficha #{$fichaId} ha pasado a 'En Proceso' y está siendo atendida por {$usuarioNombre}.",
                     $fichaId
                 );
             }
-            Notificador::enviarPorRol(4, 'info', 'Ficha Tomada: Inicio de Gestión', "El despachador {$usuarioNombre} ha tomado la Ficha #{$fichaId}.", $fichaId);
+            Notificador::enviarPorRol(4, 'info', 'Ficha Tomada: Inicio de Gestión', "El despachador {$usuarioNombre} ha tomado la Ficha #{$fichaId}.", $fichaId, $excluir);
 
             return ['success' => true, 'message' => "Ficha #{$fichaId} tomada correctamente."];
         }
@@ -87,7 +88,8 @@ class DespachoServicio {
         $despachoId = $this->modelo->crear([
             'ficha_id'         => $fichaId,
             'organismo_id'     => $datos['organismo_id'],
-            'unidad_designada'  => $datos['unidad_designada'],
+            'cuadrante_id'     => $datos['cuadrante_id'] ?: null,
+            'unidad_designada' => $datos['unidad_designada'],
             'mando_acargo'     => $datos['mando_acargo'],
             'persona_atiende'  => $datos['persona_atiende'] ?: null,
             'despachador_id'   => $usuarioId,
@@ -100,10 +102,11 @@ class DespachoServicio {
                 "Despacho #{$despachoId}: Organismo asignado."
             );
 
+            $excluir = [];
             if (!empty($infoFicha['id_user'])) {
-                Notificador::enviarAUsuario((int)$infoFicha['id_user'], 'info', 'Organismo Despachado', "Se ha despachado un organismo a tu Ficha #{$fichaId}.", $fichaId);
+                $excluir = Notificador::enviarAUsuario((int)$infoFicha['id_user'], 'info', 'Organismo Despachado', "Se ha despachado un organismo a tu Ficha #{$fichaId}.", $fichaId);
             }
-            Notificador::enviarPorRol(4, 'alerta', 'Nuevo Despacho', "Organismo asignado a la Ficha #{$fichaId}.", $fichaId);
+            Notificador::enviarPorRol(4, 'alerta', 'Nuevo Despacho', "Organismo asignado a la Ficha #{$fichaId}.", $fichaId, $excluir);
 
             return ['success' => true, 'message' => "Despacho registrado correctamente.", 'id' => $despachoId];
         }
@@ -131,11 +134,12 @@ class DespachoServicio {
 
             // Notificaciones de cambio en despacho
             $fichaId = (int)$anterior['ficha_id'];
-            Notificador::enviarPorRol(4, 'info', 'Actualización de Despacho', "El organismo en la Ficha #{$fichaId} pasó a estado '{$nuevoEstado}'.", $fichaId);
+            $excluir = [];
             $infoFicha = $this->modeloFicha->obtenerInfoFicha($fichaId);
             if ($infoFicha && !empty($infoFicha['id_user'])) {
-                Notificador::enviarAUsuario((int)$infoFicha['id_user'], 'info', 'Organismo Actualizado', "El organismo despachado en tu Ficha #{$fichaId} está '{$nuevoEstado}'.", $fichaId);
+                $excluir = Notificador::enviarAUsuario((int)$infoFicha['id_user'], 'info', 'Organismo Actualizado', "El organismo despachado en tu Ficha #{$fichaId} está '{$nuevoEstado}'.", $fichaId);
             }
+            Notificador::enviarPorRol(4, 'info', 'Actualización de Despacho', "El organismo en la Ficha #{$fichaId} pasó a estado '{$nuevoEstado}'.", $fichaId, $excluir);
 
             return ['success' => true, 'message' => "Estatus actualizado.", 'nuevo_estado' => $nuevoEstado];
         }
@@ -164,11 +168,12 @@ class DespachoServicio {
 
             // Notificaciones de cancelación
             $fichaId = (int)$despacho['ficha_id'];
-            Notificador::enviarPorRol(4, 'alerta', 'Despacho Cancelado', "Se ha cancelado un organismo en la Ficha #{$fichaId}. Motivo: {$tipoMotivo}.", $fichaId);
+            $excluir = [];
             $infoFicha = $this->modeloFicha->obtenerInfoFicha($fichaId);
             if ($infoFicha && !empty($infoFicha['id_user'])) {
-                Notificador::enviarAUsuario((int)$infoFicha['id_user'], 'alerta', 'Organismo Cancelado', "Un organismo despachado a tu Ficha #{$fichaId} fue cancelado.", $fichaId);
+                $excluir = Notificador::enviarAUsuario((int)$infoFicha['id_user'], 'alerta', 'Organismo Cancelado', "Un organismo despachado a tu Ficha #{$fichaId} fue cancelado.", $fichaId);
             }
+            Notificador::enviarPorRol(4, 'alerta', 'Despacho Cancelado', "Se ha cancelado un organismo en la Ficha #{$fichaId}. Motivo: {$tipoMotivo}.", $fichaId, $excluir);
 
             return ['success' => true, 'message' => "Despacho cancelado correctamente."];
         }
@@ -209,10 +214,11 @@ class DespachoServicio {
                 "Ficha #{$fichaId} actualizada a '{$nuevoEstado}' por {$usuarioNombre}."
             );
 
+            $excluir = [];
             if (!empty($infoFicha['id_user'])) {
-                Notificador::enviarAUsuario((int)$infoFicha['id_user'], 'cambio_estado', 'Estado de Ficha Actualizado', "Tu Ficha #{$fichaId} cambió a '{$nuevoEstado}'.", $fichaId);
+                $excluir = Notificador::enviarAUsuario((int)$infoFicha['id_user'], 'cambio_estado', 'Estado de Ficha Actualizado', "Tu Ficha #{$fichaId} cambió a '{$nuevoEstado}'.", $fichaId);
             }
-            Notificador::enviarPorRol(4, 'info', 'Actualización de Emergencia', "Ficha #{$fichaId} actualizada a '{$nuevoEstado}'.", $fichaId);
+            Notificador::enviarPorRol(4, 'info', 'Actualización de Emergencia', "Ficha #{$fichaId} actualizada a '{$nuevoEstado}'.", $fichaId, $excluir);
 
             return ['success' => true, 'message' => "Estado actualizado.", 'nuevo_estado' => $nuevoEstado];
         }

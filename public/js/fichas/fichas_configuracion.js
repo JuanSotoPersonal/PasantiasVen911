@@ -236,6 +236,8 @@ $(function () {
         guardarCatalogo(datos, [dtCasos, dtCasosInactivos], 'modalCaso').always(() => btn.prop('disabled', false).html(originalText));
     });
 
+
+
     // 5. MÓDULO: MUNICIPIOS
     const dtMunicipios = $('#tablaMunicipios').DataTable({
         ajax: { url: 'index.php?url=ficha/obtenerCatalogo&cat=municipio&estado=1', dataSrc: 'data' },
@@ -319,6 +321,110 @@ $(function () {
 
         const datos = Object.fromEntries(new FormData(document.getElementById('formParroquia')));
         guardarCatalogo(datos, [dtParroquias, dtParroquiasInactivos], 'modalParroquia').always(() => btn.prop('disabled', false).html(originalText));
+    });
+
+    // Helper para cargar selects asincrónicamente
+    function cargarSelectCascada(url, selectId, valueField, textField, textLabel, selectedId = null) {
+        const $select = $(`#${selectId}`);
+        $select.html('<option value="">Cargando...</option>').prop('disabled', true);
+        $.getJSON(url, function(res) {
+            $select.empty().append(`<option value="">-- Seleccione ${textLabel} --</option>`);
+            if (res.data) {
+                res.data.forEach(item => {
+                    const selected = (selectedId && item[valueField] == selectedId) ? 'selected' : '';
+                    $select.append(`<option value="${item[valueField]}" ${selected}>${escapeHTML(item[textField])}</option>`);
+                });
+            }
+            $select.prop('disabled', false).trigger('change.select2');
+        });
+    }
+
+    // --- NUEVO MÓDULO: COMUNAS ---
+    const dtComunas = $('#tablaComunas').length ? $('#tablaComunas').DataTable({
+        ajax: { url: 'index.php?url=ficha/obtenerCatalogo&cat=comuna&estado=1', dataSrc: 'data' },
+        columns: [
+            { data: null, render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, orderable: false, searchable: false, width: '50px' },
+            { data: 'nombre_comuna', render: (d) => escapeHTML(d) },
+            { data: 'nombre_parroquia', render: (d) => escapeHTML(d) },
+            { data: 'descripcion', render: (d) => d ? `<small class="text-muted">${escapeHTML(d)}</small>` : '<em class="text-muted">—</em>' },
+            { data: null, render: (d, t, r) => renderEstadoBadge(r, 'comuna'), orderable: false, searchable: false },
+            { data: null, orderable: false, searchable: false, className: 'text-center', render: (d, t, row) => btnsAccion(row, 'comuna') },
+        ],
+        language: lang, pageLength: 10, order: [[2, 'asc'], [1, 'asc']],
+    }) : null;
+
+    $('#btnNuevaComuna').on('click', () => {
+        $('#formComuna')[0].reset();
+        $('#comuna_accion').val('crear');
+        $('#comuna_id').val('0');
+        $('#modalComunaTitulo').text('Nueva Comuna');
+        cargarSelectCascada('index.php?url=ficha/obtenerCatalogo&cat=parroquia&estado=1', 'comuna_parroquia_id', 'id', 'nombre_parroquia', 'Parroquia');
+        new bootstrap.Modal(document.getElementById('modalComuna')).show();
+    });
+
+    $('#btnGuardarComuna').on('click', function () {
+        const btn = $(this);
+        btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span>');
+        guardarCatalogo(Object.fromEntries(new FormData(document.getElementById('formComuna'))), [dtComunas], 'modalComuna').always(() => btn.prop('disabled', false).text('Guardar'));
+    });
+
+    // --- NUEVO MÓDULO: SECTORES ---
+    const dtSectores = $('#tablaSectores').length ? $('#tablaSectores').DataTable({
+        ajax: { url: 'index.php?url=ficha/obtenerCatalogo&cat=sector&estado=1', dataSrc: 'data' },
+        columns: [
+            { data: null, render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, orderable: false, searchable: false, width: '50px' },
+            { data: 'nombre_sector', render: (d) => escapeHTML(d) },
+            { data: 'nombre_comuna', render: (d) => escapeHTML(d) },
+            { data: 'descripcion', render: (d) => d ? `<small class="text-muted">${escapeHTML(d)}</small>` : '<em class="text-muted">—</em>' },
+            { data: null, render: (d, t, r) => renderEstadoBadge(r, 'sector'), orderable: false, searchable: false },
+            { data: null, orderable: false, searchable: false, className: 'text-center', render: (d, t, row) => btnsAccion(row, 'sector') },
+        ],
+        language: lang, pageLength: 10, order: [[2, 'asc'], [1, 'asc']],
+    }) : null;
+
+    $('#btnNuevoSector').on('click', () => {
+        $('#formSector')[0].reset();
+        $('#sector_accion').val('crear');
+        $('#sector_id').val('0');
+        $('#modalSectorTitulo').text('Nuevo Sector');
+        cargarSelectCascada('index.php?url=ficha/obtenerCatalogo&cat=comuna&estado=1', 'sector_comuna_id', 'id', 'nombre_comuna', 'Comuna');
+        new bootstrap.Modal(document.getElementById('modalSector')).show();
+    });
+
+    $('#btnGuardarSector').on('click', function () {
+        const btn = $(this);
+        btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span>');
+        guardarCatalogo(Object.fromEntries(new FormData(document.getElementById('formSector'))), [dtSectores], 'modalSector').always(() => btn.prop('disabled', false).text('Guardar'));
+    });
+
+    // --- NUEVO MÓDULO: CUADRANTES DE PAZ ---
+    const dtCuadrantes = $('#tablaCuadrantes').length ? $('#tablaCuadrantes').DataTable({
+        ajax: { url: 'index.php?url=ficha/obtenerCatalogo&cat=cuadrante&estado=1', dataSrc: 'data' },
+        columns: [
+            { data: null, render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, orderable: false, searchable: false, width: '50px' },
+            { data: 'nombre_cuadrante', render: (d) => escapeHTML(d) },
+            { data: 'nombre_sector', render: (d) => escapeHTML(d) },
+            { data: 'nombre_organismo', render: (d) => d ? `<span class="badge bg-info text-dark">${escapeHTML(d)}</span>` : '<span class="text-muted">Ninguno</span>' },
+            { data: null, render: (d, t, r) => renderEstadoBadge(r, 'cuadrante'), orderable: false, searchable: false },
+            { data: null, orderable: false, searchable: false, className: 'text-center', render: (d, t, row) => btnsAccion(row, 'cuadrante') },
+        ],
+        language: lang, pageLength: 10, order: [[2, 'asc'], [1, 'asc']],
+    }) : null;
+
+    $('#btnNuevoCuadrante').on('click', () => {
+        $('#formCuadrante')[0].reset();
+        $('#cuadrante_accion').val('crear');
+        $('#cuadrante_id').val('0');
+        $('#modalCuadranteTitulo').text('Nuevo Cuadrante');
+        cargarSelectCascada('index.php?url=ficha/obtenerCatalogo&cat=sector&estado=1', 'cuadrante_sector_id', 'id', 'nombre_sector', 'Sector');
+        cargarSelectCascada('index.php?url=ficha/obtenerCatalogo&cat=organismo&estado=1', 'cuadrante_organismo_id', 'id', 'nombre_organismo', 'Organismo');
+        new bootstrap.Modal(document.getElementById('modalCuadrante')).show();
+    });
+
+    $('#btnGuardarCuadrante').on('click', function () {
+        const btn = $(this);
+        btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span>');
+        guardarCatalogo(Object.fromEntries(new FormData(document.getElementById('formCuadrante'))), [dtCuadrantes], 'modalCuadrante').always(() => btn.prop('disabled', false).text('Guardar'));
     });
 
     // 7. MÓDULO: ORGANISMOS DE RESPUESTA
@@ -457,6 +563,8 @@ $(function () {
             $('#modalCasoTitulo').text(`Editar Caso #${row.id}`);
             bootstrap.Modal.getOrCreateInstance(document.getElementById('modalCaso')).show();
 
+
+
         } else if (catalogo === 'municipio') {
             $('#cat_simple_catalogo').val('municipio');
             $('#cat_simple_accion').val('editar');
@@ -475,6 +583,34 @@ $(function () {
             $('#parroquia_descripcion').val(row.descripcion || '');
             $('#modalParroquiaTitulo').text(`Editar Parroquia #${row.id}`);
             bootstrap.Modal.getOrCreateInstance(document.getElementById('modalParroquia')).show();
+
+        } else if (catalogo === 'comuna') {
+            $('#comuna_accion').val('editar');
+            $('#comuna_id').val(row.id);
+            $('#comuna_nombre').val(row.nombre_comuna);
+            $('#comuna_descripcion').val(row.descripcion || '');
+            $('#modalComunaTitulo').text(`Editar Comuna #${row.id}`);
+            cargarSelectCascada('index.php?url=ficha/obtenerCatalogo&cat=parroquia&estado=1', 'comuna_parroquia_id', 'id', 'nombre_parroquia', 'Parroquia', row.parroquia_id);
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('modalComuna')).show();
+
+        } else if (catalogo === 'sector') {
+            $('#sector_accion').val('editar');
+            $('#sector_id').val(row.id);
+            $('#sector_nombre').val(row.nombre_sector);
+            $('#sector_descripcion').val(row.descripcion || '');
+            $('#modalSectorTitulo').text(`Editar Sector #${row.id}`);
+            cargarSelectCascada('index.php?url=ficha/obtenerCatalogo&cat=comuna&estado=1', 'sector_comuna_id', 'id', 'nombre_comuna', 'Comuna', row.comuna_id);
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('modalSector')).show();
+
+        } else if (catalogo === 'cuadrante') {
+            $('#cuadrante_accion').val('editar');
+            $('#cuadrante_id').val(row.id);
+            $('#cuadrante_nombre').val(row.nombre_cuadrante);
+            $('#cuadrante_descripcion').val(row.descripcion || '');
+            $('#modalCuadranteTitulo').text(`Editar Cuadrante #${row.id}`);
+            cargarSelectCascada('index.php?url=ficha/obtenerCatalogo&cat=sector&estado=1', 'cuadrante_sector_id', 'id', 'nombre_sector', 'Sector', row.sector_id);
+            cargarSelectCascada('index.php?url=ficha/obtenerCatalogo&cat=organismo&estado=1', 'cuadrante_organismo_id', 'id', 'nombre_organismo', 'Organismo', row.organismo_id);
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('modalCuadrante')).show();
 
         } else if (catalogo === 'organismo') {
             $('#cat_simple_catalogo').val('organismo');
@@ -513,14 +649,16 @@ $(function () {
         const tablas = { 
             tipo_emergencia: [dtTipos, dtTiposInactivos], 
             caso: [dtCasos, dtCasosInactivos], 
-            municipio: [dtMunicipios, dtMunicipiosInactivos], 
+            municipio: [dtMunicipios, dtMunicipiosInactivos],  
             parroquia: [dtParroquias, dtParroquiasInactivos],
+            comuna: typeof dtComunas !== 'undefined' ? [dtComunas] : [],
+            sector: typeof dtSectores !== 'undefined' ? [dtSectores] : [],
+            cuadrante: typeof dtCuadrantes !== 'undefined' ? [dtCuadrantes] : [],
             organismo: [dtOrganismos, dtOrganismosInactivos],
             motivo_cierre: [
-                // Incluye las cuatro tablas (ficha + organismo) para recargar ambas al hacer toggle
                 dtMotivos, dtMotivosInactivos,
-                ...(dtMotivosOrg ? [dtMotivosOrg] : []),
-                ...(dtMotivosOrgInactivos ? [dtMotivosOrgInactivos] : []),
+                ...(typeof dtMotivosOrg !== 'undefined' && dtMotivosOrg ? [dtMotivosOrg] : []),
+                ...(typeof dtMotivosOrgInactivos !== 'undefined' && dtMotivosOrgInactivos ? [dtMotivosOrgInactivos] : []),
             ],
         };
         confirmarEstado(id, catalogo, tablas[catalogo], activando);

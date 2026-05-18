@@ -23,6 +23,7 @@
                     <i class="bi bi-list-ul me-1"></i>Casos
                 </button>
             </li>
+
             <li class="nav-item">
                 <button class="nav-link" id="tab-municipios-btn" data-bs-toggle="tab" data-bs-target="#tab-municipios" type="button">
                     <i class="bi bi-map-fill me-1"></i>Municipios
@@ -31,6 +32,21 @@
             <li class="nav-item">
                 <button class="nav-link" id="tab-parroquias-btn" data-bs-toggle="tab" data-bs-target="#tab-parroquias" type="button">
                     <i class="bi bi-geo-alt-fill me-1"></i>Parroquias
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="tab-comunas-btn" data-bs-toggle="tab" data-bs-target="#tab-comunas" type="button">
+                    <i class="bi bi-house-door-fill me-1"></i>Comunas
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="tab-sectores-btn" data-bs-toggle="tab" data-bs-target="#tab-sectores" type="button">
+                    <i class="bi bi-pin-map-fill me-1"></i>Sectores
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="tab-cuadrantes-btn" data-bs-toggle="tab" data-bs-target="#tab-cuadrantes" type="button">
+                    <i class="bi bi-shield-shaded me-1"></i>Cuadrantes
                 </button>
             </li>
             <li class="nav-item">
@@ -116,6 +132,8 @@
             </div>
         </div>
 
+
+
         <!-- TAB: MUNICIPIOS -->
         <div class="tab-pane fade" id="tab-municipios" role="tabpanel">
             <div class="card shadow-sm border-0 rounded-bottom">
@@ -165,6 +183,78 @@
                         <table id="tablaParroquias" class="table table-bordered table-striped table-hover align-middle w-100">
                             <thead class="table-dark">
                                 <tr><th width="60">#</th><th>Parroquia</th><th>Municipio</th><th>Descripción</th><th width="100">Estado</th><th width="110" class="text-center text-white">Acciones</th></tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: COMUNAS -->
+        <div class="tab-pane fade" id="tab-comunas" role="tabpanel">
+            <div class="card shadow-sm border-0 rounded-bottom">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                    <h5 class="card-title mb-0 fw-bold text-success"><i class="bi bi-house-door-fill me-2"></i>Comunas</h5>
+                    <div class="card-tools ms-auto">
+                        <button class="btn btn-ven-primary btn-sm rounded-pill px-3" id="btnNuevaComuna">
+                            <i class="bi bi-plus-circle-fill me-1"></i>Nueva Comuna
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table id="tablaComunas" class="table table-bordered table-striped table-hover align-middle w-100">
+                            <thead class="table-dark">
+                                <tr><th width="60">#</th><th class="text-nowrap">Comuna</th><th>Parroquia Base</th><th>Descripción</th><th width="100">Estado</th><th width="110" class="text-center text-white">Acciones</th></tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: SECTORES -->
+        <div class="tab-pane fade" id="tab-sectores" role="tabpanel">
+            <div class="card shadow-sm border-0 rounded-bottom">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                    <h5 class="card-title mb-0 fw-bold text-success"><i class="bi bi-pin-map-fill me-2"></i>Sectores</h5>
+                    <div class="card-tools ms-auto">
+                        <button class="btn btn-ven-primary btn-sm rounded-pill px-3" id="btnNuevoSector">
+                            <i class="bi bi-plus-circle-fill me-1"></i>Nuevo Sector
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table id="tablaSectores" class="table table-bordered table-striped table-hover align-middle w-100">
+                            <thead class="table-dark">
+                                <tr><th width="60">#</th><th class="text-nowrap">Sector</th><th>Comuna Base</th><th>Descripción</th><th width="100">Estado</th><th width="110" class="text-center text-white">Acciones</th></tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: CUADRANTES DE PAZ -->
+        <div class="tab-pane fade" id="tab-cuadrantes" role="tabpanel">
+            <div class="card shadow-sm border-0 rounded-bottom">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                    <h5 class="card-title mb-0 fw-bold text-success"><i class="bi bi-shield-shaded me-2"></i>Cuadrantes de Paz</h5>
+                    <div class="card-tools ms-auto">
+                        <button class="btn btn-ven-primary btn-sm rounded-pill px-3" id="btnNuevoCuadrante">
+                            <i class="bi bi-plus-circle-fill me-1"></i>Nuevo Cuadrante
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table id="tablaCuadrantes" class="table table-bordered table-striped table-hover align-middle w-100">
+                            <thead class="table-dark">
+                                <tr><th width="60">#</th><th class="text-nowrap">Cuadrante</th><th>Sector Base</th><th>Organismo</th><th width="100">Estado</th><th width="110" class="text-center text-white">Acciones</th></tr>
                             </thead>
                             <tbody></tbody>
                         </table>
@@ -471,3 +561,121 @@
     </div>
 </div>
 
+
+
+<!-- Modal: Comuna -->
+<div class="modal fade" id="modalComuna" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header modal-header-ven py-3">
+                <h5 class="modal-title text-white" id="modalComunaTitulo">Nueva Comuna</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="formComuna" novalidate>
+                    <input type="hidden" name="catalogo" value="comuna">
+                    <input type="hidden" id="comuna_accion" name="accion" value="crear">
+                    <input type="hidden" id="comuna_id"     name="id"     value="0">
+                    <div class="mb-3">
+                        <label for="comuna_parroquia_id" class="form-label fw-bold small text-secondary text-uppercase">Parroquia Base <span class="text-danger">*</span></label>
+                        <select class="form-select shadow-sm border-2" id="comuna_parroquia_id" name="parroquia_id">
+                            <option value="">-- Seleccione --</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="comuna_nombre" class="form-label fw-bold small text-secondary text-uppercase">Nombre de la Comuna <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control shadow-sm border-2" id="comuna_nombre" name="nombre_comuna">
+                    </div>
+                    <div class="mb-3">
+                        <label for="comuna_descripcion" class="form-label fw-bold small text-secondary text-uppercase">Descripción</label>
+                        <textarea class="form-control shadow-sm border-2" id="comuna_descripcion" name="descripcion" rows="2"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-light border-0 py-3">
+                <button type="button" class="btn btn-ven-cancel px-4" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-ven-primary px-4 shadow-sm" id="btnGuardarComuna">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Sector -->
+<div class="modal fade" id="modalSector" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header modal-header-ven py-3">
+                <h5 class="modal-title text-white" id="modalSectorTitulo">Nuevo Sector</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="formSector" novalidate>
+                    <input type="hidden" name="catalogo" value="sector">
+                    <input type="hidden" id="sector_accion" name="accion" value="crear">
+                    <input type="hidden" id="sector_id"     name="id"     value="0">
+                    <div class="mb-3">
+                        <label for="sector_comuna_id" class="form-label fw-bold small text-secondary text-uppercase">Comuna Base <span class="text-danger">*</span></label>
+                        <select class="form-select shadow-sm border-2" id="sector_comuna_id" name="comuna_id">
+                            <option value="">-- Seleccione --</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="sector_nombre" class="form-label fw-bold small text-secondary text-uppercase">Nombre del Sector <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control shadow-sm border-2" id="sector_nombre" name="nombre_sector">
+                    </div>
+                    <div class="mb-3">
+                        <label for="sector_descripcion" class="form-label fw-bold small text-secondary text-uppercase">Descripción</label>
+                        <textarea class="form-control shadow-sm border-2" id="sector_descripcion" name="descripcion" rows="2"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-light border-0 py-3">
+                <button type="button" class="btn btn-ven-cancel px-4" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-ven-primary px-4 shadow-sm" id="btnGuardarSector">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Cuadrante de Paz -->
+<div class="modal fade" id="modalCuadrante" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header modal-header-ven py-3">
+                <h5 class="modal-title text-white" id="modalCuadranteTitulo">Nuevo Cuadrante</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="formCuadrante" novalidate>
+                    <input type="hidden" name="catalogo" value="cuadrante">
+                    <input type="hidden" id="cuadrante_accion" name="accion" value="crear">
+                    <input type="hidden" id="cuadrante_id"     name="id"     value="0">
+                    <div class="mb-3">
+                        <label for="cuadrante_sector_id" class="form-label fw-bold small text-secondary text-uppercase">Sector Base <span class="text-danger">*</span></label>
+                        <select class="form-select shadow-sm border-2" id="cuadrante_sector_id" name="sector_id">
+                            <option value="">-- Seleccione --</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="cuadrante_organismo_id" class="form-label fw-bold small text-secondary text-uppercase">Organismo Responsable</label>
+                        <select class="form-select shadow-sm border-2" id="cuadrante_organismo_id" name="organismo_id">
+                            <option value="">-- Ninguno (Opcional) --</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="cuadrante_nombre" class="form-label fw-bold small text-secondary text-uppercase">Nombre del Cuadrante <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control shadow-sm border-2" id="cuadrante_nombre" name="nombre_cuadrante">
+                    </div>
+                    <div class="mb-3">
+                        <label for="cuadrante_descripcion" class="form-label fw-bold small text-secondary text-uppercase">Descripción</label>
+                        <textarea class="form-control shadow-sm border-2" id="cuadrante_descripcion" name="descripcion" rows="2"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-light border-0 py-3">
+                <button type="button" class="btn btn-ven-cancel px-4" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-ven-primary px-4 shadow-sm" id="btnGuardarCuadrante">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>

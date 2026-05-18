@@ -38,6 +38,13 @@ class UsuarioModelo {
         }
     }
 
+    /**
+     * Retorna el último ID insertado.
+     */
+    public function obtenerUltimoId(): int {
+        return (int)$this->conexion->lastInsertId();
+    }
+
     // ///////////////////////////////////////////////////////////////////
     // 3. MÉTODOS DE CONSULTA (LECTURA)
     // ///////////////////////////////////////////////////////////////////

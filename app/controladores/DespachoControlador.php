@@ -246,6 +246,7 @@ class DespachoControlador {
             $datos = [
                 'ficha_id'         => (int)($_POST['ficha_id']       ?? 0),
                 'organismo_id'     => (int)($_POST['organismo_id']   ?? 0),
+                'cuadrante_id'     => (int)($_POST['cuadrante_id']   ?? 0),
                 'unidad_designada' => trim($_POST['unidad_designada'] ?? ''),
                 'mando_acargo'     => trim($_POST['mando_acargo']    ?? ''),
                 'persona_atiende'  => trim($_POST['persona_atiende']  ?? ''),
@@ -260,6 +261,11 @@ class DespachoControlador {
             if (!$valOrganismo['valido']) { echo json_encode(['success' => false, 'message' => $valOrganismo['mensaje']]); return; }
             if (!$valUnidad['valido'])    { echo json_encode(['success' => false, 'message' => $valUnidad['mensaje']]);   return; }
             if (!$valMando['valido'])     { echo json_encode(['success' => false, 'message' => $valMando['mensaje']]);    return; }
+
+            if ($datos['cuadrante_id'] > 0) {
+                $valCuadrante = Validador::validarId($datos['cuadrante_id'], 'Cuadrante de Paz');
+                if (!$valCuadrante['valido']) { echo json_encode(['success' => false, 'message' => $valCuadrante['mensaje']]); return; }
+            }
 
             $resultado = $this->servicio->asignarOrganismo($datos, (int)$_SESSION['user_id']);
             echo json_encode($resultado);
@@ -384,6 +390,8 @@ class DespachoControlador {
             $direccion   = trim($_POST['direccion_exacta']   ?? '');
             $telefono1   = trim($_POST['telefono1']          ?? '');
             $telefono2   = trim($_POST['telefono2']          ?? '');
+            $comunaId    = (int)($_POST['comuna_id']        ?? 0);
+            $sectorId    = (int)($_POST['sector_id']        ?? 0);
 
             $valFicha     = Validador::validarId($fichaId, 'Ficha de Emergencia');
             $valDescripcion = Validador::validarTextoLibre($descripcion, 'Descripción del Caso', 5, 2000);
@@ -413,12 +421,19 @@ class DespachoControlador {
                 'direccion_exacta' => $direccion,
                 'telefono1'        => $telefono1,
                 'telefono2'        => $telefono2 ?: null,
+                'comuna_id'        => $comunaId ?: null,
+                'sector_id'        => $sectorId ?: null,
             ], $usuarioId);
 
             if ($exito) {
                 $this->modeloEvento->registrarEventoFicha(
                     $fichaId, $usuarioId, 'MODIFICACION', null, null, null,
-                    ['descripcion' => $descripcion, 'direccion' => $direccion],
+                    [
+                        'descripcion' => $descripcion, 
+                        'direccion'   => $direccion,
+                        'comuna_id'   => $comunaId ?: null,
+                        'sector_id'   => $sectorId ?: null
+                    ],
                     "Ficha #{$fichaId} editada desde Centro de Despacho por usuario ID {$usuarioId}."
                 );
                 echo json_encode(['success' => true, 'message' => "Ficha #{$fichaId} actualizada correctamente."]);

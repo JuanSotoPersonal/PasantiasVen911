@@ -15,6 +15,7 @@
 namespace App\modelos;
 
 use App\Config\Database;
+use App\Helpers\Cache;
 use PDO;
 use Exception;
 
@@ -385,6 +386,7 @@ class DespachoModelo {
                         f.estado_ficha,
                         f.fecha_creacion,
                         f.id_owner,
+                        f.sector_id,
                         s.nombre_solicitante,
                         s.telefono1,
                         s.telefono2,
@@ -434,9 +436,11 @@ class DespachoModelo {
                         d.estatus_despacho,
                         d.motivo_cancelacion,
                         o.nombre_organismo,
+                        cp.nombre_cuadrante,
                         u.nombre_completo AS nombre_despachador
                       FROM despachos_organismos d
                       INNER JOIN organismos o ON d.organismo_id  = o.id
+                      LEFT  JOIN cuadrantes_paz cp ON d.cuadrante_id = cp.id
                       LEFT  JOIN usuarios   u ON d.despachador_id = u.id
                       WHERE d.ficha_id = :ficha_id
                       ORDER BY d.hora_despacho ASC";
@@ -479,12 +483,13 @@ class DespachoModelo {
     public function crear(array $datos): int|false {
         try {
             $query = "INSERT INTO despachos_organismos
-                        (ficha_id, organismo_id, unidad_designada, mando_acargo, persona_atiende, estatus_despacho, despachador_id)
+                        (ficha_id, organismo_id, cuadrante_id, unidad_designada, mando_acargo, persona_atiende, estatus_despacho, despachador_id)
                       VALUES
-                        (:ficha_id, :organismo_id, :unidad, :mando, :persona, 'Asignado', :despachador_id)";
+                        (:ficha_id, :organismo_id, :cuadrante_id, :unidad, :mando, :persona, 'Asignado', :despachador_id)";
             $stmt = $this->conexion->prepare($query);
             $stmt->bindValue(':ficha_id',      $datos['ficha_id'],      PDO::PARAM_INT);
             $stmt->bindValue(':organismo_id',  $datos['organismo_id'],  PDO::PARAM_INT);
+            $stmt->bindValue(':cuadrante_id',  $datos['cuadrante_id'] ?? null, PDO::PARAM_INT);
             $stmt->bindValue(':unidad',        $datos['unidad_designada'],  PDO::PARAM_STR);
             $stmt->bindValue(':mando',         $datos['mando_acargo'],  PDO::PARAM_STR);
             $stmt->bindValue(':persona',       $datos['persona_atiende'] ?? null, PDO::PARAM_STR);
@@ -639,11 +644,15 @@ class DespachoModelo {
                 "UPDATE fichas_emergencia
                  SET descripcion_caso = :descripcion,
                      direccion_exacta = :direccion,
+                     comuna_id        = :comuna_id,
+                     sector_id        = :sector_id,
                      id_owner         = :id_owner
                  WHERE id = :id"
             );
             $stmt->bindValue(':descripcion', $datos['descripcion_caso'], \PDO::PARAM_STR);
             $stmt->bindValue(':direccion',   $datos['direccion_exacta'], \PDO::PARAM_STR);
+            $stmt->bindValue(':comuna_id',   $datos['comuna_id'] ?: null, \PDO::PARAM_INT);
+            $stmt->bindValue(':sector_id',   $datos['sector_id'] ?: null, \PDO::PARAM_INT);
             $stmt->bindValue(':id_owner',    $usuarioId,                 \PDO::PARAM_INT);
             $stmt->bindValue(':id',          $fichaId,                   \PDO::PARAM_INT);
             $stmt->execute();

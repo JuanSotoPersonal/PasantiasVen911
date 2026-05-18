@@ -116,6 +116,8 @@ class FichaControlador {
 
             $datos = [
                 'parroquia_id'       => (int)($_POST['parroquia_id'] ?? 0),
+                'comuna_id'          => (int)($_POST['comuna_id'] ?? 0),
+                'sector_id'          => (int)($_POST['sector_id'] ?? 0),
                 'direccion_exacta'   => trim($_POST['direccion_exacta'] ?? ''),
                 'caso_id'            => (int)($_POST['caso_id'] ?? 0),
                 'descripcion_caso'   => trim($_POST['descripcion_caso'] ?? ''),
@@ -152,6 +154,8 @@ class FichaControlador {
             $fichaId = (int)($_POST['ficha_id'] ?? 0);
             $datos = [
                 'parroquia_id'       => (int)($_POST['parroquia_id'] ?? 0),
+                'comuna_id'          => (int)($_POST['comuna_id'] ?? 0),
+                'sector_id'          => (int)($_POST['sector_id'] ?? 0),
                 'direccion_exacta'   => trim($_POST['direccion_exacta'] ?? ''),
                 'caso_id'            => (int)($_POST['caso_id'] ?? 0),
                 'descripcion_caso'   => trim($_POST['descripcion_caso'] ?? ''),
@@ -327,6 +331,54 @@ class FichaControlador {
                     'eliminar' => $this->modelo->toggleEstadoParroquia($id),
                     default    => false,
                 },
+                'comuna' => match ($accion) {
+                    'crear', 'editar' => (function() use ($id, $accion) {
+                        $parId  = (int)($_POST['parroquia_id'] ?? 0);
+                        $nombre = trim($_POST['nombre_comuna'] ?? $_POST['nombre'] ?? '');
+                        $desc   = trim($_POST['descripcion'] ?? '');
+                        $vId = Validador::validarId($parId, 'Parroquia');
+                        if (!$vId['valido']) return $vId;
+                        $vNom = Validador::validarNombreCatalogo($nombre, 'Nombre de la Comuna');
+                        if (!$vNom['valido']) return $vNom;
+                        return ($accion === 'crear') ? $this->modelo->crearComuna($parId, $nombre, $desc) : $this->modelo->actualizarComuna($id, $parId, $nombre, $desc);
+                    })(),
+                    'eliminar' => $this->modelo->toggleEstadoComuna($id),
+                    default    => false,
+                },
+                'sector' => match ($accion) {
+                    'crear', 'editar' => (function() use ($id, $accion) {
+                        $comId  = (int)($_POST['comuna_id'] ?? 0);
+                        $nombre = trim($_POST['nombre_sector'] ?? $_POST['nombre'] ?? '');
+                        $desc   = trim($_POST['descripcion'] ?? '');
+                        $vId = Validador::validarId($comId, 'Comuna');
+                        if (!$vId['valido']) return $vId;
+                        $vNom = Validador::validarNombreCatalogo($nombre, 'Nombre del Sector');
+                        if (!$vNom['valido']) return $vNom;
+                        return ($accion === 'crear') ? $this->modelo->crearSector($comId, $nombre, $desc) : $this->modelo->actualizarSector($id, $comId, $nombre, $desc);
+                    })(),
+                    'eliminar' => $this->modelo->toggleEstadoSector($id),
+                    default    => false,
+                },
+                'cuadrante' => match ($accion) {
+                    'crear', 'editar' => (function() use ($id, $accion) {
+                        $secId  = (int)($_POST['sector_id'] ?? 0);
+                        $orgId  = (int)($_POST['organismo_id'] ?? 0);
+                        $nombre = trim($_POST['nombre_cuadrante'] ?? $_POST['nombre'] ?? '');
+                        $desc   = trim($_POST['descripcion'] ?? '');
+                        
+                        $vId = Validador::validarId($secId, 'Sector');
+                        if (!$vId['valido']) return $vId;
+                        
+                        $vNom = Validador::validarNombreCatalogo($nombre, 'Nombre del Cuadrante');
+                        if (!$vNom['valido']) return $vNom;
+                        
+                        return ($accion === 'crear') 
+                            ? $this->modelo->crearCuadrantePaz($secId, $orgId > 0 ? $orgId : null, $nombre, $desc) 
+                            : $this->modelo->actualizarCuadrantePaz($id, $secId, $orgId > 0 ? $orgId : null, $nombre, $desc);
+                    })(),
+                    'eliminar' => $this->modelo->toggleEstadoCuadrantePaz($id),
+                    default    => false,
+                },
                 'organismo' => match ($accion) {
                     'crear', 'editar' => (function() use ($id, $accion) {
                         $nombre = trim($_POST['nombre_organismo'] ?? $_POST['nombre'] ?? '');
@@ -388,13 +440,18 @@ class FichaControlador {
         header('Content-Type: application/json');
         session_write_close(); // Liberar bloqueo de sesión
         try {
-            if (!tienePerm('configuracion', 'gestionar')) {
+            if (!tienePerm('configuracion', 'gestionar') && !tienePerm('fichas', 'ver') && !tienePerm('despacho', 'ver')) {
                 echo json_encode(['data' => []]);
                 return;
             }
             $catalogo    = $_GET['cat']          ?? '';
             $tipoId      = (int)($_GET['tipo_id']      ?? 0);
             $municipioId = (int)($_GET['municipio_id'] ?? 0);
+            $parroquiaId = (int)($_GET['parroquia_id'] ?? 0);
+            $comunaId    = (int)($_GET['comuna_id'] ?? 0);
+            $sectorId    = (int)($_GET['sector_id'] ?? 0);
+            $organismoId = (int)($_GET['organismo_id'] ?? 0);
+            $estadoGeog  = (int)($_GET['estado_id'] ?? 0);
             $estado      = (int)($_GET['estado'] ?? 1);
             // Contexto diferenciador para motivos de cierre: 'ficha' o 'organismo'
             $contexto    = in_array($_GET['contexto'] ?? '', ['ficha', 'organismo']) ? $_GET['contexto'] : 'ficha';
@@ -404,6 +461,9 @@ class FichaControlador {
                 'caso'            => $this->modelo->obtenerCasos($tipoId ?: null, $estado),
                 'municipio'       => $this->modelo->obtenerMunicipios($estado),
                 'parroquia'       => $this->modelo->obtenerParroquias($municipioId ?: null, $estado),
+                'comuna'          => $this->modelo->obtenerComunas($parroquiaId ?: null, $estado),
+                'sector'          => $this->modelo->obtenerSectores($comunaId ?: null, $estado),
+                'cuadrante'       => $this->modelo->obtenerCuadrantesPaz($sectorId ?: null, $estado, $organismoId ?: null),
                 'organismo'       => $this->modelo->obtenerOrganismos($estado),
                 'motivo_cierre'   => $this->modelo->obtenerMotivosCierre($estado, $contexto),
                 default           => [],

@@ -419,7 +419,9 @@ $(document).ready(function () {
                 $('#btnAgregarOrganismoDesdeDetalle')
                     .removeClass('d-none')
                     .data('ficha-id', fichaId)
-                    .attr('data-ficha-id', fichaId);
+                    .attr('data-ficha-id', fichaId)
+                    .data('sector-id', f.sector_id || 0)
+                    .attr('data-sector-id', f.sector_id || 0);
             }
 
         }, 'json');
@@ -481,7 +483,10 @@ $(document).ready(function () {
                 <div class="despacho-card p-3 rounded-3 border" style="background: ${d.estatus_despacho === 'Cancelado' ? '#fff5f5' : '#f9fafb'};">
                     <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
                         <div>
-                            <div class="fw-bold fs-6">${escapeHTML(d.nombre_organismo)}</div>
+                            <div class="fw-bold fs-6 d-flex align-items-center gap-2 flex-wrap">
+                                <span>${escapeHTML(d.nombre_organismo)}</span>
+                                ${d.nombre_cuadrante ? `<span class="badge bg-success-subtle text-success border border-success-subtle fw-semibold rounded-pill" style="font-size:0.7rem; padding: 0.15rem 0.4rem;"><i class="bi bi-geo-alt-fill me-1"></i>${escapeHTML(d.nombre_cuadrante)}</span>` : ''}
+                            </div>
                             <div class="text-muted small mt-1">
                                 <i class="bi bi-shield-fill me-1"></i><strong>Unidad:</strong> ${escapeHTML(d.unidad_designada || 'N/A')}
                                 &nbsp;·&nbsp;
@@ -975,29 +980,72 @@ $(document).ready(function () {
                 }
                 const f = res.data;
 
-                // Pre-llenar todos los campos del modal (idéntico a fichas_datatable.js)
+                // Pre-llenar todos los campos operacionales del modal
                 $('#editar_ficha_id').val(f.id);
                 $('#editarFichaIdLabel').text(`#${f.id}`);
-                $('#editar_cedula_solicitante').val(f.cedula_solicitante || '');
-                $('#editar_nombre_solicitante').val(f.nombre_solicitante);
                 $('#editar_telefono1').val(f.telefono1);
                 $('#editar_telefono2').val(f.telefono2 || '');
-                $('#editar_municipio_id').val(f.municipio_id).trigger('change.select2');
-                $('#editar_tipo_emergencia_id').val(f.tipo_emergencia_id).trigger('change.select2');
                 $('#editar_descripcion_caso').val(f.descripcion_caso);
                 $('#editar_direccion_exacta').val(f.direccion_exacta);
+                
+                // Set hidden parroquia_id for cascade
+                $('#editar_despacho_parroquia_id').val(f.parroquia_id);
 
-                // Re-hidratar las cascadas con los valores actuales de la ficha
-                despachoCargarParroquias(f.municipio_id, $('#editar_parroquia_id'), f.parroquia_id);
-                despachoCargarCasos(f.tipo_emergencia_id, $('#editar_caso_id'), f.caso_id);
+                // Inicializar select2 en los nuevos selects
+                $('#editar_despacho_comuna_id, #editar_despacho_sector_id').select2({
+                    theme: 'bootstrap-5',
+                    dropdownParent: $('#modalEditarFicha')
+                });
+
+                // Cargar cascadas de Comuna y Sector
+                if (f.parroquia_id) {
+                    despachoCargarComunas(f.parroquia_id, $('#editar_despacho_comuna_id'), f.comuna_id);
+                }
+                if (f.comuna_id) {
+                    despachoCargarSectores(f.comuna_id, $('#editar_despacho_sector_id'), f.sector_id);
+                }
 
                 bootstrap.Modal.getOrCreateInstance(document.getElementById('modalEditarFicha')).show();
             }, 'json');
         }, { once: true });
     });
 
-    // 7.4 Guardar edición: usa el mismo endpoint centralizado del módulo de fichas
-    $('#btnGuardarEdicion').on('click', function () {
+    // 7.4 Cascada: Comunas y Sectores en modal de Despacho
+    $('#editar_despacho_comuna_id').on('change', function () {
+        const comunaId = $(this).val();
+        const $sel = $('#editar_despacho_sector_id');
+        if (!comunaId) { $sel.prop('disabled', true).html('<option value="">-- Seleccionar Sector --</option>').trigger('change'); return; }
+        despachoCargarSectores(comunaId, $sel, null);
+    });
+
+    function despachoCargarComunas(parroquiaId, $sel, valorActual) {
+        $.get(`index.php?url=ficha/obtenerCatalogo&cat=comuna&estado=1&parroquia_id=${parroquiaId}`, function (res) {
+            let opts = '<option value="">-- Seleccione comuna --</option>';
+            if (res.data) {
+                res.data.forEach(c => {
+                    const sel = valorActual == c.id ? 'selected' : '';
+                    opts += `<option value="${c.id}" ${sel}>${escapeHTML(c.nombre_comuna)}</option>`;
+                });
+            }
+            $sel.prop('disabled', false).html(opts).trigger('change');
+        }, 'json');
+    }
+
+    function despachoCargarSectores(comunaId, $sel, valorActual) {
+        $.get(`index.php?url=ficha/obtenerCatalogo&cat=sector&estado=1&comuna_id=${comunaId}`, function (res) {
+            let opts = '<option value="">-- Seleccione sector --</option>';
+            if (res.data) {
+                res.data.forEach(s => {
+                    const sel = valorActual == s.id ? 'selected' : '';
+                    opts += `<option value="${s.id}" ${sel}>${escapeHTML(s.nombre_sector)}</option>`;
+                });
+            }
+            $sel.prop('disabled', false).html(opts).trigger('change');
+        }, 'json');
+    }
+
+    // 7.5 Guardar edición: usa el endpoint operacional de despacho
+    $('#btnGuardarEdicionFicha').on('click', function () {
         const btn = $(this);
         const originalText = btn.html();
         btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...');
@@ -1006,7 +1054,7 @@ $(document).ready(function () {
         const datos   = new FormData(document.getElementById('formEditarFicha'));
 
         $.ajax({
-            url:         'index.php?url=ficha/actualizar',
+            url:         'index.php?url=despacho/editarFicha',
             method:      'POST',
             data:         datos,
             processData: false,
@@ -1043,9 +1091,11 @@ $(document).ready(function () {
 
     $(document).on('click', '#btnAgregarOrganismoDesdeDetalle', function () {
         const fichaId = $(this).data('ficha-id');
+        const sectorId = $(this).data('sector-id') || 0;
 
-        // Pre-inyectar el ficha_id y limpiar el formulario
+        // Pre-inyectar el ficha_id, sector_id en el formulario y limpiar
         $('#asignar_ficha_id').val(fichaId);
+        $('#formAsignarDespacho').data('sector-id', sectorId);
         $('#asignarFichaContextLabel').text(`— Ficha #${fichaId}`);
         $('#formAsignarDespacho')[0].reset();
         $('#asignar_ficha_id').val(fichaId); // Re-inyectar tras reset
@@ -1054,6 +1104,9 @@ $(document).ready(function () {
         inicializarSelect2Modal('#modalAsignarDespacho');
         cargarOrganismos('#asignar_organismo_id');
 
+        // Limpiar y deshabilitar selector de cuadrante al abrir
+        $('#asignar_cuadrante_id').prop('disabled', true).html('<option value="">-- Seleccione cuadrante --</option>').trigger('change.select2');
+
         // Cerrar el modal de gestión antes de abrir el de asignación
         bootstrap.Modal.getOrCreateInstance(document.getElementById('modalDetalleDespacho')).hide();
 
@@ -1061,6 +1114,61 @@ $(document).ready(function () {
             bootstrap.Modal.getOrCreateInstance(document.getElementById('modalAsignarDespacho')).show();
             document.getElementById('modalDetalleDespacho').removeEventListener('hidden.bs.modal', openAsignar);
         }, { once: true });
+    });
+
+    // Cascada dinámica: Organismo -> Cuadrante de Paz
+    $('#asignar_organismo_id').on('change', function () {
+        const organismoId = $(this).val();
+        const sectorId = $('#formAsignarDespacho').data('sector-id') || 0;
+        const sel = $('#asignar_cuadrante_id');
+        if (!organismoId) {
+            sel.prop('disabled', true).html('<option value="">-- Seleccione cuadrante --</option>').trigger('change.select2');
+            return;
+        }
+
+        // Intentar primero buscar cuadrantes asignados a este organismo en el sector de la ficha
+        let url = `index.php?url=ficha/obtenerCatalogo&cat=cuadrante&estado=1&organismo_id=${organismoId}`;
+        if (sectorId > 0) {
+            url += `&sector_id=${sectorId}`;
+        }
+
+        $.get(url, function (res) {
+            let opts = '<option value="">-- Seleccione cuadrante --</option>';
+            let count = 0;
+            let lastId = null;
+            if (res.data && res.data.length > 0) {
+                res.data.forEach(c => {
+                    opts += `<option value="${c.id}">${escapeHTML(c.nombre_cuadrante)} (${escapeHTML(c.nombre_sector)})</option>`;
+                    lastId = c.id;
+                    count++;
+                });
+            }
+
+            // Si no se encontraron cuadrantes en el sector específico de la ficha, cargamos todos los del organismo
+            if (count === 0 && sectorId > 0) {
+                $.get(`index.php?url=ficha/obtenerCatalogo&cat=cuadrante&estado=1&organismo_id=${organismoId}`, function (res2) {
+                    let opts2 = '<option value="">-- Seleccione cuadrante --</option>';
+                    let count2 = 0;
+                    let lastId2 = null;
+                    if (res2.data) {
+                        res2.data.forEach(c => {
+                            opts2 += `<option value="${c.id}">${escapeHTML(c.nombre_cuadrante)} (${escapeHTML(c.nombre_sector)})</option>`;
+                            lastId2 = c.id;
+                            count2++;
+                        });
+                    }
+                    sel.prop('disabled', count2 === 0).html(opts2).trigger('change.select2');
+                    if (count2 === 1) {
+                        sel.val(lastId2).trigger('change.select2');
+                    }
+                }, 'json');
+            } else {
+                sel.prop('disabled', count === 0).html(opts).trigger('change.select2');
+                if (count === 1) {
+                    sel.val(lastId).trigger('change.select2');
+                }
+            }
+        }, 'json');
     });
 
     // ///////////////////////////////////////////////////////////////////

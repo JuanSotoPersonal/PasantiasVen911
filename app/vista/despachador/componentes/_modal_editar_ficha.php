@@ -58,10 +58,37 @@
                         </div>
                     </div>
 
-                    <!-- Sección 2: Datos operacionales de la emergencia -->
+                    <!-- Sección 2: Ubicación Geográfica (Solo Despacho) -->
                     <div class="section-title-container mb-4">
                         <h6 class="fw-bold text-success text-uppercase small border-bottom pb-2">
-                            <i class="bi bi-exclamation-triangle-fill me-2"></i>2. Datos de la Emergencia
+                            <i class="bi bi-geo-alt-fill me-2"></i>2. Ubicación Geográfica
+                        </h6>
+                    </div>
+                    
+                    <div class="row g-3 mb-4">
+                        <!-- Parroquia Id Oculto para Cascada -->
+                        <input type="hidden" id="editar_despacho_parroquia_id" name="parroquia_id">
+                        
+                        <div class="col-md-6">
+                            <label for="editar_despacho_comuna_id" class="form-label fw-semibold small text-secondary">Comuna (Opcional)</label>
+                            <select class="form-select shadow-sm border-2" id="editar_despacho_comuna_id" name="comuna_id" disabled>
+                                <option value="">-- Seleccionar Comuna --</option>
+                            </select>
+                            <div class="form-text mt-1" style="font-size: 0.75rem;">Para refinar la ubicación.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="editar_despacho_sector_id" class="form-label fw-semibold small text-secondary">Sector (Opcional)</label>
+                            <select class="form-select shadow-sm border-2" id="editar_despacho_sector_id" name="sector_id" disabled>
+                                <option value="">-- Seleccionar Sector --</option>
+                            </select>
+                            <div class="form-text mt-1" style="font-size: 0.75rem;">Habilitado al seleccionar comuna.</div>
+                        </div>
+                    </div>
+
+                    <!-- Sección 3: Datos operacionales de la emergencia -->
+                    <div class="section-title-container mb-4">
+                        <h6 class="fw-bold text-success text-uppercase small border-bottom pb-2">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>3. Datos de la Emergencia
                         </h6>
                     </div>
 
