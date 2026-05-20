@@ -54,7 +54,7 @@ $pageName = $pageName ?? 'home';
     <script src="public/libs/select2/es.js"></script>
 
     <!-- Lógica de Notificaciones en Tiempo Real -->
-    <script src="public/js/comun/notificaciones.js"></script>
+    <script src="public/js/comun/notificaciones.js?v=<?=filemtime('public/js/comun/notificaciones.js')?>"></script>
 
     <!-- 4. CONFIGURACIÓN DE COMPORTAMIENTO DE INTERFAZ -->
     <script>
