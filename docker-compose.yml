@@ -3,6 +3,7 @@ version: '3.8'
 services:
   # Servidor Web y Aplicación
   ven911_app:
+    image: ven911_custom_image:latest
     build: .
     container_name: ven911_web
     restart: always
@@ -46,6 +47,7 @@ services:
 
   # Servidor de WebSockets (Independiente)
   ven911_ws:
+    image: ven911_custom_image:latest
     build: .
     container_name: ven911_sockets
     restart: always
@@ -79,6 +81,7 @@ services:
 
   # Worker Consumer: Lee la cola de RabbitMQ y entrega al bus WS
   ven911_consumer:
+    image: ven911_custom_image:latest
     build: .
     container_name: ven911_consumer
     restart: always
