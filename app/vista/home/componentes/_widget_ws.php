@@ -25,8 +25,8 @@ if ((int)($_SESSION['user_rol_id'] ?? 0) !== 1) return;
         </div>
         <!-- Info técnica -->
         <div class="small text-muted border-top pt-3">
-            <div class="mb-1"><i class="bi bi-hdd-network me-1"></i>WebSocket: <code>ws://localhost:8080</code></div>
-            <div class="mb-1"><i class="bi bi-diagram-3 me-1"></i>RabbitMQ: <code>amqp://localhost:5672</code></div>
+            <div class="mb-1"><i class="bi bi-hdd-network me-1"></i>WebSocket: <code>ws://<?=$_SERVER['HTTP_HOST'] ?? 'localhost'?>:8080</code></div>
+            <div class="mb-1"><i class="bi bi-diagram-3 me-1"></i>RabbitMQ: <code>amqp://<?=$_SERVER['HTTP_HOST'] ?? 'localhost'?>:5672</code></div>
             <div><i class="bi bi-cpu me-1"></i>Worker PHP: <code>consumidor_notif.php</code></div>
         </div>
         <!-- Instrucción de arranque -->

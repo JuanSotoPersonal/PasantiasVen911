@@ -35,8 +35,8 @@
     function conectarWebSocket() {
         if (websocket) websocket.close();
 
-        // Conexión al demonio Ratchet en el puerto 8080
-        websocket = new WebSocket('ws://localhost:8080');
+        // Conexión al demonio Ratchet en el puerto 8080 (Dinámico usando el hostname actual)
+        websocket = new WebSocket(`ws://${window.location.hostname}:8080`);
 
         websocket.onopen = function() {
             console.log('[Notificaciones] Conectado al servidor WebSocket (Ratchet).');
