@@ -1,9 +1,9 @@
 /**
- * notificaciones.js - Sistema de Notificaciones en Tiempo Real (SSE)
+ * notificaciones.js - Sistema de Notificaciones en Tiempo Real (SSE / WebSockets)
  * 
- * Implementa la comunicación unidireccional con el servidor mediante Server-Sent Events,
+ * Implementa la comunicación con el servidor mediante WebSockets,
  * permitiendo la actualización dinámica de la bandeja de entrada sin recargar la página.
- * Soporta gestión de estados (leído/no leído) y formateo de tiempo relativo.
+ * Soporta gestión de estados (leído/no leído), alertas en tiempo real y formateo de tiempo.
  */
 
 (function () {
@@ -18,6 +18,7 @@
         alerta: { clase: 'tipo-alerta', icono: 'bi-exclamation-triangle-fill' },
         info: { clase: 'tipo-info', icono: 'bi-info-circle-fill' },
         cambio_estado: { clase: 'tipo-cambio', icono: 'bi-arrow-repeat' },
+        critico: { clase: 'tipo-critico', icono: 'bi-x-octagon-fill' },
         default: { clase: 'tipo-info', icono: 'bi-bell-fill' },
     };
 
@@ -56,15 +57,29 @@
                     return;
                 }
 
-                // Mostrar alerta visual instantánea usando SweetAlert2
+                // Mostrar alerta visual flotante (Toast) usando SweetAlert2
                 if (typeof Swal !== 'undefined') {
-                    Swal.fire({
-                        title: notif.titulo || 'Notificación',
-                        text: notif.mensaje || 'Nueva actividad registrada en el sistema.',
-                        icon: (notif.tipo === 'alerta' ? 'warning' : 'info'),
-                        confirmButtonText: 'Entendido',
+                    const Toast = Swal.mixin({
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
                         timer: 5000,
-                        timerProgressBar: true
+                        timerProgressBar: true,
+                        didOpen: (toast) => {
+                            toast.addEventListener('mouseenter', Swal.stopTimer);
+                            toast.addEventListener('mouseleave', Swal.resumeTimer);
+                        }
+                    });
+                    
+                    let toastIcon = 'info';
+                    if (notif.tipo === 'alerta') toastIcon = 'warning';
+                    else if (notif.tipo === 'critico') toastIcon = 'error';
+                    else if (notif.tipo === 'cambio_estado') toastIcon = 'success';
+
+                    Toast.fire({
+                        icon: toastIcon,
+                        title: window.escapeHTML(notif.titulo || 'Notificación'),
+                        text: window.escapeHTML(notif.mensaje || 'Nueva actividad registrada.')
                     });
                 }
                 
@@ -99,22 +114,25 @@
         const tiempo = formatearTiempo(notif.fecha_creacion);
 
         li.innerHTML = `
-            <div class="notif-content">
-                <div class="notif-header">
-                    <span class="notif-titulo fw-bold">${window.escapeHTML(notif.titulo || 'Notificación')}</span>
-                    <span class="notif-tiempo small text-muted">${tiempo}</span>
+            <div class="notif-icono ${config.clase}">
+                <i class="bi ${config.icono}"></i>
+            </div>
+            <div class="notif-content flex-grow-1">
+                <div class="notif-header d-flex justify-content-between align-items-baseline gap-2">
+                    <span class="notif-titulo fw-bold text-dark text-truncate" style="max-width: 190px;" title="${window.escapeHTML(notif.titulo || 'Notificación')}">${window.escapeHTML(notif.titulo || 'Notificación')}</span>
+                    <span class="notif-tiempo small text-muted text-nowrap">${tiempo}</span>
                 </div>
-                <p class="notif-mensaje mb-0">${window.escapeHTML(notif.mensaje || 'Nueva actividad registrada.')}</p>
+                <p class="notif-mensaje mb-0 text-muted small text-wrap">${window.escapeHTML(notif.mensaje || 'Nueva actividad registrada.')}</p>
             </div>
         `;
         li.addEventListener('click', () => {
             marcarLeida(notif.id, li);
             if (notif.ficha_id) {
-                window.location.href = `index.php?url=ficha&id=${notif.ficha_id}`;
+                window.location.href = `index.php?url=ficha&accion=ver&id=${notif.ficha_id}`;
             }
         });
         
-        // Insertar al principio (después de notif-header si hubiera, o primero)
+        // Insertar al principio (después de vacio o primero)
         if ($lista.firstChild) {
             $lista.insertBefore(li, $lista.firstChild);
         } else {
@@ -143,7 +161,7 @@
 
         // Manejo de estado vacío (Empty State)
         if (total === 0) {
-            $vacio.style.display = 'block';
+            $vacio.style.display = 'flex';
             return;
         }
 
@@ -159,19 +177,22 @@
             const tiempo = formatearTiempo(notif.fecha_creacion);
 
             li.innerHTML = `
-            <div class="notif-content">
-                <div class="notif-header">
-                    <span class="notif-titulo fw-bold">${window.escapeHTML(notif.titulo || 'Notificación')}</span>
-                    <span class="notif-tiempo small text-muted">${tiempo}</span>
+                <div class="notif-icono ${config.clase}">
+                    <i class="bi ${config.icono}"></i>
                 </div>
-                <p class="notif-mensaje mb-0">${window.escapeHTML(notif.mensaje || 'Nueva actividad registrada.')}</p>
-            </div>
-        `;
+                <div class="notif-content flex-grow-1">
+                    <div class="notif-header d-flex justify-content-between align-items-baseline gap-2">
+                        <span class="notif-titulo fw-bold text-dark text-truncate" style="max-width: 190px;" title="${window.escapeHTML(notif.titulo || 'Notificación')}">${window.escapeHTML(notif.titulo || 'Notificación')}</span>
+                        <span class="notif-tiempo small text-muted text-nowrap">${tiempo}</span>
+                    </div>
+                    <p class="notif-mensaje mb-0 text-muted small text-wrap">${window.escapeHTML(notif.mensaje || 'Nueva actividad registrada.')}</p>
+                </div>
+            `;
             // Vinculación de evento para marcado individual y navegación
             li.addEventListener('click', () => {
                 marcarLeida(notif.id, li);
                 if (notif.ficha_id) {
-                    window.location.href = `index.php?url=ficha&id=${notif.ficha_id}`;
+                    window.location.href = `index.php?url=ficha&accion=ver&id=${notif.ficha_id}`;
                 }
             });
             $lista.appendChild(li);
@@ -231,7 +252,10 @@
 
     function formatearTiempo(fechaStr) {
         if (!fechaStr) return 'Reciente';
-        const fecha = new Date(fechaStr);
+        
+        // Reemplazar espacios por 'T' para que sea compatible con navegadores de iOS/Safari
+        const fechaStrISO = fechaStr.replace(' ', 'T');
+        const fecha = new Date(fechaStrISO);
         if (isNaN(fecha.getTime())) return 'Reciente';
 
         const diff = Math.floor((Date.now() - fecha.getTime()) / 1000);
@@ -260,6 +284,23 @@
             });
     }
 
-    inicializarBandeja();
+    // Cargar pendientes si el DOM ya está listo
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', inicializarBandeja);
+    } else {
+        inicializarBandeja();
+    }
+
+    // Exponer la función globalmente para actualizar el badge de notificaciones desde otros scripts si es necesario
+    window.cargarNotificacionesPendientes = function() {
+        fetch('index.php?url=notificacion/obtenerPendientes')
+            .then(res => res.json())
+            .then(res => {
+                if (res.success && Array.isArray(res.data)) {
+                    renderizarNotificaciones(res.data);
+                }
+            })
+            .catch(() => {});
+    };
 
 })();

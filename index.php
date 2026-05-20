@@ -132,7 +132,7 @@ if ($autenticado) {
         'notificacion' => ['fichas', 'ver'],
         'ficha'     => ['fichas',    'ver'],
         'despacho'  => ['despachos', 'ver'],
-        'jefatura'  => ['jefatura',  'ver'],
+        'jefatura'  => ['reportes',  'ver'],
         'reporte'   => ['reportes',  'ver'],
     ];
 

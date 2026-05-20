@@ -126,6 +126,16 @@ $seccion   = explode('/', $urlActual)[0] ?? '';
                         </li>
                     <?php endif; ?>
 
+                    <!-- Módulo: Buzón de Notificaciones -->
+                    <?php if (tienePerm('fichas', 'ver')): ?>
+                        <li class="nav-item">
+                            <a href="index.php?url=notificacion" class="nav-link <?= $seccion === 'notificacion' ? 'active' : '' ?>">
+                                <i class="nav-icon bi bi-bell-fill"></i>
+                                <p>Notificaciones</p>
+                            </a>
+                        </li>
+                    <?php endif; ?>
+
                     <!-- Módulo: Gestión de Personal -->
                     <?php if (tienePerm('usuarios', 'ver')): ?>
                         <?php $tabUsr = $_GET['t'] ?? 'todos'; ?>

@@ -26,6 +26,14 @@
                 </a>
             </li>
 
+            <?php if (tienePerm('reportes', 'ver')): ?>
+                <li class="nav-item d-none d-md-block">
+                    <a href="index.php?url=reporte" class="nav-link">
+                        <i class="bi bi-file-earmark-bar-graph-fill me-1 text-success"></i>Reportes
+                    </a>
+                </li>
+            <?php endif; ?>
+            
             <?php if (tienePerm('fichas', 'ver')): ?>
                 <li class="nav-item d-none d-md-block">
                     <a href="index.php?url=ficha" class="nav-link">
@@ -38,6 +46,14 @@
                 <li class="nav-item d-none d-md-block">
                     <a href="index.php?url=despacho" class="nav-link">
                         <i class="bi bi-broadcast me-1 text-success"></i>Despacho
+                    </a>
+                </li>
+            <?php endif; ?>
+
+            <?php if (tienePerm('fichas', 'ver')): ?>
+                <li class="nav-item d-none d-md-block">
+                    <a href="index.php?url=notificacion" class="nav-link">
+                        <i class="bi bi-bell-fill me-1 text-success"></i>Notificaciones
                     </a>
                 </li>
             <?php endif; ?>

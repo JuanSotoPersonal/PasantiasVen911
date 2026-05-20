@@ -442,7 +442,7 @@ class FichaControlador {
         header('Content-Type: application/json');
         session_write_close(); // Liberar bloqueo de sesión
         try {
-            if (!tienePerm('configuracion', 'gestionar') && !tienePerm('fichas', 'ver') && !tienePerm('despacho', 'ver')) {
+            if (!tienePerm('configuracion', 'gestionar') && !tienePerm('fichas', 'ver') && !tienePerm('despachos', 'ver')) {
                 echo json_encode(['data' => []]);
                 return;
             }

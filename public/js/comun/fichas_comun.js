@@ -79,6 +79,8 @@ $(document).on('click', '.btn-ver-detalle', function () {
                 <div class="ficha-detalle-item"><label>Teléfono 2</label><span>${f.telefono2 ? escapeHTML(f.telefono2) : '<em class="text-muted">N/A</em>'}</span></div>
                 <div class="ficha-detalle-item"><label>Municipio</label><span>${escapeHTML(f.nombre_municipio)}</span></div>
                 <div class="ficha-detalle-item"><label>Parroquia</label><span>${escapeHTML(f.nombre_parroquia)}</span></div>
+                <div class="ficha-detalle-item"><label>Comuna</label><span>${f.nombre_comuna ? escapeHTML(f.nombre_comuna) : '<em class="text-muted">N/A</em>'}</span></div>
+                <div class="ficha-detalle-item"><label>Sector</label><span>${f.nombre_sector ? escapeHTML(f.nombre_sector) : '<em class="text-muted">N/A</em>'}</span></div>
                 <div class="ficha-detalle-item" style="grid-column:1/-1"><label>Dirección</label><span>${escapeHTML(f.direccion_exacta)}</span></div>
                 <div class="ficha-detalle-item"><label>Tipo de Emergencia</label><span>${escapeHTML(f.tipo_emergencia)}</span></div>
                 <div class="ficha-detalle-item"><label>Caso</label><span>${escapeHTML(f.nombre_caso)}</span></div>

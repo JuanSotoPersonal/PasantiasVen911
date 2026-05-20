@@ -387,13 +387,21 @@ class DespachoModelo {
                         f.fecha_creacion,
                         f.id_owner,
                         f.sector_id,
+                        f.comuna_id,
+                        f.parroquia_id,
+                        f.direccion_exacta,
+                        f.descripcion_caso,
                         s.nombre_solicitante,
                         s.telefono1,
                         s.telefono2,
                         c.nombre_caso,
+                        c.tipo_emergencia_id,
                         t.nombre              AS tipo_emergencia,
                         p.nombre_parroquia,
+                        p.municipio_id,
                         m.nombre_municipio,
+                        com.nombre_comuna,
+                        sec.nombre_sector,
                         u_creador.nombre_completo AS nombre_creador,
                         u_owner.nombre_completo   AS nombre_owner
                       FROM fichas_emergencia f
@@ -402,6 +410,8 @@ class DespachoModelo {
                       INNER JOIN tipos_emergencia t         ON c.tipo_emergencia_id = t.id
                       INNER JOIN parroquias       p         ON f.parroquia_id      = p.id
                       INNER JOIN municipios       m         ON p.municipio_id      = m.id
+                      LEFT  JOIN comunas          com       ON f.comuna_id         = com.id
+                      LEFT  JOIN sectores         sec       ON f.sector_id         = sec.id
                       LEFT  JOIN usuarios         u_creador ON f.id_user           = u_creador.id
                       LEFT  JOIN usuarios         u_owner   ON f.id_owner          = u_owner.id
                       WHERE f.id = :id LIMIT 1";

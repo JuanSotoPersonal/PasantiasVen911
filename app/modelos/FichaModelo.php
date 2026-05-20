@@ -228,7 +228,8 @@ class FichaModelo {
      */
     public function obtenerPorId(int $id): array|false {
         try {
-            $query = "SELECT f.id, f.parroquia_id, f.direccion_exacta, f.caso_id, f.descripcion_caso,
+            $query = "SELECT f.id, f.parroquia_id, f.comuna_id, f.sector_id,
+                        f.direccion_exacta, f.caso_id, f.descripcion_caso,
                         f.solicitante_id, f.id_user, f.id_owner, f.fecha_creacion, f.hora_cierre,
                         f.motivo_cierre, f.tipo_motivo_cierre, f.estado_ficha, f.fecha_actualizacion,
                         solicitante.nombre_solicitante, solicitante.cedula AS cedula_solicitante,
@@ -236,13 +237,19 @@ class FichaModelo {
                         c.nombre_caso, c.tipo_emergencia_id,
                         t.nombre AS tipo_emergencia,
                         p.nombre_parroquia, p.municipio_id,
-                        m.nombre_municipio
+                        m.nombre_municipio,
+                        com.nombre_comuna,
+                        sec.nombre_sector,
+                        creador.nombre_completo AS nombre_creador
                       FROM fichas_emergencia f
                       INNER JOIN solicitantes    solicitante ON f.solicitante_id = solicitante.id
                       INNER JOIN casos             c          ON f.caso_id        = c.id
                       INNER JOIN tipos_emergencia  t          ON c.tipo_emergencia_id = t.id
                       INNER JOIN parroquias         p          ON f.parroquia_id   = p.id
                       INNER JOIN municipios         m          ON p.municipio_id   = m.id
+                      LEFT  JOIN comunas            com        ON f.comuna_id      = com.id
+                      LEFT  JOIN sectores           sec        ON f.sector_id      = sec.id
+                      LEFT  JOIN usuarios           creador    ON f.id_user        = creador.id
                       WHERE f.id = :id LIMIT 1";
             $stmt = $this->conexion->prepare($query);
             $stmt->bindValue(':id', $id, PDO::PARAM_INT);

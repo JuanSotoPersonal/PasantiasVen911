@@ -82,11 +82,14 @@ class NotificacionControlador {
             $orderCol = $columnas[$orderColIdx] ?? 'fecha_creacion';
             $orderDir = isset($_POST['order'][0]['dir']) && strtolower($_POST['order'][0]['dir']) === 'asc' ? 'ASC' : 'DESC';
 
+            $tipoFiltro   = isset($_POST['tipo_filtro']) ? trim($_POST['tipo_filtro']) : '';
+            $estadoFiltro = isset($_POST['estado_filtro']) ? trim($_POST['estado_filtro']) : '';
+
             // Consultas al modelo
             $totalRecords = $this->modelo->contarPorUsuario($usuario_id);
-            $totalFiltered = empty($search) ? $totalRecords : $this->modelo->contarPorUsuario($usuario_id, $search);
+            $totalFiltered = $this->modelo->contarPorUsuario($usuario_id, $search, $tipoFiltro, $estadoFiltro);
             
-            $notificaciones = $this->modelo->obtenerPaginadoPorUsuario($usuario_id, $start, $length, $search, $orderCol, $orderDir);
+            $notificaciones = $this->modelo->obtenerPaginadoPorUsuario($usuario_id, $start, $length, $search, $orderCol, $orderDir, $tipoFiltro, $estadoFiltro);
 
             echo json_encode([
                 "draw"            => $draw,

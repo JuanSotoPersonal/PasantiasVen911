@@ -59,14 +59,24 @@ class NotificacionModelo {
     /**
      * Recupera las notificaciones paginadas para DataTables.
      */
-    public function obtenerPaginadoPorUsuario(int $usuario_id, int $start, int $length, string $search, string $orderCol, string $orderDir): array {
+    public function obtenerPaginadoPorUsuario(int $usuario_id, int $start, int $length, string $search, string $orderCol, string $orderDir, string $tipoFiltro = '', string $estadoFiltro = ''): array {
         try {
             $sql = "SELECT id, ficha_id, tipo, titulo, mensaje, leido, fecha_creacion
                     FROM {$this->tabla}
                     WHERE usuario_recibe_id = :uid ";
             
             if (!empty($search)) {
-                $sql .= " AND (titulo LIKE :search OR mensaje LIKE :search OR tipo LIKE :search) ";
+                $sql .= " AND (titulo LIKE :b1 OR mensaje LIKE :b2 OR tipo LIKE :b3) ";
+            }
+
+            if (!empty($tipoFiltro)) {
+                $sql .= " AND tipo = :tipo_filtro ";
+            }
+
+            if ($estadoFiltro === 'no-leidas') {
+                $sql .= " AND leido = 0 ";
+            } elseif ($estadoFiltro === 'leidas') {
+                $sql .= " AND leido = 1 ";
             }
 
             $sql .= " ORDER BY {$orderCol} {$orderDir} LIMIT :start, :length";
@@ -75,7 +85,12 @@ class NotificacionModelo {
             $stmt->bindParam(':uid', $usuario_id, PDO::PARAM_INT);
             if (!empty($search)) {
                 $searchTerm = "%{$search}%";
-                $stmt->bindParam(':search', $searchTerm, PDO::PARAM_STR);
+                $stmt->bindValue(':b1', $searchTerm, PDO::PARAM_STR);
+                $stmt->bindValue(':b2', $searchTerm, PDO::PARAM_STR);
+                $stmt->bindValue(':b3', $searchTerm, PDO::PARAM_STR);
+            }
+            if (!empty($tipoFiltro)) {
+                $stmt->bindParam(':tipo_filtro', $tipoFiltro, PDO::PARAM_STR);
             }
             $stmt->bindParam(':start', $start, PDO::PARAM_INT);
             $stmt->bindParam(':length', $length, PDO::PARAM_INT);
@@ -91,19 +106,34 @@ class NotificacionModelo {
     /**
      * Cuenta el total de notificaciones de un usuario, con o sin filtro de búsqueda.
      */
-    public function contarPorUsuario(int $usuario_id, string $search = ''): int {
+    public function contarPorUsuario(int $usuario_id, string $search = '', string $tipoFiltro = '', string $estadoFiltro = ''): int {
         try {
             $sql = "SELECT COUNT(id) FROM {$this->tabla} WHERE usuario_recibe_id = :uid ";
             
             if (!empty($search)) {
-                $sql .= " AND (titulo LIKE :search OR mensaje LIKE :search OR tipo LIKE :search) ";
+                $sql .= " AND (titulo LIKE :b1 OR mensaje LIKE :b2 OR tipo LIKE :b3) ";
+            }
+
+            if (!empty($tipoFiltro)) {
+                $sql .= " AND tipo = :tipo_filtro ";
+            }
+
+            if ($estadoFiltro === 'no-leidas') {
+                $sql .= " AND leido = 0 ";
+            } elseif ($estadoFiltro === 'leidas') {
+                $sql .= " AND leido = 1 ";
             }
 
             $stmt = $this->conexion->prepare($sql);
             $stmt->bindParam(':uid', $usuario_id, PDO::PARAM_INT);
             if (!empty($search)) {
                 $searchTerm = "%{$search}%";
-                $stmt->bindParam(':search', $searchTerm, PDO::PARAM_STR);
+                $stmt->bindValue(':b1', $searchTerm, PDO::PARAM_STR);
+                $stmt->bindValue(':b2', $searchTerm, PDO::PARAM_STR);
+                $stmt->bindValue(':b3', $searchTerm, PDO::PARAM_STR);
+            }
+            if (!empty($tipoFiltro)) {
+                $stmt->bindParam(':tipo_filtro', $tipoFiltro, PDO::PARAM_STR);
             }
             $stmt->execute();
 

@@ -21,6 +21,7 @@ use App\Servicios\DespachoServicio;
 
 require_once 'app/modelos/DespachoModelo.php';
 require_once 'app/modelos/FichaModelo.php';
+require_once 'app/modelos/EventoModelo.php';
 require_once 'app/Helpers/Validador.php';
 require_once 'app/Servicios/DespachoServicio.php';
 
@@ -31,9 +32,10 @@ class DespachoControlador {
     // 1. ATRIBUTOS Y CONSTRUCTOR
     // ///////////////////////////////////////////////////////////////////
 
-    private DespachoModelo $modelo;
-    private FichaModelo    $modeloFicha;
+    private DespachoModelo   $modelo;
+    private FichaModelo      $modeloFicha;
     private DespachoServicio $servicio;
+    private \App\modelos\EventoModelo $modeloEvento;
 
     /**
      * Valida sesión activa e instancia los modelos necesarios.
@@ -43,9 +45,10 @@ class DespachoControlador {
             header('Location: index.php?url=auth');
             exit;
         }
-        $this->modelo       = new DespachoModelo();
-        $this->modeloFicha  = new FichaModelo();
-        $this->servicio     = new DespachoServicio();
+        $this->modelo        = new DespachoModelo();
+        $this->modeloFicha   = new FichaModelo();
+        $this->servicio      = new DespachoServicio();
+        $this->modeloEvento  = new \App\modelos\EventoModelo();
     }
 
     // ///////////////////////////////////////////////////////////////////

@@ -214,7 +214,10 @@ $(document).ready(function () {
             selSec.prop('disabled', true).html('<option value="">-- Seleccionar Sector --</option>').trigger('change'); 
             return; 
         }
-        cargarComunas(parroquiaId, sel, null);
+        // Leer valor precargado para preservar la selección durante re-hidratación
+        const valorPrecargado = sel.data('valor-precargado') || null;
+        sel.removeData('valor-precargado');
+        cargarComunas(parroquiaId, sel, valorPrecargado);
     });
 
     function cargarComunas(parroquiaId, $sel, valorActual) {
@@ -242,7 +245,10 @@ $(document).ready(function () {
         const comunaId = $(this).val();
         const sel = $('#editar_sector_id');
         if (!comunaId) { sel.prop('disabled', true).html('<option value="">-- Seleccionar Sector --</option>').trigger('change'); return; }
-        cargarSectores(comunaId, sel, null);
+        // Leer valor precargado para preservar la selección durante re-hidratación
+        const valorPrecargado = sel.data('valor-precargado') || null;
+        sel.removeData('valor-precargado');
+        cargarSectores(comunaId, sel, valorPrecargado);
     });
 
     function cargarSectores(comunaId, $sel, valorActual) {
@@ -307,14 +313,12 @@ $(document).ready(function () {
             $('#editar_descripcion_caso').val(f.descripcion_caso);
             $('#editar_direccion_exacta').val(f.direccion_exacta);
 
-            // Re-hidratación de cascadas en el modal de edición
+            // Re-hidratación de cascadas: almacenar valores deseados antes de
+            // disparar la cadena para que los handlers de 'change' los lean
+            // en lugar de pasar null (evita condición de carrera AJAX).
+            $('#editar_comuna_id').data('valor-precargado', f.comuna_id || '');
+            $('#editar_sector_id').data('valor-precargado', f.sector_id || '');
             cargarParroquias(f.municipio_id, $('#editar_parroquia_id'), f.parroquia_id);
-            if (f.parroquia_id) {
-                cargarComunas(f.parroquia_id, $('#editar_comuna_id'), f.comuna_id);
-            }
-            if (f.comuna_id) {
-                cargarSectores(f.comuna_id, $('#editar_sector_id'), f.sector_id);
-            }
             cargarCasos(f.tipo_emergencia_id, $('#editar_caso_id'), f.caso_id);
 
             bootstrap.Modal.getOrCreateInstance(document.getElementById('modalEditarFicha')).show();
