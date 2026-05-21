@@ -453,7 +453,6 @@ class FichaControlador {
             $comunaId    = (int)($_GET['comuna_id'] ?? 0);
             $sectorId    = (int)($_GET['sector_id'] ?? 0);
             $organismoId = (int)($_GET['organismo_id'] ?? 0);
-            $estadoGeog  = (int)($_GET['estado_id'] ?? 0);
             $estado      = (int)($_GET['estado'] ?? 1);
             // Contexto diferenciador para motivos de cierre: 'ficha' o 'organismo'
             $contexto    = in_array($_GET['contexto'] ?? '', ['ficha', 'organismo']) ? $_GET['contexto'] : 'ficha';

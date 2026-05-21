@@ -211,7 +211,6 @@ CREATE TABLE `motivos_cierre` (
 
 CREATE TABLE `municipios` (
   `id` int(10) UNSIGNED NOT NULL,
-  `estado_id` int(10) UNSIGNED NOT NULL,
   `nombre_municipio` varchar(100) NOT NULL,
   `Descripcion` varchar(256) NOT NULL,
   `estado` tinyint(1) DEFAULT 1
@@ -544,8 +543,7 @@ ALTER TABLE `motivos_cierre`
 --
 ALTER TABLE `municipios`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `nombre_municipio` (`nombre_municipio`),
-  ADD KEY `fk_municipio_estado` (`estado_id`);
+  ADD UNIQUE KEY `nombre_municipio` (`nombre_municipio`);
 
 --
 -- Indices de la tabla `notificaciones`
@@ -815,12 +813,6 @@ ALTER TABLE `fichas_emergencia`
   ADD CONSTRAINT `fk_ficha_parroquia` FOREIGN KEY (`parroquia_id`) REFERENCES `parroquias` (`id`),
   ADD CONSTRAINT `fk_ficha_sector` FOREIGN KEY (`sector_id`) REFERENCES `sectores` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `fk_ficha_solicitante` FOREIGN KEY (`solicitante_id`) REFERENCES `solicitantes` (`id`);
-
---
--- Filtros para la tabla `municipios`
---
-ALTER TABLE `municipios`
-  ADD CONSTRAINT `fk_municipio_estado` FOREIGN KEY (`estado_id`) REFERENCES `estados` (`id`) ON DELETE CASCADE;
 
 --
 -- Filtros para la tabla `notificaciones`
