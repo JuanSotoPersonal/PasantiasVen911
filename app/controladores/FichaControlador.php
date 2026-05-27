@@ -92,7 +92,8 @@ class FichaControlador {
                 'data'            => $datos,
             ]);
         } catch (\Exception $e) {
-            echo json_encode(['draw' => 1, 'recordsTotal' => 0, 'recordsFiltered' => 0, 'data' => [], 'error' => $e->getMessage()]);
+            error_log("[FichaControlador] Error en obtenerDatos: " . $e->getMessage());
+            echo json_encode(['draw' => 1, 'recordsTotal' => 0, 'recordsFiltered' => 0, 'data' => [], 'error' => 'Error interno al cargar los datos.']);
         }
     }
 
@@ -133,7 +134,8 @@ class FichaControlador {
             echo json_encode($respuesta);
 
         } catch (\Exception $e) {
-            echo json_encode(['success' => false, 'message' => 'Error inesperado: ' . $e->getMessage()]);
+            error_log("[FichaControlador] Error en guardar: " . $e->getMessage());
+            echo json_encode(['success' => false, 'message' => 'Error inesperado al guardar la ficha.']);
         }
     }
 
@@ -172,7 +174,8 @@ class FichaControlador {
             echo json_encode($respuesta);
 
         } catch (\Exception $e) {
-            echo json_encode(['success' => false, 'message' => 'Error inesperado: ' . $e->getMessage()]);
+            error_log("[FichaControlador] Error en actualizar: " . $e->getMessage());
+            echo json_encode(['success' => false, 'message' => 'Error inesperado al actualizar la ficha.']);
         }
     }
 
@@ -203,7 +206,8 @@ class FichaControlador {
             echo json_encode($respuesta);
 
         } catch (\Exception $e) {
-            echo json_encode(['success' => false, 'message' => 'Error inesperado: ' . $e->getMessage()]);
+            error_log("[FichaControlador] Error en cambiarEstado: " . $e->getMessage());
+            echo json_encode(['success' => false, 'message' => 'Error inesperado al cambiar el estado.']);
         }
     }
 
@@ -228,7 +232,8 @@ class FichaControlador {
 
             echo json_encode($dataResponse);
         } catch (\Exception $e) {
-            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+            error_log("[FichaControlador] Error en detalle: " . $e->getMessage());
+            echo json_encode(['success' => false, 'message' => 'Error interno al cargar los detalles.']);
         }
     }
 
@@ -431,7 +436,8 @@ class FichaControlador {
                 'message' => $resultado ? 'Operación exitosa.' : 'No se pudo completar la operación. Verifique los datos o si ya existe un registro similar.'
             ]);
         } catch (\Exception $e) {
-            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+            error_log("[FichaControlador] Error en guardarCatalogo: " . $e->getMessage());
+            echo json_encode(['success' => false, 'message' => 'Ocurrió un error en la base de datos al procesar el catálogo.']);
         }
     }
 

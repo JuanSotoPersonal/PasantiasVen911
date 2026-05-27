@@ -129,24 +129,24 @@ $(function () {
     const dtTipos = $('#tablaTipos').DataTable({
         ajax: { url: 'index.php?url=ficha/obtenerCatalogo&cat=tipo_emergencia&estado=1', dataSrc: 'data' },
         columns: [
-            { data: null, render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, orderable: false, searchable: false, width: '50px' },
+            { data: 'id', searchable: false, width: '50px' },
             { data: 'nombre', render: (d) => escapeHTML(d) },
             { data: 'descripcion', render: (d) => d ? `<small class="text-muted">${escapeHTML(d)}</small>` : '<em class="text-muted">—</em>' },
             { data: null, render: (d, t, r) => renderEstadoBadge(r, 'tipo_emergencia'), orderable: false, searchable: false },
             { data: null, orderable: false, searchable: false, className: 'text-center', render: (d, t, row) => btnsAccion(row, 'tipo_emergencia') },
         ],
-        language: lang, pageLength: 10, order: [[1, 'asc']],
+        language: lang, pageLength: 10, order: [[0, 'desc']],
     });
 
     const dtTiposInactivos = $('#tablaTiposInactivos').DataTable({
         ajax: { url: 'index.php?url=ficha/obtenerCatalogo&cat=tipo_emergencia&estado=0', dataSrc: 'data' },
         columns: [
-            { data: null, render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, orderable: false, searchable: false, width: '40px' },
+            { data: 'id', searchable: false, width: '40px' },
             { data: 'nombre', render: (d) => escapeHTML(d) },
             { data: null, render: (d, t, r) => renderEstadoBadge(r, 'tipo_emergencia'), orderable: false, searchable: false },
             { data: null, orderable: false, searchable: false, className: 'text-center', render: (d, t, row) => btnsAccion(row, 'tipo_emergencia') },
         ],
-        language: lang, pageLength: 5, searching: false, lengthChange: false
+        language: lang, pageLength: 5, searching: false, lengthChange: false, order: [[0, 'desc']]
     });
     setupContadorDT(dtTiposInactivos, 'count-inactivos-tipos');
 
@@ -191,26 +191,26 @@ $(function () {
     const dtCasos = $('#tablaCasos').DataTable({
         ajax: { url: 'index.php?url=ficha/obtenerCatalogo&cat=caso&estado=1', dataSrc: 'data' },
         columns: [
-            { data: null, render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, orderable: false, searchable: false, width: '50px' },
+            { data: 'id', searchable: false, width: '50px' },
             { data: 'nombre_caso', render: (d) => escapeHTML(d) },
             { data: 'tipo_emergencia', render: (d) => `<span class="badge bg-secondary">${escapeHTML(d)}</span>` },
             { data: 'descripcion', render: (d) => d ? `<small class="text-muted">${escapeHTML(d)}</small>` : '<em class="text-muted">—</em>' },
             { data: null, render: (d, t, r) => renderEstadoBadge(r, 'caso'), orderable: false, searchable: false },
             { data: null, orderable: false, searchable: false, className: 'text-center', render: (d, t, row) => btnsAccion(row, 'caso') },
         ],
-        language: lang, pageLength: 10, order: [[1, 'asc']],
+        language: lang, pageLength: 10, order: [[0, 'desc']],
     });
 
     const dtCasosInactivos = $('#tablaCasosInactivos').DataTable({
         ajax: { url: 'index.php?url=ficha/obtenerCatalogo&cat=caso&estado=0', dataSrc: 'data' },
         columns: [
-            { data: null, render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, orderable: false, searchable: false, width: '40px' },
+            { data: 'id', searchable: false, width: '40px' },
             { data: 'nombre_caso', render: (d) => escapeHTML(d) },
             { data: 'tipo_emergencia', render: (d) => escapeHTML(d) },
             { data: null, render: (d, t, r) => renderEstadoBadge(r, 'caso'), orderable: false, searchable: false },
             { data: null, orderable: false, searchable: false, className: 'text-center', render: (d, t, row) => btnsAccion(row, 'caso') },
         ],
-        language: lang, pageLength: 5, searching: false, lengthChange: false
+        language: lang, pageLength: 5, searching: false, lengthChange: false, order: [[0, 'desc']]
     });
     setupContadorDT(dtCasosInactivos, 'count-inactivos-casos');
 
@@ -242,24 +242,24 @@ $(function () {
     const dtMunicipios = $('#tablaMunicipios').DataTable({
         ajax: { url: 'index.php?url=ficha/obtenerCatalogo&cat=municipio&estado=1', dataSrc: 'data' },
         columns: [
-            { data: null, render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, orderable: false, searchable: false, width: '50px' },
+            { data: 'id', searchable: false, width: '50px' },
             { data: 'nombre_municipio', render: (d) => escapeHTML(d) },
             { data: 'descripcion', render: (d) => d ? `<small class="text-muted">${escapeHTML(d)}</small>` : '<em class="text-muted">—</em>' },
             { data: null, render: (d, t, r) => renderEstadoBadge(r, 'municipio'), orderable: false, searchable: false },
             { data: null, orderable: false, searchable: false, className: 'text-center', render: (d, t, row) => btnsAccion(row, 'municipio') },
         ],
-        language: lang, pageLength: 10, order: [[1, 'asc']],
+        language: lang, pageLength: 10, order: [[0, 'desc']],
     });
 
     const dtMunicipiosInactivos = $('#tablaMunicipiosInactivos').DataTable({
         ajax: { url: 'index.php?url=ficha/obtenerCatalogo&cat=municipio&estado=0', dataSrc: 'data' },
         columns: [
-            { data: null, render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, orderable: false, searchable: false, width: '40px' },
+            { data: 'id', searchable: false, width: '40px' },
             { data: 'nombre_municipio', render: (d) => escapeHTML(d) },
             { data: null, render: (d, t, r) => renderEstadoBadge(r, 'municipio'), orderable: false, searchable: false },
             { data: null, orderable: false, searchable: false, className: 'text-center', render: (d, t, row) => btnsAccion(row, 'municipio') },
         ],
-        language: lang, pageLength: 5, searching: false, lengthChange: false
+        language: lang, pageLength: 5, searching: false, lengthChange: false, order: [[0, 'desc']]
     });
     setupContadorDT(dtMunicipiosInactivos, 'count-inactivos-municipios');
 
@@ -278,26 +278,26 @@ $(function () {
     const dtParroquias = $('#tablaParroquias').DataTable({
         ajax: { url: 'index.php?url=ficha/obtenerCatalogo&cat=parroquia&estado=1', dataSrc: 'data' },
         columns: [
-            { data: null, render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, orderable: false, searchable: false, width: '50px' },
+            { data: 'id', searchable: false, width: '50px' },
             { data: 'nombre_parroquia', render: (d) => escapeHTML(d) },
             { data: 'nombre_municipio', render: (d) => escapeHTML(d) },
             { data: 'descripcion', render: (d) => d ? `<small class="text-muted">${escapeHTML(d)}</small>` : '<em class="text-muted">—</em>' },
             { data: null, render: (d, t, r) => renderEstadoBadge(r, 'parroquia'), orderable: false, searchable: false },
             { data: null, orderable: false, searchable: false, className: 'text-center', render: (d, t, row) => btnsAccion(row, 'parroquia') },
         ],
-        language: lang, pageLength: 10, order: [[2, 'asc'], [1, 'asc']],
+        language: lang, pageLength: 10, order: [[0, 'desc']],
     });
 
     const dtParroquiasInactivos = $('#tablaParroquiasInactivos').DataTable({
         ajax: { url: 'index.php?url=ficha/obtenerCatalogo&cat=parroquia&estado=0', dataSrc: 'data' },
         columns: [
-            { data: null, render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, orderable: false, searchable: false, width: '40px' },
+            { data: 'id', searchable: false, width: '40px' },
             { data: 'nombre_parroquia', render: (d) => escapeHTML(d) },
             { data: 'nombre_municipio', render: (d) => escapeHTML(d) },
             { data: null, render: (d, t, r) => renderEstadoBadge(r, 'parroquia'), orderable: false, searchable: false },
             { data: null, orderable: false, searchable: false, className: 'text-center', render: (d, t, row) => btnsAccion(row, 'parroquia') },
         ],
-        language: lang, pageLength: 5, searching: false, lengthChange: false
+        language: lang, pageLength: 5, searching: false, lengthChange: false, order: [[0, 'desc']]
     });
     setupContadorDT(dtParroquiasInactivos, 'count-inactivos-parroquias');
 
@@ -343,14 +343,14 @@ $(function () {
     const dtComunas = $('#tablaComunas').length ? $('#tablaComunas').DataTable({
         ajax: { url: 'index.php?url=ficha/obtenerCatalogo&cat=comuna&estado=1', dataSrc: 'data' },
         columns: [
-            { data: null, render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, orderable: false, searchable: false, width: '50px' },
+            { data: 'id', searchable: false, width: '50px' },
             { data: 'nombre_comuna', render: (d) => escapeHTML(d) },
             { data: 'nombre_parroquia', render: (d) => escapeHTML(d) },
             { data: 'descripcion', render: (d) => d ? `<small class="text-muted">${escapeHTML(d)}</small>` : '<em class="text-muted">—</em>' },
             { data: null, render: (d, t, r) => renderEstadoBadge(r, 'comuna'), orderable: false, searchable: false },
             { data: null, orderable: false, searchable: false, className: 'text-center', render: (d, t, row) => btnsAccion(row, 'comuna') },
         ],
-        language: lang, pageLength: 10, order: [[2, 'asc'], [1, 'asc']],
+        language: lang, pageLength: 10, order: [[0, 'desc']],
     }) : null;
 
     $('#btnNuevaComuna').on('click', () => {
@@ -372,14 +372,14 @@ $(function () {
     const dtSectores = $('#tablaSectores').length ? $('#tablaSectores').DataTable({
         ajax: { url: 'index.php?url=ficha/obtenerCatalogo&cat=sector&estado=1', dataSrc: 'data' },
         columns: [
-            { data: null, render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, orderable: false, searchable: false, width: '50px' },
+            { data: 'id', searchable: false, width: '50px' },
             { data: 'nombre_sector', render: (d) => escapeHTML(d) },
             { data: 'nombre_comuna', render: (d) => escapeHTML(d) },
             { data: 'descripcion', render: (d) => d ? `<small class="text-muted">${escapeHTML(d)}</small>` : '<em class="text-muted">—</em>' },
             { data: null, render: (d, t, r) => renderEstadoBadge(r, 'sector'), orderable: false, searchable: false },
             { data: null, orderable: false, searchable: false, className: 'text-center', render: (d, t, row) => btnsAccion(row, 'sector') },
         ],
-        language: lang, pageLength: 10, order: [[2, 'asc'], [1, 'asc']],
+        language: lang, pageLength: 10, order: [[0, 'desc']],
     }) : null;
 
     $('#btnNuevoSector').on('click', () => {
@@ -401,14 +401,14 @@ $(function () {
     const dtCuadrantes = $('#tablaCuadrantes').length ? $('#tablaCuadrantes').DataTable({
         ajax: { url: 'index.php?url=ficha/obtenerCatalogo&cat=cuadrante&estado=1', dataSrc: 'data' },
         columns: [
-            { data: null, render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, orderable: false, searchable: false, width: '50px' },
+            { data: 'id', searchable: false, width: '50px' },
             { data: 'nombre_cuadrante', render: (d) => escapeHTML(d) },
             { data: 'nombre_sector', render: (d) => escapeHTML(d) },
             { data: 'nombre_organismo', render: (d) => d ? `<span class="badge bg-info text-dark">${escapeHTML(d)}</span>` : '<span class="text-muted">Ninguno</span>' },
             { data: null, render: (d, t, r) => renderEstadoBadge(r, 'cuadrante'), orderable: false, searchable: false },
             { data: null, orderable: false, searchable: false, className: 'text-center', render: (d, t, row) => btnsAccion(row, 'cuadrante') },
         ],
-        language: lang, pageLength: 10, order: [[2, 'asc'], [1, 'asc']],
+        language: lang, pageLength: 10, order: [[0, 'desc']],
     }) : null;
 
     $('#btnNuevoCuadrante').on('click', () => {
@@ -431,24 +431,24 @@ $(function () {
     const dtOrganismos = $('#tablaOrganismos').DataTable({
         ajax: { url: 'index.php?url=ficha/obtenerCatalogo&cat=organismo&estado=1', dataSrc: 'data' },
         columns: [
-            { data: null, render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, orderable: false, searchable: false, width: '50px' },
+            { data: 'id', searchable: false, width: '50px' },
             { data: 'nombre_organismo', render: (d) => escapeHTML(d) },
             { data: 'descripcion', render: (d) => d ? `<small class="text-muted">${escapeHTML(d)}</small>` : '<em class="text-muted">—</em>' },
             { data: null, render: (d, t, r) => renderEstadoBadge(r, 'organismo'), orderable: false, searchable: false },
             { data: null, orderable: false, searchable: false, className: 'text-center', render: (d, t, row) => btnsAccion(row, 'organismo') },
         ],
-        language: lang, pageLength: 10, order: [[1, 'asc']],
+        language: lang, pageLength: 10, order: [[0, 'desc']],
     });
 
     const dtOrganismosInactivos = $('#tablaOrganismosInactivos').DataTable({
         ajax: { url: 'index.php?url=ficha/obtenerCatalogo&cat=organismo&estado=0', dataSrc: 'data' },
         columns: [
-            { data: null, render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, orderable: false, searchable: false, width: '40px' },
+            { data: 'id', searchable: false, width: '40px' },
             { data: 'nombre_organismo', render: (d) => escapeHTML(d) },
             { data: null, render: (d, t, r) => renderEstadoBadge(r, 'organismo'), orderable: false, searchable: false },
             { data: null, orderable: false, searchable: false, className: 'text-center', render: (d, t, row) => btnsAccion(row, 'organismo') },
         ],
-        language: lang, pageLength: 5, searching: false, lengthChange: false
+        language: lang, pageLength: 5, searching: false, lengthChange: false, order: [[0, 'desc']]
     });
     setupContadorDT(dtOrganismosInactivos, 'count-inactivos-organismos');
 
@@ -467,24 +467,24 @@ $(function () {
     const dtMotivos = $('#tablaMotivos').DataTable({
         ajax: { url: 'index.php?url=ficha/obtenerCatalogo&cat=motivo_cierre&estado=1&contexto=ficha', dataSrc: 'data' },
         columns: [
-            { data: null, render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, orderable: false, searchable: false, width: '50px' },
+            { data: 'id', searchable: false, width: '50px' },
             { data: 'nombre', render: (d) => escapeHTML(d) },
             { data: 'descripcion', render: (d) => d ? `<small class="text-muted">${escapeHTML(d)}</small>` : '<em class="text-muted">—</em>' },
             { data: null, render: (d, t, r) => renderEstadoBadge(r, 'motivo_cierre'), orderable: false, searchable: false },
             { data: null, orderable: false, searchable: false, className: 'text-center', render: (d, t, row) => btnsAccion(row, 'motivo_cierre') },
         ],
-        language: lang, pageLength: 10, order: [[1, 'asc']],
+        language: lang, pageLength: 10, order: [[0, 'desc']],
     });
 
     const dtMotivosInactivos = $('#tablaMotivosInactivos').DataTable({
         ajax: { url: 'index.php?url=ficha/obtenerCatalogo&cat=motivo_cierre&estado=0&contexto=ficha', dataSrc: 'data' },
         columns: [
-            { data: null, render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, orderable: false, searchable: false, width: '40px' },
+            { data: 'id', searchable: false, width: '40px' },
             { data: 'nombre', render: (d) => escapeHTML(d) },
             { data: null, render: (d, t, r) => renderEstadoBadge(r, 'motivo_cierre'), orderable: false, searchable: false },
             { data: null, orderable: false, searchable: false, className: 'text-center', render: (d, t, row) => btnsAccion(row, 'motivo_cierre') },
         ],
-        language: lang, pageLength: 5, searching: false, lengthChange: false
+        language: lang, pageLength: 5, searching: false, lengthChange: false, order: [[0, 'desc']]
     });
     setupContadorDT(dtMotivosInactivos, 'count-inactivos-motivos');
 
@@ -504,24 +504,24 @@ $(function () {
     const dtMotivosOrg = $('#tablaMotivosOrganismo').length ? $('#tablaMotivosOrganismo').DataTable({
         ajax: { url: 'index.php?url=ficha/obtenerCatalogo&cat=motivo_cierre&estado=1&contexto=organismo', dataSrc: 'data' },
         columns: [
-            { data: null, render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, orderable: false, searchable: false, width: '50px' },
+            { data: 'id', searchable: false, width: '50px' },
             { data: 'nombre', render: (d) => escapeHTML(d) },
             { data: 'descripcion', render: (d) => d ? `<small class="text-muted">${escapeHTML(d)}</small>` : '<em class="text-muted">—</em>' },
             { data: null, render: (d, t, r) => renderEstadoBadge(r, 'motivo_cierre'), orderable: false, searchable: false },
             { data: null, orderable: false, searchable: false, className: 'text-center', render: (d, t, row) => btnsAccion(row, 'motivo_cierre') },
         ],
-        language: lang, pageLength: 10, order: [[1, 'asc']],
+        language: lang, pageLength: 10, order: [[0, 'desc']],
     }) : null;
 
     const dtMotivosOrgInactivos = $('#tablaMotivosOrganismoInactivos').length ? $('#tablaMotivosOrganismoInactivos').DataTable({
         ajax: { url: 'index.php?url=ficha/obtenerCatalogo&cat=motivo_cierre&estado=0&contexto=organismo', dataSrc: 'data' },
         columns: [
-            { data: null, render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, orderable: false, searchable: false, width: '40px' },
+            { data: 'id', searchable: false, width: '40px' },
             { data: 'nombre', render: (d) => escapeHTML(d) },
             { data: null, render: (d, t, r) => renderEstadoBadge(r, 'motivo_cierre'), orderable: false, searchable: false },
             { data: null, orderable: false, searchable: false, className: 'text-center', render: (d, t, row) => btnsAccion(row, 'motivo_cierre') },
         ],
-        language: lang, pageLength: 5, searching: false, lengthChange: false
+        language: lang, pageLength: 5, searching: false, lengthChange: false, order: [[0, 'desc']]
     }) : null;
     if (dtMotivosOrgInactivos) setupContadorDT(dtMotivosOrgInactivos, 'count-inactivos-motivos-org');
 
