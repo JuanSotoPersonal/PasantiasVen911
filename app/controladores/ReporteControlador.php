@@ -587,7 +587,7 @@ class ReporteControlador {
             // Fórmulas de Porcentaje y Formato
             for ($row = 11; $row <= $lastCaseRow; $row++) {
                 $sheet->setCellValue("AM{$row}", "=IF(AL{$totalRowIndex}>0, AL{$row}/AL{$totalRowIndex}, 0)");
-                $sheet->getStyle("AM{$row}")->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_PERCENTAGE_2);
+                $sheet->getStyle("AM{$row}")->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_PERCENTAGE_00);
             }
 
             // --- FILA DE TOTAL GENERAL AL FINAL ---
@@ -599,7 +599,7 @@ class ReporteControlador {
                 if ($colLetter === 'AM') {
                     // Porcentaje Total
                     $sheet->setCellValue("AM{$totalRowIndex}", "=SUM(AM11:AM{$lastCaseRow})");
-                    $sheet->getStyle("AM{$totalRowIndex}")->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_PERCENTAGE_2);
+                    $sheet->getStyle("AM{$totalRowIndex}")->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_PERCENTAGE_00);
                 } else {
                     $sheet->setCellValue("{$colLetter}{$totalRowIndex}", "=SUM({$colLetter}11:{$colLetter}{$lastCaseRow})");
                 }
