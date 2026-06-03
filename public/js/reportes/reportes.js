@@ -200,4 +200,50 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     document.getElementById('btnExportarPDF').addEventListener('click', () => dispararExportacionSincrona('pdf'));
     document.getElementById('btnExportarExcel').addEventListener('click', () => dispararExportacionSincrona('csv'));
+
+    // --- DESCARGA DE REPORTE MATRIZ ACUMULADO MENSUAL (EXCEL) ---
+    const btnDescargarAcumulado = document.getElementById('btnDescargarAcumulado');
+    if (btnDescargarAcumulado) {
+        btnDescargarAcumulado.addEventListener('click', function () {
+            const mesAnio = document.getElementById('filtro_acumulado_mes').value;
+            if (!mesAnio) {
+                Swal.fire('Atención', 'Por favor seleccione un mes y año válido.', 'warning');
+                return;
+            }
+
+            const [anio, mes] = mesAnio.split('-');
+
+            const htmlOrig = btnDescargarAcumulado.innerHTML;
+            btnDescargarAcumulado.disabled = true;
+            btnDescargarAcumulado.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Generando...';
+
+            // Crear formulario temporal para la descarga vía POST
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = 'index.php?url=reporte/exportarAcumuladoMensualExcel';
+            form.target = '_blank';
+
+            const inputMes = document.createElement('input');
+            inputMes.type = 'hidden';
+            inputMes.name = 'mes';
+            inputMes.value = mes;
+            form.appendChild(inputMes);
+
+            const inputAnio = document.createElement('input');
+            inputAnio.type = 'hidden';
+            inputAnio.name = 'anio';
+            inputAnio.value = anio;
+            form.appendChild(inputAnio);
+
+            document.body.appendChild(form);
+            form.submit();
+            document.body.removeChild(form);
+
+            // Restaurar estado del botón tras unos segundos
+            setTimeout(() => {
+                btnDescargarAcumulado.disabled = false;
+                btnDescargarAcumulado.innerHTML = htmlOrig;
+            }, 3000);
+        });
+    }
 });

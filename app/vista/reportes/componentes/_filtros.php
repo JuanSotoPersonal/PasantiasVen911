@@ -92,6 +92,22 @@
                     <i class="bi bi-arrow-counterclockwise"></i> Limpiar
                 </button>
             </div>
+
+            <hr class="my-4 opacity-10">
+
+            <!-- Acumulado de Incidencias Excel (Matriz) -->
+            <div class="mb-3">
+                <h6 class="fw-bold mb-3 text-success">
+                    <i class="bi bi-file-earmark-excel-fill me-1"></i> Acumulado Mensual
+                </h6>
+                <label class="form-label fw-medium small">Mes a exportar:</label>
+                <input type="month" class="form-control" id="filtro_acumulado_mes" value="<?php echo date('Y-m'); ?>">
+            </div>
+            <div class="d-grid gap-2">
+                <button type="button" class="btn btn-outline-success btn-sm fw-semibold" id="btnDescargarAcumulado">
+                    <i class="bi bi-download me-1"></i> Descargar Excel (XLSX)
+                </button>
+            </div>
         </form>
     </div>
 </div>

@@ -151,4 +151,40 @@ class ReporteModelo {
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         });
     }
+
+    /**
+     * Obtener estadísticas de incidentes agrupados por caso y día del mes.
+     * 
+     * @param int $mes
+     * @param int $anio
+     * @param string $estado 'Atendido' o 'No Atendido' (Pendiente, En Proceso, Cancelada)
+     * @return array
+     */
+    public function obtenerMatrizAcumuladaMensual(int $mes, int $anio, string $estado): array {
+        // Para 'Atendido' filtramos exactamente estado_ficha = 'Atendido'
+        // Para 'No Atendido' filtramos todo lo que no sea 'Atendido' (Pendiente, En Proceso, Cancelada)
+        $condicionEstado = ($estado === 'Atendido') ? "f.estado_ficha = 'Atendido'" : "f.estado_ficha != 'Atendido'";
+        
+        $sql = "SELECT 
+                    c.id AS caso_id,
+                    c.nombre_caso,
+                    DAY(f.fecha_creacion) AS dia,
+                    COUNT(f.id) AS total_dia
+                FROM casos c
+                LEFT JOIN fichas_emergencia f ON f.caso_id = c.id 
+                    AND MONTH(f.fecha_creacion) = :mes 
+                    AND YEAR(f.fecha_creacion) = :anio
+                    AND {$condicionEstado}
+                WHERE c.estado = 1
+                GROUP BY c.id, c.nombre_caso, DAY(f.fecha_creacion)
+                ORDER BY c.nombre_caso ASC";
+
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->execute([
+            ':mes'  => $mes,
+            ':anio' => $anio
+        ]);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

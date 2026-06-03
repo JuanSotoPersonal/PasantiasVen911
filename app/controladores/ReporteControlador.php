@@ -288,4 +288,371 @@ class ReporteControlador {
             die('Formato no soportado sincrónicamente.');
         }
     }
+
+    /**
+     * Genera y descarga el reporte acumulado mensual de incidencias (Excel XLSX).
+     */
+    public function exportarAcumuladoMensualExcel() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            die('Método no permitido');
+        }
+
+        $mes = isset($_POST['mes']) ? (int)$_POST['mes'] : (int)date('m');
+        $anio = isset($_POST['anio']) ? (int)$_POST['anio'] : (int)date('Y');
+
+        // Validar rango básico de mes y año
+        if ($mes < 1 || $mes > 12 || $anio < 2000 || $anio > 2100) {
+            die('Parámetros de fecha inválidos');
+        }
+
+        require_once 'vendor/autoload.php';
+
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+
+        // 1. Crear hojas para Atendidos y No Atendidos
+        $sheetAtendidos = $spreadsheet->getActiveSheet();
+        $sheetAtendidos->setTitle('INCIDENTES ATENDIDOS');
+
+        $sheetNoAtendidos = $spreadsheet->createSheet();
+        $sheetNoAtendidos->setTitle('INCIDENTES NO ATENDIDOS');
+
+        $tiposReporte = [
+            ['sheet' => $sheetAtendidos, 'estado' => 'Atendido', 'nombre' => 'INCIDENTES ATENDIDOS'],
+            ['sheet' => $sheetNoAtendidos, 'estado' => 'No Atendido', 'nombre' => 'INCIDENTES NO ATENDIDOS']
+        ];
+
+        $meses = [
+            1 => 'ENERO', 2 => 'FEBRERO', 3 => 'MARZO', 4 => 'ABRIL', 
+            5 => 'MAYO', 6 => 'JUNIO', 7 => 'JULIO', 8 => 'AGOSTO', 
+            9 => 'SEPTIEMBRE', 10 => 'OCTUBRE', 11 => 'NOVIEMBRE', 12 => 'DICIEMBRE'
+        ];
+        $nombreMes = $meses[$mes] ?? 'MES';
+        $numDias = (int)date('t', strtotime("{$anio}-{$mes}-01"));
+
+        // Obtener todos los casos activos para construir las filas ordenadas
+        $todosCasos = $this->fichaModelo->obtenerCasos(null, 1);
+
+        foreach ($tiposReporte as $reporte) {
+            $sheet = $reporte['sheet'];
+            $estado = $reporte['estado'];
+            $nombreTabla = $reporte['nombre'];
+
+            // Mostrar cuadrícula (Gridlines)
+            $sheet->setShowGridlines(true);
+
+            // Ajustar anchos de columnas para estética
+            $sheet->getColumnDimension('A')->setWidth(6);
+            $sheet->getColumnDimension('B')->setWidth(40);
+            
+            // Columnas de días y datos demográficos
+            $smallCols = [
+                'C','D','E','F','G','H','I','K','L','M','N','O','P','Q',
+                'S','T','U','V','W','X','Y','Z','AB','AC','AD','AE','AF',
+                'AG','AH','AI','AJ','AN','AO','AP','AQ','AR','AS'
+            ];
+            foreach ($smallCols as $col) {
+                $sheet->getColumnDimension($col)->setWidth(5);
+            }
+            
+            // Columnas de totales y porcentaje
+            $mediumCols = ['J','R','AA','AK','AL','AM'];
+            foreach ($mediumCols as $col) {
+                $sheet->getColumnDimension($col)->setWidth(12);
+            }
+
+            // --- DISEÑO DE CABECERAS ---
+
+            // Fila de Título Principal (Rows 1 a 7)
+            $sheet->mergeCells('A1:AS7');
+            $sheet->setCellValue('A1', "CENTROS DE COMANDO, CONTROL Y TELECOMUNICACIONES VEN 9-1-1");
+            
+            $styleTitle = [
+                'font' => [
+                    'name' => 'Arial Black',
+                    'size' => 20,
+                    'bold' => true,
+                    'color' => ['rgb' => '000000']
+                ],
+                'alignment' => [
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                    'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+                    'wrapText' => true
+                ]
+            ];
+            $sheet->getStyle('A1:AS7')->applyFromArray($styleTitle);
+
+            // Fila de Sede, Mes y Año (Row 8)
+            $sheet->mergeCells('C8:R8');
+            $sheet->setCellValue('C8', 'CENTRO DE COMANDO VEN 9-1-1');
+
+            $sheet->mergeCells('S8:AA8');
+            $sheet->setCellValue('S8', $nombreMes);
+
+            $sheet->mergeCells('AB8:AJ8');
+            $sheet->setCellValue('AB8', $anio);
+
+            $styleSedeMesAnio = [
+                'font' => [
+                    'name' => 'Calibri',
+                    'size' => 12,
+                    'bold' => true,
+                    'color' => ['rgb' => 'FFFFFF']
+                ],
+                'fill' => [
+                    'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => '000080']
+                ],
+                'alignment' => [
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                    'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+                ]
+            ];
+            $sheet->getStyle('C8:AJ8')->applyFromArray($styleSedeMesAnio);
+
+            // Fila 9 y 10: Semanas, Días y Demografía
+            $sheet->mergeCells('A9:A10');
+            $sheet->setCellValue('A9', 'N°');
+
+            $sheet->mergeCells('B9:B10');
+            $sheet->setCellValue('B9', $nombreTabla);
+
+            $sheet->mergeCells('C9:I9');
+            $sheet->setCellValue('C9', 'SEMANA 1');
+
+            $sheet->mergeCells('J9:J10');
+            $sheet->setCellValue('J9', 'TOTAL SEMANA 1');
+
+            $sheet->mergeCells('K9:Q9');
+            $sheet->setCellValue('K9', 'SEMANA 2');
+
+            $sheet->mergeCells('R9:R10');
+            $sheet->setCellValue('R9', 'TOTAL SEMANA 2');
+
+            $sheet->mergeCells('S9:Z9');
+            $sheet->setCellValue('S9', 'SEMANA 3');
+
+            $sheet->mergeCells('AA9:AA10');
+            $sheet->setCellValue('AA9', 'TOTAL SEMANA 3');
+
+            $sheet->mergeCells('AB9:AJ9');
+            $sheet->setCellValue('AB9', 'SEMANA 4');
+
+            $sheet->mergeCells('AK9:AK10');
+            $sheet->setCellValue('AK9', 'TOTAL SEMANA 4');
+
+            $sheet->mergeCells('AL9:AL10');
+            $sheet->setCellValue('AL9', 'TOTAL');
+
+            $sheet->mergeCells('AM9:AM10');
+            $sheet->setCellValue('AM9', '%');
+
+            $sheet->mergeCells('AN9:AS9');
+            $sheet->setCellValue('AN9', 'GÉNERO Y EDAD');
+
+            // Valores Fila 10 (Días individuales y Demografía)
+            // Semana 1: 1 a 7
+            for ($d = 1; $d <= 7; $d++) {
+                $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(2 + $d);
+                $sheet->setCellValue("{$colLetter}10", $d);
+            }
+            // Semana 2: 8 a 14
+            for ($d = 8; $d <= 14; $d++) {
+                $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(3 + $d);
+                $sheet->setCellValue("{$colLetter}10", $d);
+            }
+            // Semana 3: 15 a 22
+            for ($d = 15; $d <= 22; $d++) {
+                $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(4 + $d);
+                $sheet->setCellValue("{$colLetter}10", $d);
+            }
+            // Semana 4: 23 a 31
+            for ($d = 23; $d <= 31; $d++) {
+                $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(5 + $d);
+                $sheet->setCellValue("{$colLetter}10", $d);
+            }
+
+            // Datos demográficos
+            $sheet->setCellValue('AN10', 'NIÑO');
+            $sheet->setCellValue('AO10', 'ADOLESCENTE');
+            $sheet->setCellValue('AP10', 'ADULTO');
+            $sheet->setCellValue('AQ10', 'ADULTO MAYOR');
+            $sheet->setCellValue('AR10', 'F');
+            $sheet->setCellValue('AS10', 'M');
+
+            // Estilos Fila 9 y 10
+            $styleHeaders = [
+                'font' => [
+                    'name' => 'Calibri',
+                    'bold' => true,
+                    'color' => ['rgb' => 'FFFFFF']
+                ],
+                'fill' => [
+                    'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => '003366']
+                ],
+                'alignment' => [
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                    'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+                    'wrapText' => true
+                ]
+            ];
+            $sheet->getStyle('A9:AS10')->applyFromArray($styleHeaders);
+
+            // Ajustar tamaños de letras en las cabeceras
+            $sheet->getStyle('A9:B10')->getFont()->setSize(10);
+            $sheet->getStyle('C9:I9')->getFont()->setSize(10);
+            $sheet->getStyle('J9:J10')->getFont()->setSize(9);
+            $sheet->getStyle('K9:Q9')->getFont()->setSize(10);
+            $sheet->getStyle('R9:R10')->getFont()->setSize(9);
+            $sheet->getStyle('S9:Z9')->getFont()->setSize(10);
+            $sheet->getStyle('AA9:AA10')->getFont()->setSize(9);
+            $sheet->getStyle('AB9:AJ9')->getFont()->setSize(10);
+            $sheet->getStyle('AK9:AK10')->getFont()->setSize(9);
+            $sheet->getStyle('AL9:AL10')->getFont()->setSize(10);
+            $sheet->getStyle('AM9:AM10')->getFont()->setSize(10);
+            $sheet->getStyle('AN9:AS9')->getFont()->setSize(10);
+            $sheet->getStyle('C10:AS10')->getFont()->setSize(8);
+
+            // --- VOLCADO DE DATOS ---
+
+            // Obtener de la BD los conteos agrupados para este mes y estado
+            $datosQuery = $this->reporteModelo->obtenerMatrizAcumuladaMensual($mes, $anio, $estado);
+            $conteos = [];
+            foreach ($datosQuery as $row) {
+                $casoId = (int)$row['caso_id'];
+                $dia = (int)$row['dia'];
+                $totalDia = (int)$row['total_dia'];
+                $conteos[$casoId][$dia] = $totalDia;
+            }
+
+            $currentRow = 11;
+            $contador = 1;
+
+            foreach ($todosCasos as $caso) {
+                $casoId = (int)$caso['id'];
+                $nombreCaso = $caso['nombre_caso'];
+
+                $sheet->setCellValue("A{$currentRow}", $contador++);
+                $sheet->setCellValue("B{$currentRow}", $nombreCaso);
+
+                // Semana 1 (1 a 7) -> Columnas C (3) a I (9)
+                for ($d = 1; $d <= 7; $d++) {
+                    $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(2 + $d);
+                    $val = (isset($conteos[$casoId][$d]) && $d <= $numDias) ? $conteos[$casoId][$d] : "";
+                    $sheet->setCellValue("{$colLetter}{$currentRow}", $val);
+                }
+                $sheet->setCellValue("J{$currentRow}", "=SUM(C{$currentRow}:I{$currentRow})");
+
+                // Semana 2 (8 a 14) -> Columnas K (11) a Q (17)
+                for ($d = 8; $d <= 14; $d++) {
+                    $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(3 + $d);
+                    $val = (isset($conteos[$casoId][$d]) && $d <= $numDias) ? $conteos[$casoId][$d] : "";
+                    $sheet->setCellValue("{$colLetter}{$currentRow}", $val);
+                }
+                $sheet->setCellValue("R{$currentRow}", "=SUM(K{$currentRow}:Q{$currentRow})");
+
+                // Semana 3 (15 a 22) -> Columnas S (19) a Z (26)
+                for ($d = 15; $d <= 22; $d++) {
+                    $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(4 + $d);
+                    $val = (isset($conteos[$casoId][$d]) && $d <= $numDias) ? $conteos[$casoId][$d] : "";
+                    $sheet->setCellValue("{$colLetter}{$currentRow}", $val);
+                }
+                $sheet->setCellValue("AA{$currentRow}", "=SUM(S{$currentRow}:Z{$currentRow})");
+
+                // Semana 4 (23 a 31) -> Columnas AB (28) a AJ (36)
+                for ($d = 23; $d <= 31; $d++) {
+                    $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(5 + $d);
+                    $val = (isset($conteos[$casoId][$d]) && $d <= $numDias) ? $conteos[$casoId][$d] : "";
+                    $sheet->setCellValue("{$colLetter}{$currentRow}", $val);
+                }
+                $sheet->setCellValue("AK{$currentRow}", "=SUM(AB{$currentRow}:AJ{$currentRow})");
+
+                // Total Fila
+                $sheet->setCellValue("AL{$currentRow}", "=SUM(J{$currentRow},R{$currentRow},AA{$currentRow},AK{$currentRow})");
+
+                // Demografía
+                $sheet->setCellValue("AN{$currentRow}", "");
+                $sheet->setCellValue("AO{$currentRow}", "");
+                $sheet->setCellValue("AP{$currentRow}", "");
+                $sheet->setCellValue("AQ{$currentRow}", "");
+                $sheet->setCellValue("AR{$currentRow}", "");
+                $sheet->setCellValue("AS{$currentRow}", "");
+
+                $currentRow++;
+            }
+
+            $lastCaseRow = $currentRow - 1;
+            $totalRowIndex = $currentRow;
+
+            // Fórmulas de Porcentaje y Formato
+            for ($row = 11; $row <= $lastCaseRow; $row++) {
+                $sheet->setCellValue("AM{$row}", "=IF(AL{$totalRowIndex}>0, AL{$row}/AL{$totalRowIndex}, 0)");
+                $sheet->getStyle("AM{$row}")->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_PERCENTAGE_2);
+            }
+
+            // --- FILA DE TOTAL GENERAL AL FINAL ---
+            $sheet->setCellValue("B{$totalRowIndex}", "TOTAL");
+
+            // Sumatoria de cada columna de C a AS
+            for ($colIdx = 3; $colIdx <= 45; $colIdx++) {
+                $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIdx);
+                if ($colLetter === 'AM') {
+                    // Porcentaje Total
+                    $sheet->setCellValue("AM{$totalRowIndex}", "=SUM(AM11:AM{$lastCaseRow})");
+                    $sheet->getStyle("AM{$totalRowIndex}")->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_PERCENTAGE_2);
+                } else {
+                    $sheet->setCellValue("{$colLetter}{$totalRowIndex}", "=SUM({$colLetter}11:{$colLetter}{$lastCaseRow})");
+                }
+            }
+
+            // --- ESTILIZACIÓN DE CELDAS DE DATOS Y BORDES ---
+
+            // Alineación de datos
+            $sheet->getStyle("A11:A{$lastCaseRow}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle("B11:B{$lastCaseRow}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+            $sheet->getStyle("C11:AS{$lastCaseRow}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle("A11:AS{$lastCaseRow}")->getFont()->setSize(10);
+
+            // Estilos fila total
+            $styleTotalRow = [
+                'font' => [
+                    'name' => 'Calibri',
+                    'size' => 10,
+                    'bold' => true,
+                    'color' => ['rgb' => 'FFFFFF']
+                ],
+                'fill' => [
+                    'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => '808080']
+                ],
+                'alignment' => [
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                    'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+                ]
+            ];
+            $sheet->getStyle("A{$totalRowIndex}:AS{$totalRowIndex}")->applyFromArray($styleTotalRow);
+            $sheet->getStyle("B{$totalRowIndex}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+
+            // Aplicar bordes finos a todo el bloque de datos y cabeceras
+            $styleBorders = [
+                'borders' => [
+                    'allBorders' => [
+                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                        'color' => ['rgb' => 'BFBFBF']
+                    ]
+                ]
+            ];
+            $sheet->getStyle("A8:AS{$totalRowIndex}")->applyFromArray($styleBorders);
+        }
+
+        // 3. Forzar descarga del archivo Excel XLSX
+        if (ob_get_length()) ob_clean();
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment; filename="acumulado_incidencias_' . strtolower($nombreMes) . '_' . $anio . '.xlsx"');
+        header('Cache-Control: max-age=0');
+
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        $writer->save('php://output');
+        exit;
+    }
 }
