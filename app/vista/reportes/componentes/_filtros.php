@@ -17,10 +17,10 @@
             <div class="mb-3">
                 <label class="form-label fw-semibold small text-muted">Tipo de Reporte:</label>
                 <select class="form-select fw-medium" name="tipo_reporte" id="report_type">
-                    <option value="preview" selected>🖥️ Vista Previa (En Pantalla)</option>
-                    <option value="pdf">📄 Reporte Operativo (PDF)</option>
-                    <option value="csv">📊 Reporte Operativo (CSV)</option>
-                    <option value="xlsx">📈 Acumulado Mensual (Excel XLSX)</option>
+                    <option value="preview" selected> Vista Previa (En Pantalla)</option>
+                    <option value="pdf"> Reporte Operativo (PDF)</option>
+                    <option value="xlsx_det"> Reporte Operativo (Excel XLSX)</option>
+                    <option value="xlsx"> Acumulado Mensual (Excel XLSX)</option>
                 </select>
             </div>
 

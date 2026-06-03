@@ -159,9 +159,9 @@ document.addEventListener('DOMContentLoaded', function () {
             } else if (tipo === 'pdf') {
                 btnFiltrar.className = 'btn btn-danger fw-semibold';
                 btnFiltrar.innerHTML = '<i class="bi bi-file-pdf-fill me-1"></i> Exportar PDF';
-            } else if (tipo === 'csv') {
+            } else if (tipo === 'xlsx_det') {
                 btnFiltrar.className = 'btn btn-success fw-semibold';
-                btnFiltrar.innerHTML = '<i class="bi bi-file-excel-fill me-1"></i> Exportar Excel (CSV)';
+                btnFiltrar.innerHTML = '<i class="bi bi-file-excel-fill me-1"></i> Exportar Excel (XLSX)';
             }
         }
     });
@@ -181,8 +181,8 @@ document.addEventListener('DOMContentLoaded', function () {
             ejecutarBusquedaEnPantalla();
         } else if (tipo === 'pdf') {
             dispararExportacionSincrona('pdf');
-        } else if (tipo === 'csv') {
-            dispararExportacionSincrona('csv');
+        } else if (tipo === 'xlsx_det') {
+            dispararExportacionSincrona('xlsx_det');
         } else if (tipo === 'xlsx') {
             ejecutarDescargaAcumuladoExcel();
         }
@@ -388,7 +388,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const headerExcel = document.getElementById('btnExportarExcel');
     if (headerExcel) {
         headerExcel.addEventListener('click', function () {
-            selectReportType.value = 'csv';
+            selectReportType.value = 'xlsx_det';
             selectReportType.dispatchEvent(new Event('change'));
             formFiltros.dispatchEvent(new Event('submit'));
         });
