@@ -20,9 +20,11 @@ class ReporteServicio {
      * 
      * @param array $fichas
      * @param array $resumen
+     * @param string $desde
+     * @param string $hasta
      * @return Spreadsheet
      */
-    public function generarReporteOperativoExcel(array $fichas, array $resumen): Spreadsheet {
+    public function generarReporteOperativoExcel(array $fichas, array $resumen, string $desde = '', string $hasta = ''): Spreadsheet {
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('REPORTE OPERATIVO');
@@ -41,7 +43,13 @@ class ReporteServicio {
 
         // 1. TÍTULO PRINCIPAL (Filas 1 a 3)
         $sheet->mergeCells('A1:G3');
-        $sheet->setCellValue('A1', "SISTEMA INTEGRADO DE GESTIÓN DE EMERGENCIAS VEN 9-1-1\nReporte Operativo Detallado - " . date('d/m/Y'));
+        $dateText = "";
+        if (!empty($desde) && !empty($hasta)) {
+            $dateText = "del " . date('d-m-Y', strtotime($desde)) . " hasta el " . date('d-m-Y', strtotime($hasta));
+        } else {
+            $dateText = date('d-m-Y');
+        }
+        $sheet->setCellValue('A1', "SISTEMA INTEGRADO DE GESTIÓN DE EMERGENCIAS VEN 9-1-1\nReporte Operativo " . $dateText);
         
         $styleTitle = [
             'font' => [
@@ -505,9 +513,11 @@ class ReporteServicio {
      * 
      * @param array $fichas
      * @param array $resumen
+     * @param string $desde
+     * @param string $hasta
      * @return \FPDF
      */
-    public function generarReporteOperativoPdf(array $fichas, array $resumen) {
+    public function generarReporteOperativoPdf(array $fichas, array $resumen, string $desde = '', string $hasta = '') {
         require_once 'public/libs/fpdf/fpdf.php';
 
         // Definición de clase anónima para manejar cabeceras y pies de página automáticos en FPDF
@@ -516,6 +526,8 @@ class ReporteServicio {
             public $logos = [];
             public $tablaW = [];
             public $tablaH = [];
+            public $desde = '';
+            public $hasta = '';
 
             function Header() {
                 // Colores del Sistema
@@ -536,8 +548,15 @@ class ReporteServicio {
                 $this->SetFont('Helvetica', 'B', 15);
                 $this->Cell(0, 7, mb_convert_encoding('SISTEMA INTEGRADO DE GESTIÓN DE EMERGENCIAS', 'ISO-8859-1', 'UTF-8'), 0, 1, 'C');
                 
+                $dateText = "";
+                if (!empty($this->desde) && !empty($this->hasta)) {
+                    $dateText = "del " . date('d-m-Y', strtotime($this->desde)) . " hasta el " . date('d-m-Y', strtotime($this->hasta));
+                } else {
+                    $dateText = date('d-m-Y');
+                }
+
                 $this->SetFont('Helvetica', 'B', 11);
-                $this->Cell(0, 7, mb_convert_encoding('Reporte Operativo VEN-911 | '.date('d/m/Y'), 'ISO-8859-1', 'UTF-8'), 0, 1, 'C');
+                $this->Cell(0, 7, mb_convert_encoding('Reporte Operativo VEN-911 | ' . $dateText, 'ISO-8859-1', 'UTF-8'), 0, 1, 'C');
                 
                 $this->Ln(12);
                 $this->SetDrawColor($cNegro[0], $cNegro[1], $cNegro[2]);
@@ -569,6 +588,8 @@ class ReporteServicio {
         };
 
         // Configurar propiedades de la clase anónima
+        $pdf->desde = $desde;
+        $pdf->hasta = $hasta;
         $pdf->logos = [
             'mijp'   => 'public/assets/img/logos/LOGO MIJP JUSTICIA Y PAZ - BLANCO (1).png',
             'ven911' => 'public/assets/img/logos/VEN 9-1-1.png'

@@ -103,13 +103,13 @@ class ReporteControlador {
         $resumen = $this->reporteModelo->obtenerResumenFiltrado($filtros);
 
         if ($formato === 'pdf') {
-            $pdf = $this->reporteServicio->generarReporteOperativoPdf($fichas, $resumen);
+            $pdf = $this->reporteServicio->generarReporteOperativoPdf($fichas, $resumen, $filtros['desde'], $filtros['hasta']);
             if (ob_get_length()) ob_clean();
             $pdf->Output('D', 'reporte_operativo_ven911_' . date('Ymd_His') . '.pdf');
             exit;
         } else if ($formato === 'xlsx_det') {
             require_once 'vendor/autoload.php';
-            $spreadsheet = $this->reporteServicio->generarReporteOperativoExcel($fichas, $resumen);
+            $spreadsheet = $this->reporteServicio->generarReporteOperativoExcel($fichas, $resumen, $filtros['desde'], $filtros['hasta']);
             
             if (ob_get_length()) ob_clean();
             header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
