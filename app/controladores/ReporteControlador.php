@@ -164,6 +164,10 @@ class ReporteControlador {
             $conteosNoAtendidos[(int)$row['caso_id']][(int)$row['dia']] = (int)$row['total_dia'];
         }
 
+        // Obtener despachos del mes
+        $despachosAtendidos = $this->reporteModelo->obtenerDespachosMensuales($mes, $anio, 'Atendido');
+        $despachosNoAtendidos = $this->reporteModelo->obtenerDespachosMensuales($mes, $anio, 'No Atendido');
+
         require_once 'vendor/autoload.php';
         
         $spreadsheet = $this->reporteServicio->generarAcumuladoMensualExcel(
@@ -173,7 +177,9 @@ class ReporteControlador {
             $numDias, 
             $todosCasos, 
             $conteosAtendidos, 
-            $conteosNoAtendidos
+            $conteosNoAtendidos,
+            $despachosAtendidos,
+            $despachosNoAtendidos
         );
 
         // Forzar descarga del archivo Excel XLSX

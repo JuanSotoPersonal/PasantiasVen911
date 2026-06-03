@@ -187,4 +187,43 @@ class ReporteModelo {
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    /**
+     * Obtener listado de despachos mensuales para un estado de ficha específico.
+     * 
+     * @param int $mes
+     * @param int $anio
+     * @param string $estado 'Atendido' o 'No Atendido'
+     * @return array
+     */
+    public function obtenerDespachosMensuales(int $mes, int $anio, string $estado): array {
+        $condicionEstado = ($estado === 'Atendido') ? "f.estado_ficha = 'Atendido'" : "f.estado_ficha != 'Atendido'";
+        
+        $sql = "SELECT 
+                    f.fecha_creacion,
+                    o.nombre_organismo,
+                    cp.nombre_cuadrante,
+                    m.nombre_municipio,
+                    p.nombre_parroquia,
+                    c.nombre_caso
+                FROM despachos_organismos d
+                JOIN fichas_emergencia f ON d.ficha_id = f.id
+                JOIN organismos o ON d.organismo_id = o.id
+                LEFT JOIN cuadrantes_paz cp ON d.cuadrante_id = cp.id
+                JOIN parroquias p ON f.parroquia_id = p.id
+                JOIN municipios m ON p.municipio_id = m.id
+                JOIN casos c ON f.caso_id = c.id
+                WHERE MONTH(f.fecha_creacion) = :mes 
+                  AND YEAR(f.fecha_creacion) = :anio
+                  AND {$condicionEstado}
+                ORDER BY f.fecha_creacion ASC";
+
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->execute([
+            ':mes'  => $mes,
+            ':anio' => $anio
+        ]);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

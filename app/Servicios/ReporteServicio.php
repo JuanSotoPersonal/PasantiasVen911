@@ -209,16 +209,24 @@ class ReporteServicio {
         int $numDias, 
         array $todosCasos, 
         array $conteosAtendidos, 
-        array $conteosNoAtendidos
+        array $conteosNoAtendidos,
+        array $despachosAtendidos = [],
+        array $despachosNoAtendidos = []
     ): Spreadsheet {
         $spreadsheet = new Spreadsheet();
 
-        // 1. Crear hojas Atendidos y No Atendidos
+        // 1. Crear hojas Atendidos, Organismos Atendidos, No Atendidos y Organismos No Atendidos
         $sheetAtendidos = $spreadsheet->getActiveSheet();
         $sheetAtendidos->setTitle('INCIDENTES ATENDIDOS');
 
+        $sheetOrgAtendidos = $spreadsheet->createSheet();
+        $sheetOrgAtendidos->setTitle('ORGANISMOS ATENDIDOS');
+
         $sheetNoAtendidos = $spreadsheet->createSheet();
         $sheetNoAtendidos->setTitle('INCIDENTES NO ATENDIDOS');
+
+        $sheetOrgNoAtendidos = $spreadsheet->createSheet();
+        $sheetOrgNoAtendidos->setTitle('ORG ARTICULADOS NO ATENDIDO');
 
         $tiposReporte = [
             ['sheet' => $sheetAtendidos, 'conteos' => $conteosAtendidos, 'nombre' => 'INCIDENTES ATENDIDOS'],
@@ -503,6 +511,132 @@ class ReporteServicio {
                 ]
             ];
             $sheet->getStyle("A8:AM{$totalRowIndex}")->applyFromArray($styleBorders);
+        }
+
+        // --- RENDERIZADO DE HOJAS DE ORGANISMOS ---
+        $orgSheets = [
+            [
+                'sheet' => $sheetOrgAtendidos, 
+                'datos' => $despachosAtendidos, 
+                'titulo_col' => 'ORGANISMOS ARTICULADOS ATENDIDOS',
+                'sheet_title' => 'ORGANISMOS ATENDIDOS'
+            ],
+            [
+                'sheet' => $sheetOrgNoAtendidos, 
+                'datos' => $despachosNoAtendidos, 
+                'titulo_col' => 'ORGANISMOS ARTICULADOS NO ATENDIDOS',
+                'sheet_title' => 'ORGANISMOS NO ATENDIDOS'
+            ]
+        ];
+
+        foreach ($orgSheets as $cfg) {
+            $sheet = $cfg['sheet'];
+            $datos = $cfg['datos'];
+            $tituloCol = $cfg['titulo_col'];
+
+            $sheet->setShowGridlines(true);
+
+            // Ajustar anchos
+            $sheet->getColumnDimension('A')->setWidth(6);
+            $sheet->getColumnDimension('B')->setWidth(18);
+            $sheet->getColumnDimension('C')->setWidth(35);
+            $sheet->getColumnDimension('D')->setWidth(25);
+            $sheet->getColumnDimension('E')->setWidth(15);
+            $sheet->getColumnDimension('F')->setWidth(20);
+            $sheet->getColumnDimension('G')->setWidth(25);
+            $sheet->getColumnDimension('H')->setWidth(35);
+
+            // 1. Banner de Título (Filas 1 a 7)
+            $sheet->mergeCells('A1:H7');
+            $sheet->setCellValue('A1', "CENTROS DE COMANDO, CONTROL Y TELECOMUNICACIONES VEN 9-1-1");
+            
+            $styleTitle = [
+                'font' => [
+                    'name' => 'Arial Black',
+                    'size' => 16,
+                    'bold' => true,
+                    'color' => ['rgb' => '000000']
+                ],
+                'alignment' => [
+                    'horizontal' => Alignment::HORIZONTAL_CENTER,
+                    'vertical' => Alignment::VERTICAL_CENTER,
+                    'wrapText' => true
+                ]
+            ];
+            $sheet->getStyle('A1:H7')->applyFromArray($styleTitle);
+
+            // 2. Cabecera (Fila 8)
+            $headers = ['N°', 'FECHA', $tituloCol, 'N° DE CUADRANTE DE PAZ', 'ESTADO', 'MUNICIPIO', 'PARROQUIA', 'TIPO DE INCIDENCIA'];
+            foreach ($headers as $colIdx => $header) {
+                $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIdx + 1);
+                $sheet->setCellValue("{$colLetter}8", $header);
+            }
+
+            $styleHeaders = [
+                'font' => [
+                    'name' => 'Calibri',
+                    'size' => 10,
+                    'bold' => true,
+                    'color' => ['rgb' => 'FFFFFF']
+                ],
+                'fill' => [
+                    'fillType' => Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => '16A34A'] // Verde principal
+                ],
+                'alignment' => [
+                    'horizontal' => Alignment::HORIZONTAL_CENTER,
+                    'vertical' => Alignment::VERTICAL_CENTER,
+                    'wrapText' => true
+                ]
+            ];
+            $sheet->getStyle('A8:H8')->applyFromArray($styleHeaders);
+
+            // 3. Volcado de Datos (Fila 9 en adelante)
+            $currentRow = 9;
+            $contador = 1;
+            foreach ($datos as $d) {
+                $sheet->setCellValue("A{$currentRow}", $contador++);
+                $sheet->setCellValue("B{$currentRow}", date('d-m-Y', strtotime($d['fecha_creacion'])));
+                $sheet->setCellValue("C{$currentRow}", $d['nombre_organismo']);
+                $sheet->setCellValue("D{$currentRow}", $d['nombre_cuadrante'] ?? '—');
+                $sheet->setCellValue("E{$currentRow}", 'CARABOBO');
+                $sheet->setCellValue("F{$currentRow}", $d['nombre_municipio']);
+                $sheet->setCellValue("G{$currentRow}", $d['nombre_parroquia']);
+                $sheet->setCellValue("H{$currentRow}", $d['nombre_caso'] ?? '—');
+
+                // Zebra striping para filas pares
+                if ($currentRow % 2 === 0) {
+                    $styleZebra = [
+                        'fill' => [
+                            'fillType' => Fill::FILL_SOLID,
+                            'startColor' => ['rgb' => 'F0FDF4']
+                        ]
+                    ];
+                    $sheet->getStyle("A{$currentRow}:H{$currentRow}")->applyFromArray($styleZebra);
+                }
+
+                // Alineación de celdas
+                $sheet->getStyle("A{$currentRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle("B{$currentRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle("D{$currentRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle("E{$currentRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+                $currentRow++;
+            }
+
+            // Aplicar bordes finos a todo el bloque si hay datos
+            $lastRow = $currentRow - 1;
+            if ($lastRow >= 8) {
+                $styleBorders = [
+                    'borders' => [
+                        'allBorders' => [
+                            'borderStyle' => Border::BORDER_THIN,
+                            'color' => ['rgb' => 'BFBFBF']
+                        ]
+                    ]
+                ];
+                $sheet->getStyle("A8:H{$lastRow}")->applyFromArray($styleBorders);
+            }
         }
 
         return $spreadsheet;
