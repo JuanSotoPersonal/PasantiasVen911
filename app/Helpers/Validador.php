@@ -183,7 +183,7 @@ class Validador {
         if (mb_strlen($nombre) > 100) {
             return ['valido' => false, 'mensaje' => "El nombre de '{$nombreCampo}' no puede exceder los 100 caracteres."];
         }
-        if (!preg_match('/^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s\.\-\(\)]+$/', $nombre)) {
+        if (!preg_match('/^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s\.\-\(\)\/]+$/', $nombre)) {
             return ['valido' => false, 'mensaje' => "El campo '{$nombreCampo}' contiene caracteres no permitidos."];
         }
         return ['valido' => true, 'mensaje' => ''];

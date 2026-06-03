@@ -5,10 +5,10 @@
  */
 ?>
 <div class="table-responsive">
-    <table id="tablaNotificaciones" class="table table-hover align-middle w-100">
-        <thead class="table-light">
+    <table id="tablaNotificaciones" class="table table-bordered table-striped table-hover align-middle w-100">
+        <thead class="table-dark">
             <tr>
-                <th width="5%" class="text-center"><i class="bi bi-envelope"></i></th>
+                <th width="5%" class="text-center">N°</th>
                 <th width="15%">Categoría</th>
                 <th width="20%">Asunto</th>
                 <th width="35%">Mensaje</th>

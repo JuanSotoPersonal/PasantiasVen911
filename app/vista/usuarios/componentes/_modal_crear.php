@@ -50,12 +50,12 @@
                 <div class="col-md-6">
                   <label for="crear-password" class="form-label fw-semibold">Contraseña <span class="text-danger">*</span></label>
                   <div class="password-wrapper">
-                    <input type="password" class="form-control pe-5" id="crear-password" name="password" placeholder="Mín. 6 caracteres" />
+                    <input type="password" class="form-control pe-5" id="crear-password" name="password" placeholder="Mín. 8 caracteres" />
                     <button type="button" class="btn-eye" data-target="crear-password" title="Ver contraseña">
                       <i class="bi bi-eye"></i>
                     </button>
                   </div>
-                  <div class="form-text mt-1">Mínimo 6 caracteres (alfanumérico).</div>
+                  <div class="form-text mt-1">Mínimo 8 caracteres (alfanumérico).</div>
                 </div>
               </div>
             </div>

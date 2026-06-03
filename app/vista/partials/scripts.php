@@ -17,9 +17,9 @@ $pageName = $pageName ?? 'home';
 <?php if (in_array($pageName, ['login', 'setup'])): ?>
     <!-- Scripts exclusivos de Autenticación -->
     <?php if ($pageName === 'login'): ?>
-        <script src="public/js/auth/login.js"></script>
+        <script src="public/js/auth/login.js?v=<?= filemtime('public/js/auth/login.js') ?>"></script>
     <?php elseif ($pageName === 'setup'): ?>
-        <script src="public/js/auth/setup.js"></script>
+        <script src="public/js/auth/setup.js?v=<?= filemtime('public/js/auth/setup.js') ?>"></script>
     <?php endif; ?>
 
 <?php else: ?>
@@ -91,5 +91,6 @@ $pageName = $pageName ?? 'home';
             if (!isMobile) initScroll();
         });
     </script>
+    <script src="public/js/ayuda/ayuda_contextual.js?v=<?= filemtime('public/js/ayuda/ayuda_contextual.js') ?>"></script>
 <?php endif; ?>
 

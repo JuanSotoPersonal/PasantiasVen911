@@ -15,7 +15,7 @@ $estadoFiltro = match($tabActiva) {
     'pendientes'  => 'Pendiente',
     'en_proceso'  => 'En Proceso',
     'atendidos'   => 'Atendido',
-    'cerradas'    => 'Cerrado',
+    'cerradas'    => 'Cancelada',
     default       => 'todos',
 };
 ?>

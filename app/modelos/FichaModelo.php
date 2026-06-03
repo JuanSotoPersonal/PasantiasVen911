@@ -35,6 +35,30 @@ class FichaModelo {
     public function __construct() {
         $database = new Database();
         $this->conexion = $database->obtenerConexion();
+        $this->asegurarTablaMotivosCierre();
+    }
+
+    /**
+     * Asegura la existencia de la tabla motivos_cierre en la base de datos (Self-Healing).
+     */
+    private function asegurarTablaMotivosCierre(): void {
+        try {
+            $stmt = $this->conexion->query("SHOW TABLES LIKE 'motivos_cierre'");
+            if (!$stmt->fetch()) {
+                $sql = "CREATE TABLE `motivos_cierre` (
+                  `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+                  `nombre` varchar(150) NOT NULL,
+                  `descripcion` text DEFAULT NULL,
+                  `estado` int(11) DEFAULT 1,
+                  `contexto` enum('ficha','organismo') NOT NULL DEFAULT 'ficha',
+                  PRIMARY KEY (`id`),
+                  KEY `idx_contexto_estado` (`contexto`,`estado`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;";
+                $this->conexion->exec($sql);
+            }
+        } catch (\Exception $e) {
+            error_log("[FichaModelo] Error al asegurar tabla motivos_cierre: " . $e->getMessage());
+        }
     }
 
     // ///////////////////////////////////////////////////////////////////
@@ -346,16 +370,16 @@ class FichaModelo {
 
     /**
      * Gestiona la transición de estados de la ficha.
-     * Al Cerrar una ficha requiere obligatoriamente un motivo_cierre.
-     * Estados terminales: Atendido (positivo) y Cerrado (con motivo).
+     * Al Cancelar una ficha requiere obligatoriamente un motivo de cancelación.
+     * Estados terminales: Atendido (finalizado) y Cancelada (con motivo).
      */
     public function cambiarEstado(int $id, string $nuevoEstado, int $idOwner, string $motivoCierre = '', string $tipoMotivo = ''): bool {
-        $estadosValidos = ['Pendiente', 'En Proceso', 'Atendido', 'Cerrado'];
+        $estadosValidos = ['Pendiente', 'En Proceso', 'Atendido', 'Cancelada'];
         if (!in_array($nuevoEstado, $estadosValidos, true)) return false;
 
         try {
-            // Solo se registra hora_cierre y motivo al pasar al estado Cerrado
-            if ($nuevoEstado === 'Cerrado') {
+            // Registrar hora_cierre en ambos estados terminales; motivo solo para Cancelada
+            if (in_array($nuevoEstado, ['Cancelada', 'Atendido'], true)) {
                 $query = "UPDATE fichas_emergencia
                           SET estado_ficha = :estado,
                               hora_cierre  = NOW(),

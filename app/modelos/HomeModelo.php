@@ -112,7 +112,7 @@ class HomeModelo {
         // 1. Incidentes por Municipio y su estado (Para Barras Apiladas)
         $stmt = $this->conexion->query("SELECT m.nombre_municipio, 
                                                SUM(CASE WHEN f.estado_ficha = 'Pendiente' THEN 1 ELSE 0 END) as pendientes,
-                                               SUM(CASE WHEN f.estado_ficha IN ('Atendido', 'Cerrado') THEN 1 ELSE 0 END) as resueltos,
+                                               SUM(CASE WHEN f.estado_ficha IN ('Atendido', 'Cancelada') THEN 1 ELSE 0 END) as resueltos,
                                                COUNT(f.id) as total
                                         FROM municipios m 
                                         JOIN parroquias p ON m.id = p.municipio_id 
@@ -137,7 +137,7 @@ class HomeModelo {
 
         // 3. Distribución de Cierres (Calidad)
         $stmt = $this->conexion->query("SELECT tipo_motivo_cierre as motivo, COUNT(*) as total 
-                                        FROM fichas_emergencia WHERE estado_ficha = 'Cerrado' AND tipo_motivo_cierre IS NOT NULL
+                                        FROM fichas_emergencia WHERE estado_ficha = 'Cancelada' AND tipo_motivo_cierre IS NOT NULL
                                         GROUP BY tipo_motivo_cierre");
         $cierres = $stmt->fetchAll(PDO::FETCH_ASSOC);
 

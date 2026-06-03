@@ -28,24 +28,20 @@ $seccion = 'notificacion';
         <?php require __DIR__ . '/../partials/navbar.php'; ?>
         <?php require __DIR__ . '/../partials/sidebar.php'; ?>
 
-        <main class="app-main">
-            <!-- CABECERA DE MÓDULO -->
-            <div class="content-header">
-                <div class="container-fluid">
-                    <div class="row mb-2 align-items-center">
-                        <div class="col-sm-6">
-                            <h1 class="m-0 text-dark fw-bold">
-                                <i class="bi bi-inbox-fill text-success me-2"></i>Buzón de Notificaciones
-                            </h1>
-                        </div>
+        <main class="app-main py-4 bg-light">
+            <div class="container-fluid px-4">
+                <!-- CABECERA DE MÓDULO -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h2 class="fw-bold text-dark mb-1">
+                            <i class="bi bi-bell-fill text-success me-2"></i>Buzón de Notificaciones
+                        </h2>
+                        <p class="text-muted mb-0">Gestión, lectura y control de alertas del sistema VEN 911</p>
                     </div>
                 </div>
-            </div>
 
-            <!-- CONTENIDO DE MÓDULO (SPLIT LAYOUT) -->
-            <section class="content">
-                <div class="container-fluid">
-                    <div class="row g-4">
+                <!-- CONTENIDO DE MÓDULO (SPLIT LAYOUT) -->
+                <div class="row g-4">
                         
                         <!-- Panel Izquierdo: Filtros y Buscador -->
                         <div class="col-lg-3">
@@ -140,9 +136,8 @@ $seccion = 'notificacion';
                             </div>
                         </div>
                         
-                    </div>
                 </div>
-            </section>
+            </div>
         </main>
 
         <!-- Pie de página Institucional -->

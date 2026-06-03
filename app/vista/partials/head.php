@@ -48,5 +48,6 @@ $pageName = $pageName ?? 'home';
     <link rel="stylesheet" href="public/css/adminlte.css" />
     <link rel="stylesheet" href="public/css/home.css" />
     <link rel="stylesheet" href="public/css/notificaciones.css" />
+    <link rel="stylesheet" href="public/css/ayuda.css" />
 <?php endif; ?>
 

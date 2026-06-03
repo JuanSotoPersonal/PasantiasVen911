@@ -7,7 +7,7 @@
 <div class="card shadow-sm border-0 rounded-4 mb-4 sticky-filters">
     <div class="card-header bg-white p-3 border-bottom">
         <h5 class="card-title fw-bold mb-0">
-            <i class="bi bi-funnel-fill text-primary me-1"></i> Filtros
+            <i class="bi bi-funnel-fill text-success me-1"></i> Filtros
         </h5>
     </div>
     <div class="card-body p-3">
@@ -80,12 +80,12 @@
                     <option value="Pendiente">Pendiente</option>
                     <option value="En Proceso">En Proceso</option>
                     <option value="Atendido">Atendido</option>
-                    <option value="Cerrado">Cerrado</option>
+                    <option value="Cancelada">Cancelada</option>
                 </select>
             </div>
 
             <div class="d-grid gap-2 mt-4">
-                <button type="submit" class="btn btn-primary" id="btnFiltrar">
+                <button type="submit" class="btn btn-success" id="btnFiltrar">
                     <i class="bi bi-search me-1"></i> Generar Búsqueda
                 </button>
                 <button type="button" class="btn btn-light" id="btnLimpiarFiltros">

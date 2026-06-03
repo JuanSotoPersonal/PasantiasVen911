@@ -16,7 +16,9 @@
 </footer>
 
 <!-- 2. ACCESOS RÁPIDOS Y ASISTENCIA -->
-<a href="#" class="btn-floating-help" title="Ayuda y Soporte">
+<a href="#offcanvasAyuda" data-bs-toggle="offcanvas" class="btn-floating-help" title="Ayuda Rápida">
     <i class="bi bi-question-lg"></i>
 </a>
 
+<!-- 3. PANEL LATERAL DE AYUDA (OFFCANVAS) -->
+<?php require __DIR__ . '/offcanvas_ayuda.php'; ?>

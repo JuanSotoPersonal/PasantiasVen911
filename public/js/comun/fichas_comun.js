@@ -12,13 +12,13 @@ window.FichaUI = {
         'Pendiente':  'badge-pendiente',
         'En Proceso': 'badge-en-proceso',
         'Atendido':   'badge-atendido',
-        'Cerrado':    'badge-cerrado',
+        'Cancelada':  'badge-cerrado',
     },
     iconosEstado: {
         'Pendiente':  'bi-hourglass-split',
         'En Proceso': 'bi-arrow-repeat',
         'Atendido':   'bi-check-circle-fill',
-        'Cerrado':    'bi-lock-fill',
+        'Cancelada':  'bi-x-circle-fill',
     }
 };
 
@@ -65,6 +65,20 @@ $(document).on('click', '.btn-ver-detalle', function () {
         const badgeCls = window.FichaUI.badgeClases[f.estado_ficha] || 'badge-cerrado';
         const icono    = window.FichaUI.iconosEstado[f.estado_ficha] || 'bi-question-circle';
 
+        // Determinar etiqueta dinámica según el estado terminal
+        let motivoLabel = 'Motivo del Cierre';
+        let motivoBorderColor = '#dc2626';
+        let motivoIcono = 'bi-exclamation-octagon-fill';
+        if (f.estado_ficha === 'Cancelada') {
+            motivoLabel = 'Motivo de Cancelación';
+            motivoBorderColor = '#dc2626';
+            motivoIcono = 'bi-x-circle-fill';
+        } else if (f.estado_ficha === 'Atendido') {
+            motivoLabel = 'Informe de Finalización';
+            motivoBorderColor = '#059669';
+            motivoIcono = 'bi-check-circle-fill';
+        }
+
         // Renderizado del cuerpo del detalle (Grid System & Sanetización XSS)
         $('#contenidoDetalleFicha').html(`
             <div class="mb-3">
@@ -89,8 +103,8 @@ $(document).on('click', '.btn-ver-detalle', function () {
                 <div class="ficha-detalle-item"><label>Creado por</label><span>${escapeHTML(f.nombre_creador || 'Sistema')}</span></div>
                 
                 ${f.motivo_cierre || f.tipo_motivo_cierre ? `
-                <div class="ficha-detalle-item mt-2" style="grid-column:1/-1; background-color: rgba(220, 38, 38, 0.05); border-left: 4px solid #dc2626; border-radius: 4px;">
-                    <label class="text-danger fw-bold"><i class="bi bi-exclamation-octagon-fill me-1"></i>Motivo del Cierre</label>
+                <div class="ficha-detalle-item mt-2" style="grid-column:1/-1; background-color: rgba(220, 38, 38, 0.05); border-left: 4px solid ${motivoBorderColor}; border-radius: 4px;">
+                    <label class="fw-bold" style="color: ${motivoBorderColor}"><i class="bi ${motivoIcono} me-1"></i>${motivoLabel}</label>
                     <span class="text-dark fw-bold">
                         ${f.tipo_motivo_cierre ? `<span class="badge bg-danger me-2">${escapeHTML(f.tipo_motivo_cierre)}</span>` : ''}
                         ${escapeHTML(f.motivo_cierre || '')}

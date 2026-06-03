@@ -20,7 +20,7 @@
                 'pendientes'  => 'Fichas Pendientes',
                 'en_proceso'  => 'Fichas en Proceso',
                 'atendidos'   => 'Fichas Atendidas',
-                'cerradas'    => 'Fichas Cerradas (Historial)',
+                'cerradas'    => 'Fichas Canceladas (Historial)',
                 default       => 'Fichas de Emergencia'
             };
             ?>

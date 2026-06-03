@@ -406,7 +406,7 @@ $(document).ready(function () {
             renderizarStepperFicha(f.estado_ficha, fichaId);
 
             // 4.3 Botón de edición de ficha (solo estados no terminales)
-            const estadosTerminales = ['Cerrado'];
+            const estadosTerminales = ['Cancelada', 'Atendido'];
 
 
             if (window.VEN911_PERM_FICHA_EDITAR && !estadosTerminales.includes(f.estado_ficha)) {
@@ -460,7 +460,7 @@ $(document).ready(function () {
                 trns.forEach(([nuevoEstado, btnCls, btnIco]) => {
                     btnsAvance += `
                         <button class="btn ${btnCls} btn-sm btn-avanzar-despacho ms-1"
-                                data-id="${d.id}" data-estado="${nuevoEstado}"
+                                data-id="${d.id}" data-estado="${nuevoEstado}" data-ficha-id="${d.ficha_id}"
                                 style="font-size:0.75rem; padding: 0.25rem 0.6rem;">
                             <i class="bi ${btnIco} me-1"></i>${nuevoEstado}
                         </button>`;
@@ -470,7 +470,7 @@ $(document).ready(function () {
             // Botón "Cancelar Llamada" disponible para estatus no terminales
             const btnCancelar = (!esTerminalDespacho && puedeCambiarEst)
                 ? `<button class="btn btn-outline-danger btn-sm btn-cancelar-despacho ms-1"
-                           data-id="${d.id}" data-organismo="${escapeHTML(d.nombre_organismo)}"
+                           data-id="${d.id}" data-organismo="${escapeHTML(d.nombre_organismo)}" data-ficha-id="${d.ficha_id}"
                            style="font-size:0.75rem; padding: 0.25rem 0.6rem;" title="Cancelar llamada al organismo">
                        <i class="bi bi-x-circle me-1"></i>Cancelar
                    </button>`
@@ -523,7 +523,7 @@ $(document).ready(function () {
     $(document).on('click', '.btn-avanzar-despacho', function () {
         const despachoId  = $(this).data('id');
         const nuevoEstado = $(this).data('estado');
-        const fichaId     = parseInt($('#detalleDespachoIdLabel').text().replace('#', ''));
+        const fichaId     = $(this).data('ficha-id') || parseInt($('#detalleDespachoIdLabel').text().replace(/\D/g, ''));
 
         Swal.fire({
             title: `¿Avanzar a "${nuevoEstado}"?`,
@@ -540,30 +540,67 @@ $(document).ready(function () {
                 { despacho_id: despachoId, nuevo_estado: nuevoEstado },
                 function (res) {
                     if (res.success) {
-                        Swal.fire({ title: '¡Actualizado!', text: res.message, icon: 'success', timer: 1500, showConfirmButton: false });
-                        // Recargar solo la lista de despachos dentro del modal
-                        recargarDespachosDeFicha(fichaId);
-                        // Refrescar la tabla principal silenciosamente
-                        tablaDespachos.ajax.reload(null, false);
+                        // Mostrar confirmación y DESPUÉS recargar los datos del modal
+                        Swal.fire({ title: '¡Actualizado!', text: res.message, icon: 'success', timer: 1500, showConfirmButton: false })
+                            .then(() => {
+                                recargarDespachosDeFicha(fichaId);
+                            });
+                        // Refrescar las tablas principales de la vista de forma segura
+                        recargarTablas();
                     } else {
                         Swal.fire('Error', res.message, 'error');
                     }
                 },
                 'json'
-            );
+            ).fail(() => Swal.fire('Error', 'No se pudo conectar con el servidor.', 'error'));
         });
     });
 
     /**
      * Recarga únicamente la lista de despachos del modal (sin cerrarlo).
+     * Incluye manejo de errores para evitar fallos silenciosos.
      */
     function recargarDespachosDeFicha(fichaId) {
+        if (!fichaId || isNaN(fichaId)) {
+            console.error('[recargarDespachosDeFicha] fichaId inválido:', fichaId);
+            return;
+        }
+
         $('#contenidoListaDespachos').html('<div class="text-center py-3"><div class="spinner-border text-success"></div></div>');
-        $.get(`index.php?url=despacho/detalleFicha&id=${fichaId}`, function (res) {
-            if (res.success) {
-                renderizarListaDespachos(res.despachos);
+
+        $.ajax({
+            url: `index.php?url=despacho/detalleFicha&id=${fichaId}`,
+            type: 'GET',
+            dataType: 'json',
+            cache: false,
+            success: function (res) {
+                if (res.success && res.ficha) {
+                    const f = res.ficha;
+                    // Re-renderizar stepper y botones de estado de la ficha
+                    renderizarStepperFicha(f.estado_ficha, fichaId);
+                    // Re-renderizar la lista de organismos
+                    renderizarListaDespachos(res.despachos);
+
+                    // Actualizar botón "Asignar Organismo" según el nuevo estado de la ficha
+                    if (f.estado_ficha === 'En Proceso' && puedeCrear) {
+                        $('#btnAgregarOrganismoDesdeDetalle')
+                            .removeClass('d-none')
+                            .data('ficha-id', fichaId)
+                            .attr('data-ficha-id', fichaId)
+                            .data('sector-id', f.sector_id || 0)
+                            .attr('data-sector-id', f.sector_id || 0);
+                    } else {
+                        $('#btnAgregarOrganismoDesdeDetalle').addClass('d-none');
+                    }
+                } else {
+                    $('#contenidoListaDespachos').html('<p class="text-danger text-center py-3"><i class="bi bi-exclamation-triangle me-1"></i>No se pudo actualizar la lista de despachos.</p>');
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error('[recargarDespachosDeFicha] Error AJAX:', status, error);
+                $('#contenidoListaDespachos').html('<p class="text-danger text-center py-3"><i class="bi bi-exclamation-triangle me-1"></i>Error de conexión al actualizar despachos.</p>');
             }
-        }, 'json');
+        });
     }
 
     // ///////////////////////////////////////////////////////////////////
@@ -574,7 +611,11 @@ $(document).ready(function () {
     $(document).on('click', '.btn-cancelar-despacho', function () {
         const despachoId    = $(this).data('id');
         const nombreOrg     = $(this).data('organismo');
-        const fichaId       = parseInt($('#detalleDespachoIdLabel').text().replace('#', ''));
+        const fichaId       = $(this).data('ficha-id') || parseInt($('#detalleDespachoIdLabel').text().replace(/\D/g, ''));
+
+        // Ocultar el modal de Bootstrap para liberar su focus trap
+        const modalDetalle = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalDetalleDespacho'));
+        modalDetalle.hide();
 
         // Paso 1: Cargar motivos del catálogo y pedir confirmación
         $.get('index.php?url=ficha/obtenerCatalogo&cat=motivo_cierre&estado=1&contexto=organismo', function (res) {
@@ -611,10 +652,10 @@ $(document).ready(function () {
                 confirmButtonText: '<i class="bi bi-x-circle-fill me-1"></i>Cancelar Despacho',
                 cancelButtonText:  'Volver',
                 confirmButtonColor: '#dc3545',
+                focusConfirm: false,
                 didOpen: () => {
-                    // SweetAlert2 retiene el foco en el botón de confirmación por defecto,
-                    // bloqueando la escritura en el textarea. Liberamos el foco manualmente.
-                    document.getElementById('swal-tipo-motivo').focus();
+                    const selMotivo = document.getElementById('swal-tipo-motivo');
+                    if (selMotivo) selMotivo.focus();
                 },
                 preConfirm: () => {
                     const tipo = document.getElementById('swal-tipo-motivo').value.trim();
@@ -626,7 +667,11 @@ $(document).ready(function () {
                     return { tipo_motivo: tipo, descripcion: desc };
                 },
             }).then(result => {
-                if (!result.isConfirmed) return;
+                if (!result.isConfirmed) {
+                    // Usuario canceló: reabrir el modal de gestión
+                    modalDetalle.show();
+                    return;
+                }
 
                 $.post(
                     'index.php?url=despacho/cancelarDespacho',
@@ -637,18 +682,26 @@ $(document).ready(function () {
                     },
                     function (res) {
                         if (res.success) {
-                            Swal.fire({ title: 'Cancelado', text: res.message, icon: 'success', timer: 1800, showConfirmButton: false });
-                            recargarDespachosDeFicha(fichaId);
-                            tablaDespachos.ajax.reload(null, false);
+                            Swal.fire({ title: 'Cancelado', text: res.message, icon: 'success', timer: 1800, showConfirmButton: false })
+                                .then(() => {
+                                    abrirModalGestion(fichaId);
+                                });
+                            recargarTablas();
                         } else {
-                            Swal.fire('Error', res.message, 'error');
+                            Swal.fire('Error', res.message, 'error').then(() => {
+                                modalDetalle.show();
+                            });
                         }
                     },
                     'json'
-                ).fail(() => Swal.fire('Error', 'No se pudo conectar con el servidor.', 'error'));
+                ).fail(() => Swal.fire('Error', 'No se pudo conectar con el servidor.', 'error').then(() => {
+                    modalDetalle.show();
+                }));
             });
 
-        }, 'json').fail(() => Swal.fire('Error', 'No se pudo cargar el catálogo de motivos.', 'error'));
+        }, 'json').fail(() => Swal.fire('Error', 'No se pudo cargar el catálogo de motivos.', 'error').then(() => {
+            modalDetalle.show();
+        }));
     });
 
     // ///////////////////////////////////////////////////////////////////
@@ -656,34 +709,34 @@ $(document).ready(function () {
     // ///////////////////////////////////////////////////////////////////
 
     // Orden canónico de los estados de la ficha (ruta principal)
-    // Flujo: Pendiente → En Proceso → Atendido → Cerrado
-    const PASOS_FICHA = ['Pendiente', 'En Proceso', 'Atendido', 'Cerrado'];
+    // Flujo: Pendiente → En Proceso → Atendido (finalizado) / Cancelada (descartado)
+    const PASOS_FICHA = ['Pendiente', 'En Proceso', 'Atendido', 'Cancelada'];
 
     // Ícono por estado de ficha
     const ICONOS_PASOS = {
         'Pendiente':  'bi-clock',
         'En Proceso': 'bi-arrow-repeat',
         'Atendido':   'bi-check-circle-fill',
-        'Cerrado':    'bi-lock-fill',
+        'Cancelada':  'bi-x-circle-fill',
     };
 
     // Transiciones válidas por estado
-    // Cerrado es el único estado terminal en este modelo
+    // Cancelada y Atendido son estados terminales en este modelo
 
     const TRANSICIONES_FICHA = {
         'Pendiente':  [
             { estado: 'En Proceso', cls: 'btn-ven-primary', ico: 'bi-arrow-repeat' },
         ],
         'En Proceso': [
-            { estado: 'Atendido', cls: 'btn-ven-primary', ico: 'bi-check-circle-fill' },
-            { estado: 'Cerrado',  cls: 'btn-secondary',   ico: 'bi-lock-fill' },
+            { estado: 'Atendido',   cls: 'btn-ven-primary', ico: 'bi-check-circle-fill' },
+            { estado: 'Cancelada',  cls: 'btn-danger',      ico: 'bi-x-circle-fill' },
         ],
         'Atendido': [],
     };
 
     /**
      * Renderiza el stepper visual de progresión de estados de la ficha.
-     * Flujo único: Pendiente → En Proceso → Atendido → Cerrado
+     * Flujo: Pendiente → En Proceso → Atendido / Cancelada
      */
     function renderizarStepperFicha(estadoActual, fichaId) {
         if (!window.VEN911_PERM_FICHA_ESTADO && !window.VEN911_PERM_DESPACHO_ESTADO) {
@@ -691,7 +744,7 @@ $(document).ready(function () {
             return;
         }
 
-        const esTerminal = estadoActual === 'Cerrado' || estadoActual === 'Atendido';
+        const esTerminal = estadoActual === 'Cancelada' || estadoActual === 'Atendido';
 
         // Construir el stepper visual (flujo lineal: todos los pasos son secuenciales)
         const indiceActual = PASOS_FICHA.indexOf(estadoActual);
@@ -798,7 +851,7 @@ $(document).ready(function () {
         const nuevoEstado = $(this).data('estado');
 
         // Al cerrar una ficha, se exige el motivo (igual que en el módulo de fichas)
-        if (nuevoEstado === 'Cerrado') {
+        if (nuevoEstado === 'Cancelada') {
             const modalDetalle = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalDetalleDespacho'));
             modalDetalle.hide();
 
@@ -821,24 +874,24 @@ $(document).ready(function () {
                 }
 
                 Swal.fire({
-                    title: 'Cerrar Ficha',
+                    title: 'Cancelar Ficha',
                     html: `
-                        <p class="text-muted small mb-3">Indique el motivo estructurado del cierre de la ficha.</p>
+                        <p class="text-muted small mb-3">Indique el motivo estructurado de la cancelación de la ficha.</p>
                         <div class="mb-3 text-start">
-                            <label class="form-label fw-bold text-success small mb-1">Tipo de Motivo</label>
+                            <label class="form-label fw-bold text-danger small mb-1">Tipo de Motivo</label>
                             <select id="swal_tipo_motivo" class="form-select shadow-sm">
                                 ${optionsHtml}
                             </select>
                         </div>
                         <div class="mb-2 text-start">
-                            <label class="form-label fw-bold text-success small mb-1">Descripción del Cierre</label>
-                            <textarea id="swal_desc_motivo" class="form-control shadow-sm" rows="3" placeholder="Detalles operativos sobre el cierre..."></textarea>
+                            <label class="form-label fw-bold text-danger small mb-1">Descripción de la Cancelación</label>
+                            <textarea id="swal_desc_motivo" class="form-control shadow-sm" rows="3" placeholder="Detalles operativos sobre la cancelación..."></textarea>
                         </div>
                     `,
                     icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonText: '<i class="bi bi-lock-fill me-1"></i>Cerrar Ficha',
-                    cancelButtonText: 'Cancelar',
+                    confirmButtonText: '<i class="bi bi-x-circle-fill me-1"></i>Cancelar Ficha',
+                    cancelButtonText: 'Volver',
                     preConfirm: () => {
                         const tipo = document.getElementById('swal_tipo_motivo').value;
                         const desc = document.getElementById('swal_desc_motivo').value.trim();
@@ -1093,7 +1146,7 @@ $(document).ready(function () {
                         abrirModalGestion(parseInt(fichaId));
                     }, { once: true });
 
-                    tablaDespachos.ajax.reload(null, false);
+                    recargarTablas();
                 } else {
                     Swal.fire('Error de Validación', res.message, 'error');
                 }
@@ -1222,7 +1275,7 @@ $(document).ready(function () {
                         document.getElementById('modalAsignarDespacho').removeEventListener('hidden.bs.modal', reopen);
                     }, { once: true });
 
-                    tablaDespachos.ajax.reload(null, false);
+                    recargarTablas();
                 } else {
                     Swal.fire('Error de Validación', res.message, 'error');
                 }

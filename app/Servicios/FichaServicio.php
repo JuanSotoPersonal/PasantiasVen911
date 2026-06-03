@@ -95,7 +95,7 @@ class FichaServicio {
         $anterior = $this->modelo->obtenerPorId($fichaId);
         if (!$anterior) return ['success' => false, 'message' => 'Ficha no encontrada.'];
 
-        if (in_array($anterior['estado_ficha'], ['Cerrado', 'Atendido'])) {
+        if (in_array($anterior['estado_ficha'], ['Cancelada', 'Atendido'])) {
             return ['success' => false, 'message' => 'No se puede editar una emergencia en estado terminal.'];
         }
 
@@ -129,17 +129,17 @@ class FichaServicio {
      * Gestiona el cambio de estado con blindaje de integridad operativa.
      */
     public function cambiarEstado(int $fichaId, string $nuevoEstado, int $usuarioId, string $usuarioNombre, string $motivoCierre = ''): array {
-        $estadosPermitidos = ['Pendiente', 'En Proceso', 'Atendido', 'Cerrado'];
+        $estadosPermitidos = ['Pendiente', 'En Proceso', 'Atendido', 'Cancelada'];
         if (!in_array($nuevoEstado, $estadosPermitidos, true)) {
             return ['success' => false, 'message' => 'Estado no válido.'];
         }
 
-        if ($nuevoEstado === 'Cerrado' && empty($motivoCierre)) {
-            return ['success' => false, 'message' => 'Debe ingresar el motivo de cierre.'];
+        if ($nuevoEstado === 'Cancelada' && empty($motivoCierre)) {
+            return ['success' => false, 'message' => 'Debe ingresar el motivo de cancelación.'];
         }
 
         // Blindaje de Integridad: No cerrar si hay organismos activos
-        if (in_array($nuevoEstado, ['Cerrado', 'Atendido'])) {
+        if (in_array($nuevoEstado, ['Cancelada', 'Atendido'])) {
             $despachosActivos = $this->modeloDespacho->contarDespachosActivos($fichaId);
             if ($despachosActivos > 0) {
                 return ['success' => false, 'message' => "No se puede finalizar la ficha porque aún tiene {$despachosActivos} organismo(s) activos."];
@@ -148,7 +148,7 @@ class FichaServicio {
 
         $anterior = $this->modelo->obtenerPorId($fichaId);
         if (!$anterior) return ['success' => false, 'message' => 'Ficha no encontrada.'];
-        if (in_array($anterior['estado_ficha'], ['Cerrado', 'Atendido'])) {
+        if (in_array($anterior['estado_ficha'], ['Cancelada', 'Atendido'])) {
             return ['success' => false, 'message' => 'La ficha ya está en un estado terminal.'];
         }
 

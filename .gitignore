@@ -44,7 +44,5 @@ storage/cache/*.json
 scratch/
 
 # Herramientas y Debug
-graphify-out/
 debug_*.php
 test_*.php
-graphify_help.txt

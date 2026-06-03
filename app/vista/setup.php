@@ -80,7 +80,7 @@ $pageName = 'setup';
                             <i class="bi bi-eye-slash toggle-password" id="togglePassword" style="cursor: pointer;"></i>
                         </div>
                         <div class="form-text mt-1 form-text-ven">
-                            <i class="bi bi-info-circle me-1"></i> Mín. 6 caracteres, incluir una mayúscula y un número.
+                            <i class="bi bi-info-circle me-1"></i> Mín. 8 caracteres, incluir una mayúscula y un número.
                         </div>
                     </div>
                 </div>

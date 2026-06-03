@@ -69,6 +69,12 @@ $pageName = 'login';
             </button>
         </form>
 
+        <div class="text-center mt-3">
+            <a href="#" id="btnRecuperarPassword" class="text-success text-decoration-none small fw-bold">
+                ¿Olvidó su contraseña? (Solo Administrador)
+            </a>
+        </div>
+
         <!-- Bloque Especial: Activación de Sistema (Solo primer inicio) -->
         <?php if (isset($puedeRegistrarse) && $puedeRegistrarse): ?>
         <div class="mt-4 text-center">

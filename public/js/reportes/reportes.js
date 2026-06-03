@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', function () {
             'Atendido':   'bg-success-subtle text-success',
             'Pendiente':  'bg-warning-subtle text-warning',
             'En Proceso': 'bg-info-subtle text-info',
-            'Cerrado':    'bg-secondary-subtle text-secondary'
+            'Cancelada':  'bg-danger-subtle text-danger'
         };
 
         let html = '';
@@ -137,7 +137,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('kpi_atendidas').textContent   = resumen.atendidas;
         document.getElementById('kpi_pendientes').textContent  = resumen.pendientes;
         document.getElementById('kpi_proceso').textContent     = resumen.en_proceso;
-        document.getElementById('kpi_cerradas').textContent    = resumen.cerradas;
+        document.getElementById('kpi_cerradas').textContent    = resumen.canceladas;
         document.getElementById('kpi_efectividad').textContent = resumen.efectividad + '%';
     }
 

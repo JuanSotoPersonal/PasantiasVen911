@@ -26,7 +26,7 @@ $pageName = 'reporte';
                     <div class="col-12 d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="fw-bold text-dark mb-1">
-                                <i class="bi bi-file-earmark-bar-graph text-primary me-2"></i>Reportes e Inteligencia
+                                <i class="bi bi-file-earmark-bar-graph text-success me-2"></i>Reportes e Inteligencia
                             </h2>
                             <p class="text-muted mb-0">Generación de informes y análisis de datos operativos del VEN 911</p>
                         </div>
@@ -57,7 +57,7 @@ $pageName = 'reporte';
                         <div class="card shadow-sm border-0 rounded-4">
                             <div class="card-header bg-white p-3 border-bottom d-flex justify-content-between align-items-center">
                                 <h5 class="card-title fw-bold mb-0">Vista Previa de Resultados</h5>
-                                <span class="badge bg-primary rounded-pill" id="totalResultadosBadge">0 registros</span>
+                                <span class="badge rounded-pill" id="totalResultadosBadge">0 registros</span>
                             </div>
                             <div class="card-body p-0">
                                 <div class="table-responsive">

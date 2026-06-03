@@ -183,22 +183,32 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // 6. Marcar Notificación Individual como Leída
     function marcarNotificacionLeida(id, rowElement) {
+        // Actualización optimista en la tabla
+        rowElement.removeClass('notif-row-unread').addClass('notif-row-read');
+        rowElement.find('.bi-envelope-fill').removeClass('bi-envelope-fill text-success').addClass('bi-envelope-open text-muted').attr('title', 'Leída');
+        
+        // Disparar evento global para sincronizar el dropdown de notificaciones
+        document.dispatchEvent(new CustomEvent('notificacionLeida', { detail: { id: id } }));
+
         $.ajax({
             url: 'index.php?url=notificacion/marcarLeida',
             type: 'POST',
             data: { id: id },
             success: function (res) {
                 if (res.success) {
-                    rowElement.removeClass('notif-row-unread').addClass('notif-row-read');
-                    rowElement.find('.bi-envelope-fill').removeClass('bi-envelope-fill text-success').addClass('bi-envelope-open text-muted').attr('title', 'Leída');
-                    
-                    // Actualizar contadores
                     actualizarConteosFiltros();
-                    
-                    if (typeof window.cargarNotificacionesPendientes === 'function') {
-                        window.cargarNotificacionesPendientes();
-                    }
+                } else {
+                    // Revertir si el servidor reporta error
+                    rowElement.addClass('notif-row-unread').removeClass('notif-row-read');
+                    rowElement.find('.bi-envelope-open').addClass('bi-envelope-fill text-success').removeClass('bi-envelope-open text-muted').attr('title', 'No Leída');
+                    document.dispatchEvent(new CustomEvent('notificacionRevertida', { detail: { id: id } }));
                 }
+            },
+            error: function () {
+                // Revertir si hay fallo de red
+                rowElement.addClass('notif-row-unread').removeClass('notif-row-read');
+                rowElement.find('.bi-envelope-open').addClass('bi-envelope-fill text-success').removeClass('bi-envelope-open text-muted').attr('title', 'No Leída');
+                document.dispatchEvent(new CustomEvent('notificacionRevertida', { detail: { id: id } }));
             }
         });
     }
@@ -208,6 +218,9 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!confirm('¿Seguro que deseas marcar todas las notificaciones como leídas?')) return;
 
         $(this).prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Procesando...');
+
+        // Disparar evento de marcado masivo global
+        document.dispatchEvent(new CustomEvent('notificacionLeida'));
 
         $.ajax({
             url: 'index.php?url=notificacion/marcarTodas',
@@ -225,16 +238,16 @@ document.addEventListener('DOMContentLoaded', function () {
                     
                     tablaNotificaciones.ajax.reload(null, false);
                     actualizarConteosFiltros();
-                    
-                    if (typeof window.cargarNotificacionesPendientes === 'function') {
-                        window.cargarNotificacionesPendientes();
-                    }
                 } else {
                     Swal.fire('Error', 'No se pudieron actualizar las notificaciones.', 'error');
+                    tablaNotificaciones.ajax.reload(null, false);
+                    document.dispatchEvent(new CustomEvent('notificacionRevertida'));
                 }
             },
             error: function () {
                 Swal.fire('Error', 'Fallo de comunicación con el servidor.', 'error');
+                tablaNotificaciones.ajax.reload(null, false);
+                document.dispatchEvent(new CustomEvent('notificacionRevertida'));
             },
             complete: function() {
                 $('#btn-marcar-todas-buzon').prop('disabled', false).html('<i class="bi bi-check2-all me-1"></i>Marcar todas como leídas');
@@ -253,6 +266,51 @@ document.addEventListener('DOMContentLoaded', function () {
             })
             .catch(() => {});
     }
+
+    // Escuchar eventos globales provenientes de la barra de notificaciones u otros componentes
+    document.addEventListener('notificacionLeida', function (e) {
+        const id = e.detail?.id;
+        if (id) {
+            // Si la fila correspondiente al ID está visible, la marcamos como leída en la tabla
+            const api = $('#tablaNotificaciones').DataTable();
+            api.rows().every(function () {
+                const data = this.data();
+                if (parseInt(data.id) === parseInt(id) && parseInt(data.leido) === 0) {
+                    data.leido = 1;
+                    this.data(data);
+                    const rowNode = this.node();
+                    $(rowNode).removeClass('notif-row-unread').addClass('notif-row-read');
+                    $(rowNode).find('.bi-envelope-fill').removeClass('bi-envelope-fill text-success').addClass('bi-envelope-open text-muted').attr('title', 'Leída');
+                }
+            });
+            actualizarConteosFiltros();
+        } else {
+            // Si se marcaron todas
+            tablaNotificaciones.ajax.reload(null, false);
+            actualizarConteosFiltros();
+        }
+    });
+
+    document.addEventListener('notificacionRevertida', function (e) {
+        const id = e.detail?.id;
+        if (id) {
+            const api = $('#tablaNotificaciones').DataTable();
+            api.rows().every(function () {
+                const data = this.data();
+                if (parseInt(data.id) === parseInt(id) && parseInt(data.leido) === 1) {
+                    data.leido = 0;
+                    this.data(data);
+                    const rowNode = this.node();
+                    $(rowNode).addClass('notif-row-unread').removeClass('notif-row-read');
+                    $(rowNode).find('.bi-envelope-open').addClass('bi-envelope-fill text-success').removeClass('bi-envelope-open text-muted').attr('title', 'No Leída');
+                }
+            });
+            actualizarConteosFiltros();
+        } else {
+            tablaNotificaciones.ajax.reload(null, false);
+            actualizarConteosFiltros();
+        }
+    });
 
     // Cargar conteos iniciales
     actualizarConteosFiltros();

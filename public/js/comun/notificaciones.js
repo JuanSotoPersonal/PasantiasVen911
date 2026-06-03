@@ -58,6 +58,8 @@
                 }
 
                 // Mostrar alerta visual flotante (Toast) usando SweetAlert2
+                // DESACTIVADO POR PETICIÓN DE USUARIO para evitar interrupciones visuales
+                /*
                 if (typeof Swal !== 'undefined') {
                     const Toast = Swal.mixin({
                         toast: true,
@@ -82,10 +84,11 @@
                         text: window.escapeHTML(notif.mensaje || 'Nueva actividad registrada.')
                     });
                 }
+                */
                 
                 // Agregamos la notificación al principio de la lista
                 agregarNotificacionAlDOM(notif);
-                actualizarBadgeManual(1);
+                actualizarBadgeManual();
                 
             } catch (err) {
                 console.error('Error al procesar notificación Socket:', err, evento.data);
@@ -199,8 +202,18 @@
         });
     }
 
-    // 5. ACCIONES DE PERSISTENCIA (API FETCH)
+    // 5. ACCIONES DE PERSISTENCIA (API FETCH Y ACTUALIZACIONES OPTIMISTAS)
     function marcarLeida(idNotif, elemento) {
+        // Actualización optimista en el DOM
+        if (elemento && elemento.classList.contains('no-leido')) {
+            elemento.classList.remove('no-leido');
+            elemento.classList.add('leido');
+            actualizarBadgeManual();
+        }
+
+        // Disparar evento global de sincronización
+        document.dispatchEvent(new CustomEvent('notificacionLeida', { detail: { id: idNotif } }));
+
         fetch(`index.php?url=notificacion/marcarLeida`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -208,13 +221,25 @@
         })
         .then(res => res.json())
         .then(data => {
-            if (data.success) {
-                elemento.classList.remove('no-leido');
-                elemento.classList.add('leido');
-                actualizarBadgeManual(-1);
+            if (!data.success) {
+                // Revertir en caso de error
+                if (elemento) {
+                    elemento.classList.add('no-leido');
+                    elemento.classList.remove('leido');
+                    actualizarBadgeManual();
+                }
+                document.dispatchEvent(new CustomEvent('notificacionRevertida', { detail: { id: idNotif } }));
             }
         })
-        .catch(() => {}); // Fallo silencioso (Inercia Cero)
+        .catch(() => {
+            // Revertir en caso de fallo de red
+            if (elemento) {
+                elemento.classList.add('no-leido');
+                elemento.classList.remove('leido');
+                actualizarBadgeManual();
+            }
+            document.dispatchEvent(new CustomEvent('notificacionRevertida', { detail: { id: idNotif } }));
+        });
     }
 
     // Delegación de marcado masivo
@@ -223,29 +248,89 @@
             e.preventDefault();
             e.stopPropagation();
 
+            const elementosModificados = [];
+            $lista.querySelectorAll('.notif-item.no-leido').forEach(item => {
+                elementosModificados.push(item);
+                item.classList.remove('no-leido');
+                item.classList.add('leido');
+            });
+            actualizarBadgeManual();
+
+            // Disparar evento global de sincronización
+            document.dispatchEvent(new CustomEvent('notificacionLeida'));
+
             fetch(`index.php?url=notificacion/marcarTodas`, { method: 'POST' })
             .then(res => res.json())
             .then(data => {
-                if (data.success) {
-                    $lista.querySelectorAll('.notif-item').forEach(item => {
-                        item.classList.remove('no-leido');
-                        item.classList.add('leido');
+                if (!data.success) {
+                    // Revertir
+                    elementosModificados.forEach(item => {
+                        item.classList.add('no-leido');
+                        item.classList.remove('leido');
                     });
-                    $badge.classList.add('d-none');
+                    actualizarBadgeManual();
+                    document.dispatchEvent(new CustomEvent('notificacionRevertida'));
                 }
             })
-            .catch(() => { });
+            .catch(() => {
+                // Revertir
+                elementosModificados.forEach(item => {
+                    item.classList.add('no-leido');
+                    item.classList.remove('leido');
+                });
+                actualizarBadgeManual();
+                document.dispatchEvent(new CustomEvent('notificacionRevertida'));
+            });
         });
     }
 
+    // Escuchadores de eventos para sincronización entre componentes
+    document.addEventListener('notificacionLeida', (e) => {
+        const id = e.detail?.id;
+        if (id) {
+            const item = $lista.querySelector(`.notif-item[data-id="${id}"]`);
+            if (item && item.classList.contains('no-leido')) {
+                item.classList.remove('no-leido');
+                item.classList.add('leido');
+                actualizarBadgeManual();
+            }
+        } else {
+            // Marcadas todas
+            $lista.querySelectorAll('.notif-item.no-leido').forEach(item => {
+                item.classList.remove('no-leido');
+                item.classList.add('leido');
+            });
+            actualizarBadgeManual();
+        }
+    });
+
+    document.addEventListener('notificacionRevertida', (e) => {
+        const id = e.detail?.id;
+        if (id) {
+            const item = $lista.querySelector(`.notif-item[data-id="${id}"]`);
+            if (item && item.classList.contains('leido')) {
+                item.classList.add('no-leido');
+                item.classList.remove('leido');
+                actualizarBadgeManual();
+            }
+        } else {
+            // Revertir todas
+            $lista.querySelectorAll('.notif-item.leido').forEach(item => {
+                item.classList.add('no-leido');
+                item.classList.remove('leido');
+            });
+            actualizarBadgeManual();
+        }
+    });
+
     // 6. HELPERS DE FORMATO Y UI
-    function actualizarBadgeManual(delta) {
-        const actual = parseInt($badge.textContent) || 0;
-        const nuevo = Math.max(0, actual + delta);
-        if (nuevo === 0) {
+    function actualizarBadgeManual() {
+        const noLeidasCount = $lista.querySelectorAll('.notif-item.no-leido').length;
+        if (noLeidasCount === 0) {
+            $badge.textContent = '0';
             $badge.classList.add('d-none');
         } else {
-            $badge.textContent = nuevo;
+            $badge.textContent = noLeidasCount > 99 ? '99+' : noLeidasCount;
             $badge.classList.remove('d-none');
         }
     }

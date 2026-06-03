@@ -226,10 +226,9 @@ h1, h2, h3, h4, h5, h6, .brand-text {
   background-color: var(--ven-primary) !important;
   color: #ffffff !important;
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
   z-index: 9999;
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -238,10 +237,23 @@ h1, h2, h3, h4, h5, h6, .brand-text {
   text-decoration: none !important;
 }
 
+.btn-floating-help i {
+  color: #ffffff !important;
+  font-size: 1.8rem !important;
+  line-height: 1 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
 .btn-floating-help:hover {
   transform: scale(1.1) translateY(-5px);
   background-color: var(--ven-accent) !important;
   box-shadow: 0 8px 20px rgba(22, 163, 74, 0.4);
+}
+
+.btn-floating-help:hover i {
+  color: #ffffff !important;
 }
 
 /* Sidebar Footer Adjustments */

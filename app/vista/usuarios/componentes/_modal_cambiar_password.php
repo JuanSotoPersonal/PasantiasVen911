@@ -19,7 +19,7 @@
               <div class="mb-3">
                 <label for="pwd-nueva" class="form-label fw-semibold">Nueva Contraseña <span class="text-danger">*</span></label>
                 <div class="password-wrapper">
-                  <input type="password" class="form-control pe-5" id="pwd-nueva" name="password" placeholder="Mín. 6 caracteres" />
+                  <input type="password" class="form-control pe-5" id="pwd-nueva" name="password" placeholder="Mín. 8 caracteres" />
                   <button type="button" class="btn-eye" data-target="pwd-nueva" title="Ver contraseña">
                     <i class="bi bi-eye"></i>
                   </button>

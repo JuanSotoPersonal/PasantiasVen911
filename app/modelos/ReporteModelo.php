@@ -106,7 +106,7 @@ class ReporteModelo {
                     SUM(CASE WHEN f.estado_ficha = 'Atendido'   THEN 1 ELSE 0 END) AS atendidas,
                     SUM(CASE WHEN f.estado_ficha = 'Pendiente'  THEN 1 ELSE 0 END) AS pendientes,
                     SUM(CASE WHEN f.estado_ficha = 'En Proceso' THEN 1 ELSE 0 END) AS en_proceso,
-                    SUM(CASE WHEN f.estado_ficha = 'Cerrado'    THEN 1 ELSE 0 END) AS cerradas
+                    SUM(CASE WHEN f.estado_ficha = 'Cancelada'  THEN 1 ELSE 0 END) AS canceladas
                 FROM fichas_emergencia f
                 JOIN parroquias p        ON f.parroquia_id       = p.id
                 JOIN municipios m        ON p.municipio_id       = m.id
@@ -136,7 +136,7 @@ class ReporteModelo {
             'atendidas'   => $atendidas,
             'pendientes'  => (int)($row['pendientes'] ?? 0),
             'en_proceso'  => (int)($row['en_proceso'] ?? 0),
-            'cerradas'    => (int)($row['cerradas']   ?? 0),
+            'canceladas'  => (int)($row['canceladas'] ?? 0),
             'efectividad' => $total > 0 ? round(($atendidas / $total) * 100, 1) : 0
         ];
     }

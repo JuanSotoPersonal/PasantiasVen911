@@ -59,20 +59,35 @@ document.addEventListener('DOMContentLoaded', function() {
         };
 
         if (rol === 1) {
-            if (chartInstances.roles) chartInstances.roles.updateSeries(s.roles.map(r => parseInt(r.total)));
+            if (chartInstances.roles) {
+                chartInstances.roles.updateSeries(s.roles.map(r => parseInt(r.total)));
+                chartInstances.roles.updateOptions({ labels: s.roles.map(r => r.nombre_rol) });
+            }
             if (chartInstances.emergencias) {
-                chartInstances.emergencias.updateSeries([{ data: s.emergencias.map(e => parseInt(e.total)) }]);
+                chartInstances.emergencias.updateSeries([{ name: 'Incidentes', data: s.emergencias.map(e => parseInt(e.total)) }]);
                 chartInstances.emergencias.updateOptions({ xaxis: { categories: s.emergencias.map(e => e.nombre) } });
             }
-            if (chartInstances.estados) chartInstances.estados.updateSeries([{ data: s.estados.map(e => parseInt(e.total)) }]);
+            if (chartInstances.estados) {
+                chartInstances.estados.updateSeries([{ name: 'Fichas', data: s.estados.map(e => parseInt(e.total)) }]);
+                chartInstances.estados.updateOptions({ xaxis: { categories: s.estados.map(e => e.estado_ficha) } });
+            }
         } else if (rol === 2) {
             updateText('counter_total_hoy', s.total_hoy);
-            if (chartInstances.misEstados) chartInstances.misEstados.updateSeries(s.estados.map(e => parseInt(e.total)));
-            if (chartInstances.semana) chartInstances.semana.updateSeries([{ data: s.semana.map(d => parseInt(d.total)) }]);
+            if (chartInstances.misEstados) {
+                chartInstances.misEstados.updateSeries(s.estados.map(e => parseInt(e.total)));
+                chartInstances.misEstados.updateOptions({ labels: s.estados.map(e => e.estado_ficha) });
+            }
+            if (chartInstances.semana) {
+                chartInstances.semana.updateSeries([{ name: 'Fichas creadas', data: s.semana.map(d => parseInt(d.total)) }]);
+                chartInstances.semana.updateOptions({ xaxis: { categories: s.semana.map(d => d.fecha) } });
+            }
         } else if (rol === 3) {
             updateText('counter_pendientes_globales', s.pendientes_globales);
             updateText('counter_mis_despachos_activos', s.mis_despachos_activos);
-            if (chartInstances.organismos) chartInstances.organismos.updateSeries([{ data: s.top_organismos.map(o => parseInt(o.total)) }]);
+            if (chartInstances.organismos) {
+                chartInstances.organismos.updateSeries([{ name: 'Solicitudes', data: s.top_organismos.map(o => parseInt(o.total)) }]);
+                chartInstances.organismos.updateOptions({ xaxis: { categories: s.top_organismos.map(o => o.nombre_organismo) } });
+            }
         } else if (rol === 4) {
             updateText('counter_total_hoy_jefatura', s.kpis.total_hoy);
             updateText('counter_efectividad', s.kpis.efectividad + '%');
@@ -99,6 +114,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     { name: 'Resueltos', data: s.municipios.map(m => parseInt(m.resueltos)) },
                     { name: 'Pendientes', data: s.municipios.map(m => parseInt(m.pendientes)) }
                 ]);
+                chartInstances.municipiosEficiencia.updateOptions({ xaxis: { categories: s.municipios.map(m => m.nombre_municipio) } });
             }
         }
     }

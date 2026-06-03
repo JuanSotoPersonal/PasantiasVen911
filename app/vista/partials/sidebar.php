@@ -82,8 +82,8 @@ $seccion   = explode('/', $urlActual)[0] ?? '';
                                 </li>
                                 <li class="nav-item">
                                     <a href="index.php?url=ficha&t=cerradas" class="nav-link <?= ($seccion === 'ficha' && $tabFicha === 'cerradas') ? 'active' : '' ?>">
-                                        <i class="nav-icon bi bi-lock-fill"></i>
-                                        <p>Cerradas</p>
+                                        <i class="nav-icon bi bi-x-circle-fill text-danger"></i>
+                                        <p>Canceladas</p>
                                     </a>
                                 </li>
                                 <?php if (tienePerm('configuracion', 'gestionar')): ?>
@@ -221,9 +221,9 @@ $seccion   = explode('/', $urlActual)[0] ?? '';
             <div class="sidebar-footer-nav">
                 <ul class="nav sidebar-menu flex-column">
                     <li class="nav-item">
-                        <a href="#" class="nav-link">
-                            <i class="nav-icon bi bi-info-circle"></i>
-                            <p>Preguntas Frecuentes</p>
+                        <a href="index.php?url=ayuda" class="nav-link <?= $seccion === 'ayuda' ? 'active' : '' ?>">
+                            <i class="nav-icon bi bi-book"></i>
+                            <p>Manual de Usuario</p>
                         </a>
                     </li>
                 </ul>

@@ -100,7 +100,7 @@ $(document).ready(function () {
                         </button>`;
 
                     // Solo permitir edición en estados no terminales
-                    if (puedeEditar && row.estado_ficha !== 'Cerrado' && row.estado_ficha !== 'Atendido') {
+                    if (puedeEditar && row.estado_ficha !== 'Cancelada' && row.estado_ficha !== 'Atendido') {
 
                         btns += `
                         <button class="btn btn-ven-edit btn-accion btn-editar-ficha"

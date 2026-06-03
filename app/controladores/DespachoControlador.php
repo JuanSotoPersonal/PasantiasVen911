@@ -413,8 +413,8 @@ class DespachoControlador {
 
             // Verificar que la ficha exista y sea operable
             $infoFicha = $this->modelo->obtenerInfoFicha($fichaId);
-            if (!$infoFicha || $infoFicha['estado_ficha'] === 'Cerrado') {
-                echo json_encode(['success' => false, 'message' => 'La ficha ya está cerrada y no puede modificarse.']);
+            if (!$infoFicha || in_array($infoFicha['estado_ficha'], ['Cancelada', 'Atendido'], true)) {
+                echo json_encode(['success' => false, 'message' => 'La ficha está en estado terminal y no puede modificarse.']);
                 return;
             }
 
@@ -457,7 +457,7 @@ class DespachoControlador {
      * El Operador (Rol 2) NO puede usar este endpoint — bloqueado por RBAC.
      * Registra id_owner = usuario actual en cada transición.
      *
-     * Flujo: Pendiente → En Proceso → Atendido → Cerrado
+     * Flujo: Pendiente → En Proceso → Atendido / Cancelada
      */
     public function cambiarEstadoFicha(): void {
         header('Content-Type: application/json');
@@ -483,15 +483,15 @@ class DespachoControlador {
                 return;
             }
 
-            $estadosPermitidos = ['Pendiente', 'En Proceso', 'Atendido', 'Cerrado'];
+            $estadosPermitidos = ['Pendiente', 'En Proceso', 'Atendido', 'Cancelada'];
             if (!in_array($nuevoEstado, $estadosPermitidos, true)) {
                 echo json_encode(['success' => false, 'message' => 'El estado especificado no es válido.']);
                 return;
             }
 
-            // Al cerrar una ficha, el motivo y el tipo son obligatorios
-            if ($nuevoEstado === 'Cerrado' && ($motivoCierre === '' || $tipoMotivo === '')) {
-                echo json_encode(['success' => false, 'message' => 'Debe ingresar el tipo y el motivo de cierre de la ficha.']);
+            // Al cancelar una ficha, el motivo y el tipo son obligatorios
+            if ($nuevoEstado === 'Cancelada' && ($motivoCierre === '' || $tipoMotivo === '')) {
+                echo json_encode(['success' => false, 'message' => 'Debe ingresar el tipo y el motivo de cancelación de la ficha.']);
                 return;
             }
 

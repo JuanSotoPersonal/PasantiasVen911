@@ -103,7 +103,7 @@ $tabActiva = $_GET['t'] ?? 'general';
 
 
     <script src="public/js/comun/datatables_config.js"></script>
-    <script src="public/js/despacho/despacho_datatable.js?v=1.1"></script>
+    <script src="public/js/despacho/despacho_datatable.js?v=1.6"></script>
 
 
 

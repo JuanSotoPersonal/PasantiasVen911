@@ -135,7 +135,7 @@ class DespachoServicio {
             // Notificaciones de cambio en despacho
             $fichaId = (int)$anterior['ficha_id'];
             $excluir = [];
-            $infoFicha = $this->modeloFicha->obtenerInfoFicha($fichaId);
+            $infoFicha = $this->modelo->obtenerInfoFicha($fichaId);
             if ($infoFicha && !empty($infoFicha['id_user'])) {
                 $excluir = Notificador::enviarAUsuario((int)$infoFicha['id_user'], 'info', 'Organismo Actualizado', "El organismo despachado en tu Ficha #{$fichaId} está '{$nuevoEstado}'.", $fichaId);
             }
@@ -169,7 +169,7 @@ class DespachoServicio {
             // Notificaciones de cancelación
             $fichaId = (int)$despacho['ficha_id'];
             $excluir = [];
-            $infoFicha = $this->modeloFicha->obtenerInfoFicha($fichaId);
+            $infoFicha = $this->modelo->obtenerInfoFicha($fichaId);
             if ($infoFicha && !empty($infoFicha['id_user'])) {
                 $excluir = Notificador::enviarAUsuario((int)$infoFicha['id_user'], 'alerta', 'Organismo Cancelado', "Un organismo despachado a tu Ficha #{$fichaId} fue cancelado.", $fichaId);
             }
@@ -182,18 +182,18 @@ class DespachoServicio {
     }
 
     /**
-     * Cambia el estado de una ficha (Atendido/Cerrado) con validación de integridad.
+     * Cambia el estado de una ficha (Atendido/Cancelada) con validación de integridad.
      */
     public function cambiarEstadoFicha(int $fichaId, string $nuevoEstado, int $usuarioId, string $usuarioNombre, string $motivo = '', string $tipoMotivo = ''): array {
         $infoFicha = $this->modelo->obtenerInfoFicha($fichaId);
         if (!$infoFicha) return ['success' => false, 'message' => 'Ficha no encontrada.'];
 
-        if (in_array($infoFicha['estado_ficha'], ['Cerrado', 'Atendido'], true)) {
+        if (in_array($infoFicha['estado_ficha'], ['Cancelada', 'Atendido'], true)) {
             return ['success' => false, 'message' => 'La ficha ya está en estado terminal.'];
         }
 
         // Integridad: No cerrar si hay organismos activos
-        if (in_array($nuevoEstado, ['Cerrado', 'Atendido'])) {
+        if (in_array($nuevoEstado, ['Cancelada', 'Atendido'])) {
             $despachosActivos = $this->modelo->contarDespachosActivos($fichaId);
             if ($despachosActivos > 0) {
                 return [
