@@ -77,7 +77,7 @@
                         <select class="form-select form-select-sm" id="select_acumulado_anio">
                             <?php
                             $anioActual = (int)date('Y');
-                            for ($a = $anioActual - 2; $a <= $anioActual + 1; $a++):
+                            for ($a = $anioActual - 2; $a <= $anioActual; $a++):
                                 $selected = ($a === $anioActual) ? 'selected' : '';
                                 echo "<option value=\"{$a}\" {$selected}>{$a}</option>";
                             endfor;

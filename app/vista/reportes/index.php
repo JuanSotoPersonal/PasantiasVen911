@@ -30,14 +30,6 @@ $pageName = 'reporte';
                             </h2>
                             <p class="text-muted mb-0">Generación de informes y análisis de datos operativos del VEN 911</p>
                         </div>
-                        <div class="btn-group shadow-sm">
-                            <button type="button" class="btn btn-outline-danger" id="btnExportarPDF">
-                                <i class="bi bi-file-pdf-fill me-1"></i> Exportar PDF
-                            </button>
-                            <button type="button" class="btn btn-outline-success" id="btnExportarExcel">
-                                <i class="bi bi-file-excel-fill me-1"></i> Exportar Excel
-                            </button>
-                        </div>
                     </div>
                 </div>
 
