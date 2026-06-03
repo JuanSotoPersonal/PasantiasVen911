@@ -519,13 +519,13 @@ class ReporteServicio {
                 'sheet' => $sheetOrgAtendidos, 
                 'datos' => $despachosAtendidos, 
                 'titulo_col' => 'ORGANISMOS ARTICULADOS ATENDIDOS',
-                'sheet_title' => 'ORGANISMOS ATENDIDOS'
+                'es_atendido' => true
             ],
             [
                 'sheet' => $sheetOrgNoAtendidos, 
                 'datos' => $despachosNoAtendidos, 
                 'titulo_col' => 'ORGANISMOS ARTICULADOS NO ATENDIDOS',
-                'sheet_title' => 'ORGANISMOS NO ATENDIDOS'
+                'es_atendido' => false
             ]
         ];
 
@@ -533,6 +533,7 @@ class ReporteServicio {
             $sheet = $cfg['sheet'];
             $datos = $cfg['datos'];
             $tituloCol = $cfg['titulo_col'];
+            $esAtendido = $cfg['es_atendido'];
 
             $sheet->setShowGridlines(true);
 
@@ -545,9 +546,13 @@ class ReporteServicio {
             $sheet->getColumnDimension('F')->setWidth(20);
             $sheet->getColumnDimension('G')->setWidth(25);
             $sheet->getColumnDimension('H')->setWidth(35);
+            if (!$esAtendido) {
+                $sheet->getColumnDimension('I')->setWidth(45);
+            }
 
             // 1. Banner de Título (Filas 1 a 7)
-            $sheet->mergeCells('A1:H7');
+            $maxColLetter = !$esAtendido ? 'I' : 'H';
+            $sheet->mergeCells("A1:{$maxColLetter}7");
             $sheet->setCellValue('A1', "CENTROS DE COMANDO, CONTROL Y TELECOMUNICACIONES VEN 9-1-1");
             
             $styleTitle = [
@@ -563,10 +568,14 @@ class ReporteServicio {
                     'wrapText' => true
                 ]
             ];
-            $sheet->getStyle('A1:H7')->applyFromArray($styleTitle);
+            $sheet->getStyle("A1:{$maxColLetter}7")->applyFromArray($styleTitle);
 
             // 2. Cabecera (Fila 8)
             $headers = ['N°', 'FECHA', $tituloCol, 'N° DE CUADRANTE DE PAZ', 'ESTADO', 'MUNICIPIO', 'PARROQUIA', 'TIPO DE INCIDENCIA'];
+            if (!$esAtendido) {
+                $headers[] = 'MOTIVO DE NO ATENCIÓN';
+            }
+
             foreach ($headers as $colIdx => $header) {
                 $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIdx + 1);
                 $sheet->setCellValue("{$colLetter}8", $header);
@@ -589,7 +598,7 @@ class ReporteServicio {
                     'wrapText' => true
                 ]
             ];
-            $sheet->getStyle('A8:H8')->applyFromArray($styleHeaders);
+            $sheet->getStyle("A8:{$maxColLetter}8")->applyFromArray($styleHeaders);
 
             // 3. Volcado de Datos (Fila 9 en adelante)
             $currentRow = 9;
@@ -604,6 +613,17 @@ class ReporteServicio {
                 $sheet->setCellValue("G{$currentRow}", $d['nombre_parroquia']);
                 $sheet->setCellValue("H{$currentRow}", $d['nombre_caso'] ?? '—');
 
+                if (!$esAtendido) {
+                    $motivo = '—';
+                    if (!empty($d['motivo_cancelacion_despacho'])) {
+                        $motivo = $d['motivo_cancelacion_despacho'];
+                    } elseif (!empty($d['motivo_cierre_ficha'])) {
+                        $tipo = !empty($d['tipo_motivo_cierre_ficha']) ? "[" . $d['tipo_motivo_cierre_ficha'] . "] " : "";
+                        $motivo = $tipo . $d['motivo_cierre_ficha'];
+                    }
+                    $sheet->setCellValue("I{$currentRow}", $motivo);
+                }
+
                 // Zebra striping para filas pares
                 if ($currentRow % 2 === 0) {
                     $styleZebra = [
@@ -612,7 +632,7 @@ class ReporteServicio {
                             'startColor' => ['rgb' => 'F0FDF4']
                         ]
                     ];
-                    $sheet->getStyle("A{$currentRow}:H{$currentRow}")->applyFromArray($styleZebra);
+                    $sheet->getStyle("A{$currentRow}:{$maxColLetter}{$currentRow}")->applyFromArray($styleZebra);
                 }
 
                 // Alineación de celdas
@@ -635,7 +655,7 @@ class ReporteServicio {
                         ]
                     ]
                 ];
-                $sheet->getStyle("A8:H{$lastRow}")->applyFromArray($styleBorders);
+                $sheet->getStyle("A8:{$maxColLetter}{$lastRow}")->applyFromArray($styleBorders);
             }
         }
 

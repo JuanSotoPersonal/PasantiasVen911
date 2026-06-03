@@ -205,7 +205,10 @@ class ReporteModelo {
                     cp.nombre_cuadrante,
                     m.nombre_municipio,
                     p.nombre_parroquia,
-                    c.nombre_caso
+                    c.nombre_caso,
+                    d.motivo_cancelacion AS motivo_cancelacion_despacho,
+                    f.motivo_cierre AS motivo_cierre_ficha,
+                    f.tipo_motivo_cierre AS tipo_motivo_cierre_ficha
                 FROM despachos_organismos d
                 JOIN fichas_emergencia f ON d.ficha_id = f.id
                 JOIN organismos o ON d.organismo_id = o.id
