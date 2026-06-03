@@ -344,11 +344,11 @@ class ReporteControlador {
             $sheet->getColumnDimension('A')->setWidth(6);
             $sheet->getColumnDimension('B')->setWidth(40);
             
-            // Columnas de días y datos demográficos
+            // Columnas de días
             $smallCols = [
                 'C','D','E','F','G','H','I','K','L','M','N','O','P','Q',
                 'S','T','U','V','W','X','Y','Z','AB','AC','AD','AE','AF',
-                'AG','AH','AI','AJ','AN','AO','AP','AQ','AR','AS'
+                'AG','AH','AI','AJ'
             ];
             foreach ($smallCols as $col) {
                 $sheet->getColumnDimension($col)->setWidth(5);
@@ -363,7 +363,7 @@ class ReporteControlador {
             // --- DISEÑO DE CABECERAS ---
 
             // Fila de Título Principal (Rows 1 a 7)
-            $sheet->mergeCells('A1:AS7');
+            $sheet->mergeCells('A1:AM7');
             $sheet->setCellValue('A1', "CENTROS DE COMANDO, CONTROL Y TELECOMUNICACIONES VEN 9-1-1");
             
             $styleTitle = [
@@ -379,7 +379,7 @@ class ReporteControlador {
                     'wrapText' => true
                 ]
             ];
-            $sheet->getStyle('A1:AS7')->applyFromArray($styleTitle);
+            $sheet->getStyle('A1:AM7')->applyFromArray($styleTitle);
 
             // Fila de Sede, Mes y Año (Row 8)
             $sheet->mergeCells('C8:R8');
@@ -446,9 +446,6 @@ class ReporteControlador {
             $sheet->mergeCells('AM9:AM10');
             $sheet->setCellValue('AM9', '%');
 
-            $sheet->mergeCells('AN9:AS9');
-            $sheet->setCellValue('AN9', 'GÉNERO Y EDAD');
-
             // Valores Fila 10 (Días individuales y Demografía)
             // Semana 1: 1 a 7
             for ($d = 1; $d <= 7; $d++) {
@@ -471,13 +468,6 @@ class ReporteControlador {
                 $sheet->setCellValue("{$colLetter}10", $d);
             }
 
-            // Datos demográficos
-            $sheet->setCellValue('AN10', 'NIÑO');
-            $sheet->setCellValue('AO10', 'ADOLESCENTE');
-            $sheet->setCellValue('AP10', 'ADULTO');
-            $sheet->setCellValue('AQ10', 'ADULTO MAYOR');
-            $sheet->setCellValue('AR10', 'F');
-            $sheet->setCellValue('AS10', 'M');
 
             // Estilos Fila 9 y 10
             $styleHeaders = [
@@ -496,7 +486,7 @@ class ReporteControlador {
                     'wrapText' => true
                 ]
             ];
-            $sheet->getStyle('A9:AS10')->applyFromArray($styleHeaders);
+            $sheet->getStyle('A9:AM10')->applyFromArray($styleHeaders);
 
             // Ajustar tamaños de letras en las cabeceras
             $sheet->getStyle('A9:B10')->getFont()->setSize(10);
@@ -510,8 +500,7 @@ class ReporteControlador {
             $sheet->getStyle('AK9:AK10')->getFont()->setSize(9);
             $sheet->getStyle('AL9:AL10')->getFont()->setSize(10);
             $sheet->getStyle('AM9:AM10')->getFont()->setSize(10);
-            $sheet->getStyle('AN9:AS9')->getFont()->setSize(10);
-            $sheet->getStyle('C10:AS10')->getFont()->setSize(8);
+            $sheet->getStyle('C10:AM10')->getFont()->setSize(8);
 
             // --- VOLCADO DE DATOS ---
 
@@ -570,14 +559,6 @@ class ReporteControlador {
                 // Total Fila
                 $sheet->setCellValue("AL{$currentRow}", "=SUM(J{$currentRow},R{$currentRow},AA{$currentRow},AK{$currentRow})");
 
-                // Demografía
-                $sheet->setCellValue("AN{$currentRow}", "");
-                $sheet->setCellValue("AO{$currentRow}", "");
-                $sheet->setCellValue("AP{$currentRow}", "");
-                $sheet->setCellValue("AQ{$currentRow}", "");
-                $sheet->setCellValue("AR{$currentRow}", "");
-                $sheet->setCellValue("AS{$currentRow}", "");
-
                 $currentRow++;
             }
 
@@ -593,8 +574,8 @@ class ReporteControlador {
             // --- FILA DE TOTAL GENERAL AL FINAL ---
             $sheet->setCellValue("B{$totalRowIndex}", "TOTAL");
 
-            // Sumatoria de cada columna de C a AS
-            for ($colIdx = 3; $colIdx <= 45; $colIdx++) {
+            // Sumatoria de cada columna de C a AM
+            for ($colIdx = 3; $colIdx <= 39; $colIdx++) {
                 $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIdx);
                 if ($colLetter === 'AM') {
                     // Porcentaje Total
@@ -610,8 +591,8 @@ class ReporteControlador {
             // Alineación de datos
             $sheet->getStyle("A11:A{$lastCaseRow}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
             $sheet->getStyle("B11:B{$lastCaseRow}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
-            $sheet->getStyle("C11:AS{$lastCaseRow}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-            $sheet->getStyle("A11:AS{$lastCaseRow}")->getFont()->setSize(10);
+            $sheet->getStyle("C11:AM{$lastCaseRow}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle("A11:AM{$lastCaseRow}")->getFont()->setSize(10);
 
             // Estilos fila total
             $styleTotalRow = [
@@ -630,7 +611,7 @@ class ReporteControlador {
                     'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
                 ]
             ];
-            $sheet->getStyle("A{$totalRowIndex}:AS{$totalRowIndex}")->applyFromArray($styleTotalRow);
+            $sheet->getStyle("A{$totalRowIndex}:AM{$totalRowIndex}")->applyFromArray($styleTotalRow);
             $sheet->getStyle("B{$totalRowIndex}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
 
             // Aplicar bordes finos a todo el bloque de datos y cabeceras
@@ -642,7 +623,7 @@ class ReporteControlador {
                     ]
                 ]
             ];
-            $sheet->getStyle("A8:AS{$totalRowIndex}")->applyFromArray($styleBorders);
+            $sheet->getStyle("A8:AM{$totalRowIndex}")->applyFromArray($styleBorders);
         }
 
         // 3. Forzar descarga del archivo Excel XLSX
