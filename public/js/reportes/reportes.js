@@ -1,14 +1,36 @@
 /**
- * reportes.js - Gestión de filtrado dinámico y exportación de reportes
- * Incluye: cascada Emergencia→Caso, renderizado de tabla con Tipo de Caso, KPIs y exportación asíncrona.
+ * reportes.js - Gestión de filtrado dinámico, configuración de períodos mediante selects,
+ * y descarga unificada de reportes en pantalla, PDF, CSV y Excel XLSX.
  */
 
 document.addEventListener('DOMContentLoaded', function () {
 
-    const formFiltros  = document.getElementById('formFiltrosReporte');
-    const tbody        = document.getElementById('tbodyReportes');
-    const badgeTotal   = document.getElementById('totalResultadosBadge');
-    const COLSPAN      = 8; // Columnas totales de la tabla
+    const formFiltros          = document.getElementById('formFiltrosReporte');
+    const tbody                = document.getElementById('tbodyReportes');
+    const badgeTotal           = document.getElementById('totalResultadosBadge');
+    const selectReportType     = document.getElementById('report_type');
+    const selectPresetDate     = document.getElementById('date_range_preset');
+    const btnFiltrar           = document.getElementById('btnFiltrar');
+    const btnLimpiar           = document.getElementById('btnLimpiarFiltros');
+    const COLSPAN              = 8;
+
+    // Inputs ocultos de fechas
+    const inputRealDesde       = document.getElementById('filtro_desde');
+    const inputRealHasta       = document.getElementById('filtro_hasta');
+
+    // Secciones dinámicas
+    const sectionCustomDates   = document.getElementById('section_custom_dates');
+    const sectionMonthSelect   = document.getElementById('section_month_select');
+    const sectionPresets       = document.getElementById('section_date_presets');
+    const sectionAdvanced      = document.getElementById('section_advanced_filters');
+
+    // Inputs personalizados
+    const inputCustomDesde     = document.getElementById('input_custom_desde');
+    const inputCustomHasta     = document.getElementById('input_custom_hasta');
+
+    // Selectores acumulados
+    const selectAcumuladoMes   = document.getElementById('select_acumulado_mes');
+    const selectAcumuladoAnio  = document.getElementById('select_acumulado_anio');
 
     // -----------------------------------------------------------------------
     // 1. INICIALIZAR SELECT2
@@ -18,12 +40,11 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // -----------------------------------------------------------------------
-    // 2. CASCADA: Tipo de Emergencia → filtra opciones de Tipo de Caso
+    // 2. CASCADA: Tipo de Emergencia → Tipo de Caso
     // -----------------------------------------------------------------------
     const selectEmergencia = document.getElementById('filtro_emergencia');
     const selectCaso       = document.getElementById('filtro_caso');
 
-    // Guardar todas las opciones de caso al cargar
     const todasOpciones = Array.from(selectCaso.options).map(opt => ({
         value:   opt.value,
         text:    opt.text,
@@ -33,16 +54,14 @@ document.addEventListener('DOMContentLoaded', function () {
     selectEmergencia.addEventListener('change', function () {
         const tipoSeleccionado = this.value;
 
-        // Destruir Select2 para manipular el DOM libremente
         if ($.fn.select2) $(selectCaso).select2('destroy');
 
-        // Limpiar opciones del caso
         selectCaso.innerHTML = '<option value="">Todos los casos</option>';
 
         todasOpciones
             .filter(o => o.value === '' || !tipoSeleccionado || o.tipoId === tipoSeleccionado)
             .forEach(o => {
-                if (o.value === '') return; // El placeholder ya fue añadido
+                if (o.value === '') return;
                 const opt = document.createElement('option');
                 opt.value         = o.value;
                 opt.textContent   = o.text;
@@ -50,21 +69,132 @@ document.addEventListener('DOMContentLoaded', function () {
                 selectCaso.appendChild(opt);
             });
 
-        // Re-inicializar Select2
         if ($.fn.select2) $(selectCaso).select2({ theme: 'bootstrap-5', width: '100%' });
     });
 
     // -----------------------------------------------------------------------
-    // 3. BÚSQUEDA FILTRADA (AJAX)
+    // 3. CÁLCULO DINÁMICO DE FECHAS PRESET (Sincronizado con inputs ocultos)
+    // -----------------------------------------------------------------------
+    function formatFecha(date) {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+    }
+
+    function actualizarFechasOcultas() {
+        const preset = selectPresetDate.value;
+        const hoy = new Date();
+
+        if (preset === 'today') {
+            const strHoy = formatFecha(hoy);
+            inputRealDesde.value = strHoy;
+            inputRealHasta.value = strHoy;
+        } else if (preset === 'yesterday') {
+            const ayer = new Date();
+            ayer.setDate(hoy.getDate() - 1);
+            const strAyer = formatFecha(ayer);
+            inputRealDesde.value = strAyer;
+            inputRealHasta.value = strAyer;
+        } else if (preset === 'this_week') {
+            // Lunes de la semana actual
+            const diaSemana = hoy.getDay();
+            const dif = hoy.getDate() - diaSemana + (diaSemana === 0 ? -6 : 1);
+            const lunes = new Date(hoy);
+            lunes.setDate(dif);
+            inputRealDesde.value = formatFecha(lunes);
+            inputRealHasta.value = formatFecha(hoy);
+        } else if (preset === 'this_month') {
+            const primerDia = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+            inputRealDesde.value = formatFecha(primerDia);
+            inputRealHasta.value = formatFecha(hoy);
+        } else if (preset === 'custom') {
+            inputRealDesde.value = inputCustomDesde.value;
+            inputRealHasta.value = inputCustomHasta.value;
+        }
+    }
+
+    selectPresetDate.addEventListener('change', function () {
+        if (this.value === 'custom') {
+            sectionCustomDates.classList.remove('d-none');
+        } else {
+            sectionCustomDates.classList.add('d-none');
+        }
+        actualizarFechasOcultas();
+    });
+
+    inputCustomDesde.addEventListener('change', actualizarFechasOcultas);
+    inputCustomHasta.addEventListener('change', actualizarFechasOcultas);
+
+    // Inicializar fechas al cargar la página
+    actualizarFechasOcultas();
+
+    // -----------------------------------------------------------------------
+    // 4. CAMBIO DE TIPO DE REPORTE (Ajustar controles y botón principal)
+    // -----------------------------------------------------------------------
+    selectReportType.addEventListener('change', function () {
+        const tipo = this.value;
+
+        if (tipo === 'xlsx') {
+            // Reporte Acumulado Mensual Excel
+            sectionMonthSelect.classList.remove('d-none');
+            sectionPresets.classList.add('d-none');
+            sectionCustomDates.classList.add('d-none');
+            sectionAdvanced.classList.add('d-none'); // Es condicional a la matriz fija, no aplican filtros individuales
+
+            btnFiltrar.className = 'btn btn-success fw-semibold';
+            btnFiltrar.innerHTML = '<i class="bi bi-download me-1"></i> Descargar Acumulado (XLSX)';
+        } else {
+            // Reportes filtrados
+            sectionMonthSelect.classList.add('d-none');
+            sectionPresets.classList.remove('d-none');
+            if (selectPresetDate.value === 'custom') {
+                sectionCustomDates.classList.remove('d-none');
+            }
+            sectionAdvanced.classList.remove('d-none');
+
+            if (tipo === 'preview') {
+                btnFiltrar.className = 'btn btn-success fw-semibold';
+                btnFiltrar.innerHTML = '<i class="bi bi-search me-1"></i> Generar Búsqueda';
+            } else if (tipo === 'pdf') {
+                btnFiltrar.className = 'btn btn-danger fw-semibold';
+                btnFiltrar.innerHTML = '<i class="bi bi-file-pdf-fill me-1"></i> Exportar PDF';
+            } else if (tipo === 'csv') {
+                btnFiltrar.className = 'btn btn-success fw-semibold';
+                btnFiltrar.innerHTML = '<i class="bi bi-file-excel-fill me-1"></i> Exportar Excel (CSV)';
+            }
+        }
+    });
+
+    // Trigger inicial de estilos del tipo de reporte
+    selectReportType.dispatchEvent(new Event('change'));
+
+    // -----------------------------------------------------------------------
+    // 5. PROCESAMIENTO Y ENVÍO DE FORMULARIO (AJAX o Descarga Directa)
     // -----------------------------------------------------------------------
     formFiltros.addEventListener('submit', function (e) {
         e.preventDefault();
+        
+        const tipo = selectReportType.value;
 
-        const formData = new FormData(this);
-        const btn      = document.getElementById('btnFiltrar');
+        if (tipo === 'preview') {
+            ejecutarBusquedaEnPantalla();
+        } else if (tipo === 'pdf') {
+            dispararExportacionSincrona('pdf');
+        } else if (tipo === 'csv') {
+            dispararExportacionSincrona('csv');
+        } else if (tipo === 'xlsx') {
+            ejecutarDescargaAcumuladoExcel();
+        }
+    });
 
-        btn.disabled  = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Buscando...';
+    // Acción A: Búsqueda AJAX
+    function ejecutarBusquedaEnPantalla() {
+        const formData = new FormData(formFiltros);
+        
+        btnFiltrar.disabled  = true;
+        const htmlOrig = btnFiltrar.innerHTML;
+        btnFiltrar.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Buscando...';
         tbody.innerHTML = `<tr><td colspan="${COLSPAN}" class="text-center py-5"><div class="spinner-border text-primary"></div></td></tr>`;
 
         fetch('index.php?url=reporte/buscar', { method: 'POST', body: formData })
@@ -82,13 +212,87 @@ document.addEventListener('DOMContentLoaded', function () {
                 Swal.fire('Error', 'No se pudo procesar la búsqueda.', 'error');
             })
             .finally(() => {
-                btn.disabled  = false;
-                btn.innerHTML = '<i class="bi bi-search me-1"></i> Generar Búsqueda';
+                btnFiltrar.disabled  = false;
+                btnFiltrar.innerHTML = htmlOrig;
             });
-    });
+    }
+
+    // Acción B: Descargas síncronas filtradas (PDF / CSV)
+    function dispararExportacionSincrona(formato) {
+        const htmlOrig = btnFiltrar.innerHTML;
+        
+        btnFiltrar.disabled = true;
+        btnFiltrar.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Generando...';
+
+        // Asegurar que las fechas ocultas estén actualizadas
+        actualizarFechasOcultas();
+
+        // Agregar input de formato temporal
+        const inputFormato = document.createElement('input');
+        inputFormato.type = 'hidden';
+        inputFormato.name = 'formato';
+        inputFormato.value = formato;
+        formFiltros.appendChild(inputFormato);
+        
+        const actionOrig = formFiltros.action;
+        const targetOrig = formFiltros.target;
+        
+        formFiltros.action = 'index.php?url=reporte/exportarSincrono';
+        formFiltros.target = '_blank';
+        formFiltros.submit();
+        
+        setTimeout(() => {
+            formFiltros.action = actionOrig || '';
+            formFiltros.target = targetOrig || '';
+            formFiltros.removeChild(inputFormato);
+            btnFiltrar.disabled = false;
+            btnFiltrar.innerHTML = htmlOrig;
+        }, 2000);
+    }
+
+    // Acción C: Descarga del reporte Acumulado de Incidencias Excel XLSX
+    function ejecutarDescargaAcumuladoExcel() {
+        const mes = selectAcumuladoMes.value;
+        const anio = selectAcumuladoAnio.value;
+
+        if (!mes || !anio) {
+            Swal.fire('Atención', 'Selección de mes y año inválida.', 'warning');
+            return;
+        }
+
+        const htmlOrig = btnFiltrar.innerHTML;
+        btnFiltrar.disabled = true;
+        btnFiltrar.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Generando XLSX...';
+
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = 'index.php?url=reporte/exportarAcumuladoMensualExcel';
+        form.target = '_blank';
+
+        const inputMes = document.createElement('input');
+        inputMes.type = 'hidden';
+        inputMes.name = 'mes';
+        inputMes.value = mes;
+        form.appendChild(inputMes);
+
+        const inputAnio = document.createElement('input');
+        inputAnio.type = 'hidden';
+        inputAnio.name = 'anio';
+        inputAnio.value = anio;
+        form.appendChild(inputAnio);
+
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form);
+
+        setTimeout(() => {
+            btnFiltrar.disabled = false;
+            btnFiltrar.innerHTML = htmlOrig;
+        }, 3000);
+    }
 
     // -----------------------------------------------------------------------
-    // 4. RENDERIZAR TABLA DE RESULTADOS
+    // 6. RENDERIZAR TABLA E KPIS
     // -----------------------------------------------------------------------
     function renderizarTabla(data) {
         if (!data || data.length === 0) {
@@ -129,9 +333,6 @@ document.addEventListener('DOMContentLoaded', function () {
         tbody.innerHTML = html;
     }
 
-    // -----------------------------------------------------------------------
-    // 5. ACTUALIZAR KPIS
-    // -----------------------------------------------------------------------
     function actualizarKPIs(resumen) {
         document.getElementById('kpi_total').textContent       = resumen.total;
         document.getElementById('kpi_atendidas').textContent   = resumen.atendidas;
@@ -142,12 +343,13 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // -----------------------------------------------------------------------
-    // 6. LIMPIAR FILTROS
+    // 7. LIMPIAR FILTROS
     // -----------------------------------------------------------------------
-    document.getElementById('btnLimpiarFiltros').addEventListener('click', function () {
+    btnLimpiar.addEventListener('click', function () {
         formFiltros.reset();
+        
+        // Limpieza de Select2
         if ($.fn.select2) {
-            // Restaurar select2 al estado inicial (incluyendo todas las opciones de caso)
             if ($.fn.select2) $(selectCaso).select2('destroy');
             selectCaso.innerHTML = '<option value="">Todos los casos</option>';
             todasOpciones.filter(o => o.value !== '').forEach(o => {
@@ -158,92 +360,37 @@ document.addEventListener('DOMContentLoaded', function () {
             $('.select2').select2({ theme: 'bootstrap-5', width: '100%' });
             $('.select2').val(null).trigger('change');
         }
+
+        // Restablecer selectores de tipo y fecha
+        selectReportType.value = 'preview';
+        selectReportType.dispatchEvent(new Event('change'));
+
+        selectPresetDate.value = 'today';
+        selectPresetDate.dispatchEvent(new Event('change'));
+
         tbody.innerHTML = `<tr><td colspan="${COLSPAN}" class="text-center py-5 text-muted"><i class="bi bi-search display-4 d-block mb-2"></i>Utilice los filtros para iniciar la búsqueda</td></tr>`;
         actualizarKPIs({ total: 0, atendidas: 0, pendientes: 0, en_proceso: 0, cerradas: 0, efectividad: 0 });
         badgeTotal.textContent = '0 registros';
     });
 
     // -----------------------------------------------------------------------
-    // 7. EXPORTACIÓN SÍNCRONA (Descarga directa desde Backend)
+    // 8. ENLAZAR BOTONES DEL HEADER (Si el usuario hace click arriba, cambia select y busca)
     // -----------------------------------------------------------------------
-    function dispararExportacionSincrona(formato) {
-        const btnId      = formato === 'csv' ? 'btnExportarExcel' : 'btnExportarPDF';
-        const btn        = document.getElementById(btnId);
-        const htmlOrig   = btn.innerHTML;
-        
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Generando...';
-
-        // Añadir input temporal de formato para enviar al backend
-        const inputFormato = document.createElement('input');
-        inputFormato.type = 'hidden';
-        inputFormato.name = 'formato';
-        inputFormato.value = formato;
-        formFiltros.appendChild(inputFormato);
-        
-        // Alterar form para enviar POST al endpoint sincrónico en nueva pestaña
-        const actionOrig = formFiltros.action;
-        const targetOrig = formFiltros.target;
-        
-        formFiltros.action = 'index.php?url=reporte/exportarSincrono';
-        formFiltros.target = '_blank';
-        formFiltros.submit();
-        
-        // Restaurar formulario y estado del botón tras un breve retraso
-        setTimeout(() => {
-            formFiltros.action = actionOrig || '';
-            formFiltros.target = targetOrig || '';
-            formFiltros.removeChild(inputFormato);
-            btn.disabled = false;
-            btn.innerHTML = htmlOrig;
-        }, 1500);
+    const headerPDF = document.getElementById('btnExportarPDF');
+    if (headerPDF) {
+        headerPDF.addEventListener('click', function () {
+            selectReportType.value = 'pdf';
+            selectReportType.dispatchEvent(new Event('change'));
+            formFiltros.dispatchEvent(new Event('submit'));
+        });
     }
-    document.getElementById('btnExportarPDF').addEventListener('click', () => dispararExportacionSincrona('pdf'));
-    document.getElementById('btnExportarExcel').addEventListener('click', () => dispararExportacionSincrona('csv'));
 
-    // --- DESCARGA DE REPORTE MATRIZ ACUMULADO MENSUAL (EXCEL) ---
-    const btnDescargarAcumulado = document.getElementById('btnDescargarAcumulado');
-    if (btnDescargarAcumulado) {
-        btnDescargarAcumulado.addEventListener('click', function () {
-            const mesAnio = document.getElementById('filtro_acumulado_mes').value;
-            if (!mesAnio) {
-                Swal.fire('Atención', 'Por favor seleccione un mes y año válido.', 'warning');
-                return;
-            }
-
-            const [anio, mes] = mesAnio.split('-');
-
-            const htmlOrig = btnDescargarAcumulado.innerHTML;
-            btnDescargarAcumulado.disabled = true;
-            btnDescargarAcumulado.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Generando...';
-
-            // Crear formulario temporal para la descarga vía POST
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = 'index.php?url=reporte/exportarAcumuladoMensualExcel';
-            form.target = '_blank';
-
-            const inputMes = document.createElement('input');
-            inputMes.type = 'hidden';
-            inputMes.name = 'mes';
-            inputMes.value = mes;
-            form.appendChild(inputMes);
-
-            const inputAnio = document.createElement('input');
-            inputAnio.type = 'hidden';
-            inputAnio.name = 'anio';
-            inputAnio.value = anio;
-            form.appendChild(inputAnio);
-
-            document.body.appendChild(form);
-            form.submit();
-            document.body.removeChild(form);
-
-            // Restaurar estado del botón tras unos segundos
-            setTimeout(() => {
-                btnDescargarAcumulado.disabled = false;
-                btnDescargarAcumulado.innerHTML = htmlOrig;
-            }, 3000);
+    const headerExcel = document.getElementById('btnExportarExcel');
+    if (headerExcel) {
+        headerExcel.addEventListener('click', function () {
+            selectReportType.value = 'csv';
+            selectReportType.dispatchEvent(new Event('change'));
+            formFiltros.dispatchEvent(new Event('submit'));
         });
     }
 });
