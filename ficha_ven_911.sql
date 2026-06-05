@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: ven911_db
--- Tiempo de generación: 27-05-2026 a las 14:47:45
+-- Tiempo de generación: 05-06-2026 a las 19:42:35
 -- Versión del servidor: 10.11.16-MariaDB-ubu2204
 -- Versión de PHP: 8.3.31
 
@@ -738,7 +738,22 @@ INSERT INTO `eventos_sistema` (`id`, `usuario_id`, `tipo_accion`, `tabla_afectad
 (3, 1, 'LOGIN', 'usuarios', 1, NULL, NULL, 'Usuario \'Admin2024\' inició sesión.', '2026-05-22 13:58:43'),
 (4, 1, 'LOGIN', 'usuarios', 1, NULL, NULL, 'Usuario \'Admin2024\' inició sesión.', '2026-05-22 14:20:58'),
 (5, 1, 'LOGIN', 'usuarios', 1, NULL, NULL, 'Usuario \'Admin2024\' inició sesión.', '2026-05-22 14:57:49'),
-(6, 1, 'LOGIN', 'usuarios', 1, NULL, NULL, 'Usuario \'Admin2024\' inició sesión.', '2026-05-27 14:33:33');
+(6, 1, 'LOGIN', 'usuarios', 1, NULL, NULL, 'Usuario \'Admin2024\' inició sesión.', '2026-05-27 14:33:33'),
+(7, 1, 'LOGIN', 'usuarios', 1, NULL, NULL, 'Usuario \'t3cn0l0gia\' inició sesión.', '2026-05-27 15:14:32'),
+(8, 1, 'LOGIN', 'usuarios', 1, NULL, NULL, 'Usuario \'t3cn0l0gia\' inició sesión.', '2026-05-28 15:10:59'),
+(9, 1, 'INSERT', 'usuarios', 72, NULL, '{\"usuario\":\"Supervisor2\",\"rol_id\":4}', 'Usuario \'Supervisor2\' creado.', '2026-05-28 15:14:02'),
+(10, 1, 'UPDATE', 'usuarios', 51, NULL, '{\"nombre_completo\":\"MARE VARGAS YAIZABETH DEL VALLE\",\"cedula\":\"25550771\",\"usuario\":\"Supervisor3\",\"rol_id\":4}', 'Usuario ID 51 editado.', '2026-05-28 15:16:35'),
+(11, 1, 'UPDATE', 'usuarios', 52, NULL, '{\"nombre_completo\":\"CEDEÑO GARRIDO SERGIO DANIEL\",\"cedula\":\"29849203\",\"usuario\":\"despachador\",\"rol_id\":3}', 'Usuario ID 52 editado.', '2026-05-28 15:17:13'),
+(12, 1, 'UPDATE', 'usuarios', 52, NULL, '{\"nombre_completo\":\"CEDEÑO GARRIDO SERGIO DANIEL\",\"cedula\":\"29849203\",\"usuario\":\"despachador4\",\"rol_id\":3}', 'Usuario ID 52 editado.', '2026-05-28 15:17:23'),
+(13, 1, 'UPDATE', 'usuarios', 54, NULL, '{\"nombre_completo\":\"TEJERA CASTILLO MARILYN ELENA\",\"cedula\":\"17031209\",\"usuario\":\"Despachador\",\"rol_id\":3}', 'Usuario ID 54 editado.', '2026-05-28 15:17:56'),
+(14, 1, 'UPDATE', 'usuarios', 54, NULL, '{\"nombre_completo\":\"TEJERA CASTILLO MARILYN ELENA\",\"cedula\":\"17031209\",\"usuario\":\"Despachador5\",\"rol_id\":3}', 'Usuario ID 54 editado.', '2026-05-28 15:18:05'),
+(15, 1, 'INSERT', 'usuarios', 73, NULL, '{\"usuario\":\"Supervisor4\",\"rol_id\":4}', 'Usuario \'Supervisor4\' creado.', '2026-05-28 15:20:11'),
+(16, 1, 'UPDATE', 'usuarios', 21, NULL, '{\"nombre_completo\":\"MORALES HENRIQUEZ JOSE ALEJANDRO\",\"cedula\":\"26011899\",\"usuario\":\"despachador6\",\"rol_id\":3}', 'Usuario ID 21 editado.', '2026-05-28 15:23:07'),
+(17, 1, 'UPDATE', 'usuarios', 27, NULL, '{\"nombre_completo\":\"FLORES MACHADO  YULIANGELIS ANAIS\",\"cedula\":\"21217646\",\"usuario\":\"Supervisor\",\"rol_id\":4}', 'Usuario ID 27 editado.', '2026-05-28 15:25:28'),
+(18, 1, 'UPDATE', 'usuarios', 27, NULL, '{\"nombre_completo\":\"FLORES MACHADO  YULIANGELIS ANAIS\",\"cedula\":\"21217646\",\"usuario\":\"Supervisor5\",\"rol_id\":4}', 'Usuario ID 27 editado.', '2026-05-28 15:25:41'),
+(19, 1, 'UPDATE', 'usuarios', 60, NULL, '{\"nombre_completo\":\"CASTILLO ROSALES PABLO JESUS\",\"cedula\":\"26634075\",\"usuario\":\"Supervisor6\",\"rol_id\":4}', 'Usuario ID 60 editado.', '2026-05-28 15:26:46'),
+(20, 1, 'LOGOUT', 'usuarios', 1, NULL, NULL, 'Usuario \'Tecnologia\' cerró sesión.', '2026-05-28 15:27:28'),
+(21, 1, 'LOGIN', 'usuarios', 1, NULL, NULL, 'Usuario \'t3cn0l0gia\' inició sesión.', '2026-06-05 19:39:37');
 
 -- --------------------------------------------------------
 
@@ -761,7 +776,7 @@ CREATE TABLE `fichas_emergencia` (
   `hora_cierre` datetime DEFAULT NULL,
   `motivo_cierre` varchar(500) DEFAULT NULL,
   `tipo_motivo_cierre` varchar(150) DEFAULT NULL,
-  `estado_ficha` enum('Pendiente','En Proceso','Atendido','Cerrado','Finalizado') DEFAULT 'Pendiente',
+  `estado_ficha` enum('Pendiente','En Proceso','Atendido','Cancelada','Finalizado') DEFAULT 'Pendiente',
   `fecha_actualizacion` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -868,26 +883,36 @@ INSERT INTO `notificaciones` (`id`, `usuario_recibe_id`, `ficha_id`, `tipo`, `ti
 (1, 7, 1, 'alerta', 'Nueva Emergencia', 'Ficha #1 generada.', 0, '2026-05-27 14:46:24'),
 (2, 22, 1, 'alerta', 'Nueva Emergencia', 'Ficha #1 generada.', 0, '2026-05-27 14:46:24'),
 (3, 29, 1, 'alerta', 'Nueva Emergencia', 'Ficha #1 generada.', 0, '2026-05-27 14:46:24'),
-(4, 1, 1, 'alerta', 'Nueva Emergencia', 'Ficha #1 generada.', 0, '2026-05-27 14:46:24'),
-(5, 2, 1, 'alerta', 'Nueva Emergencia', 'Ficha #1 generada.', 0, '2026-05-27 14:46:24'),
-(6, 3, 1, 'alerta', 'Nueva Emergencia', 'Ficha #1 generada.', 0, '2026-05-27 14:46:24'),
-(7, 4, 1, 'alerta', 'Nueva Emergencia', 'Ficha #1 generada.', 0, '2026-05-27 14:46:24'),
+(4, 1, 1, 'alerta', 'Nueva Emergencia', 'Ficha #1 generada.', 1, '2026-05-27 14:46:24'),
 (8, 6, 1, 'info', 'Nueva Ficha', 'Miguel Fernandez registró la Ficha #1.', 0, '2026-05-27 14:46:25'),
-(9, 1, 1, 'info', 'Ficha en Proceso', 'Tu Ficha #1 ha pasado a \'En Proceso\' y está siendo atendida por Miguel Fernandez.', 0, '2026-05-27 14:46:38'),
-(10, 2, 1, 'info', 'Ficha en Proceso', 'Tu Ficha #1 ha pasado a \'En Proceso\' y está siendo atendida por Miguel Fernandez.', 0, '2026-05-27 14:46:39'),
-(11, 3, 1, 'info', 'Ficha en Proceso', 'Tu Ficha #1 ha pasado a \'En Proceso\' y está siendo atendida por Miguel Fernandez.', 0, '2026-05-27 14:46:39'),
-(12, 4, 1, 'info', 'Ficha en Proceso', 'Tu Ficha #1 ha pasado a \'En Proceso\' y está siendo atendida por Miguel Fernandez.', 0, '2026-05-27 14:46:39'),
+(9, 1, 1, 'info', 'Ficha en Proceso', 'Tu Ficha #1 ha pasado a \'En Proceso\' y está siendo atendida por Miguel Fernandez.', 1, '2026-05-27 14:46:38'),
 (13, 6, 1, 'info', 'Ficha Tomada: Inicio de Gestión', 'El despachador Miguel Fernandez ha tomado la Ficha #1.', 0, '2026-05-27 14:46:39'),
 (14, 6, 1, 'info', 'Edición de Emergencia', 'Ficha #1 editada por Miguel Fernandez.', 0, '2026-05-27 14:46:51'),
-(15, 1, 1, 'info', 'Edición de Emergencia', 'Ficha #1 editada por Miguel Fernandez.', 0, '2026-05-27 14:46:51'),
-(16, 2, 1, 'info', 'Edición de Emergencia', 'Ficha #1 editada por Miguel Fernandez.', 0, '2026-05-27 14:46:51'),
-(17, 3, 1, 'info', 'Edición de Emergencia', 'Ficha #1 editada por Miguel Fernandez.', 0, '2026-05-27 14:46:51'),
-(18, 4, 1, 'info', 'Edición de Emergencia', 'Ficha #1 editada por Miguel Fernandez.', 0, '2026-05-27 14:46:51'),
-(19, 1, 1, 'info', 'Organismo Despachado', 'Se ha despachado un organismo a tu Ficha #1.', 0, '2026-05-27 14:47:11'),
-(20, 2, 1, 'info', 'Organismo Despachado', 'Se ha despachado un organismo a tu Ficha #1.', 0, '2026-05-27 14:47:12'),
-(21, 3, 1, 'info', 'Organismo Despachado', 'Se ha despachado un organismo a tu Ficha #1.', 0, '2026-05-27 14:47:12'),
-(22, 4, 1, 'info', 'Organismo Despachado', 'Se ha despachado un organismo a tu Ficha #1.', 0, '2026-05-27 14:47:12'),
-(23, 6, 1, 'alerta', 'Nuevo Despacho', 'Organismo asignado a la Ficha #1.', 0, '2026-05-27 14:47:12');
+(15, 1, 1, 'info', 'Edición de Emergencia', 'Ficha #1 editada por Miguel Fernandez.', 1, '2026-05-27 14:46:51'),
+(19, 1, 1, 'info', 'Organismo Despachado', 'Se ha despachado un organismo a tu Ficha #1.', 1, '2026-05-27 14:47:11'),
+(23, 6, 1, 'alerta', 'Nuevo Despacho', 'Organismo asignado a la Ficha #1.', 0, '2026-05-27 14:47:12'),
+(24, 72, NULL, 'info', 'Bienvenido al Sistema', 'Tu cuenta \'Supervisor2\' ha sido creada exitosamente.', 0, '2026-05-28 15:14:02'),
+(25, 1, NULL, 'info', 'Bienvenido al Sistema', 'Tu cuenta \'Supervisor2\' ha sido creada exitosamente.', 1, '2026-05-28 15:14:02'),
+(26, 51, NULL, 'info', 'Perfil Actualizado', 'Tu información de usuario ha sido actualizada.', 0, '2026-05-28 15:16:35'),
+(27, 1, NULL, 'info', 'Perfil Actualizado', 'Tu información de usuario ha sido actualizada.', 1, '2026-05-28 15:16:35'),
+(28, 52, NULL, 'info', 'Perfil Actualizado', 'Tu información de usuario ha sido actualizada.', 0, '2026-05-28 15:17:13'),
+(29, 1, NULL, 'info', 'Perfil Actualizado', 'Tu información de usuario ha sido actualizada.', 1, '2026-05-28 15:17:13'),
+(30, 52, NULL, 'info', 'Perfil Actualizado', 'Tu información de usuario ha sido actualizada.', 0, '2026-05-28 15:17:23'),
+(31, 1, NULL, 'info', 'Perfil Actualizado', 'Tu información de usuario ha sido actualizada.', 1, '2026-05-28 15:17:23'),
+(32, 54, NULL, 'info', 'Perfil Actualizado', 'Tu información de usuario ha sido actualizada.', 0, '2026-05-28 15:17:56'),
+(33, 1, NULL, 'info', 'Perfil Actualizado', 'Tu información de usuario ha sido actualizada.', 1, '2026-05-28 15:17:56'),
+(34, 54, NULL, 'info', 'Perfil Actualizado', 'Tu información de usuario ha sido actualizada.', 0, '2026-05-28 15:18:05'),
+(35, 1, NULL, 'info', 'Perfil Actualizado', 'Tu información de usuario ha sido actualizada.', 1, '2026-05-28 15:18:05'),
+(36, 73, NULL, 'info', 'Bienvenido al Sistema', 'Tu cuenta \'Supervisor4\' ha sido creada exitosamente.', 0, '2026-05-28 15:20:11'),
+(37, 1, NULL, 'info', 'Bienvenido al Sistema', 'Tu cuenta \'Supervisor4\' ha sido creada exitosamente.', 1, '2026-05-28 15:20:11'),
+(38, 21, NULL, 'info', 'Perfil Actualizado', 'Tu información de usuario ha sido actualizada.', 0, '2026-05-28 15:23:07'),
+(39, 1, NULL, 'info', 'Perfil Actualizado', 'Tu información de usuario ha sido actualizada.', 1, '2026-05-28 15:23:07'),
+(40, 27, NULL, 'info', 'Perfil Actualizado', 'Tu información de usuario ha sido actualizada.', 0, '2026-05-28 15:25:28'),
+(41, 1, NULL, 'info', 'Perfil Actualizado', 'Tu información de usuario ha sido actualizada.', 1, '2026-05-28 15:25:28'),
+(42, 27, NULL, 'info', 'Perfil Actualizado', 'Tu información de usuario ha sido actualizada.', 0, '2026-05-28 15:25:41'),
+(43, 1, NULL, 'info', 'Perfil Actualizado', 'Tu información de usuario ha sido actualizada.', 1, '2026-05-28 15:25:41'),
+(44, 60, NULL, 'info', 'Perfil Actualizado', 'Tu información de usuario ha sido actualizada.', 0, '2026-05-28 15:26:46'),
+(45, 1, NULL, 'info', 'Perfil Actualizado', 'Tu información de usuario ha sido actualizada.', 1, '2026-05-28 15:26:46');
 
 -- --------------------------------------------------------
 
@@ -3526,9 +3551,6 @@ CREATE TABLE `usuarios` (
 
 INSERT INTO `usuarios` (`id`, `usuario`, `password`, `nombre_completo`, `cedula`, `rol_id`, `estado`, `pregunta_1_id`, `pregunta_2_id`, `respuesta_1`, `respuesta_2`) VALUES
 (1, 't3cn0l0gia', '$2y$10$.6BKtm3VCGP211VKXDOh0O32SG9VOkVpYII0ZOJifErRDoHroGoF.', 'Tecnologia', '00000000', 1, 'activo', 1, 2, '$2y$10$e5ETAU0Eu8H7Z6V50PUd1ujOHzg2bBs5Lg11uPe3C2DPGPtqDfaKm', '$2y$10$uexE824x4sLdvOlAMQdCoOxjCUXF/BTQ.W2VNrXP938yetTqzWBQe'),
-(2, 'usuario1', '$2y$10$zujfXRZfGrm3kv9dgKxgPOP8NJPkYvoVUS1Emd5XG.SZxJj5eKj1y', 'test1', '00000001', 1, 'activo', NULL, NULL, NULL, NULL),
-(3, 'usuario2', '$2y$10$ARZpVf3UXpfgPqFms3NwL.xD/foHHLPGdUAxcO/KRjPSIcGCWQWGy', 'test2', '00000002', 1, 'activo', NULL, NULL, NULL, NULL),
-(4, 'usuario3', '$2y$10$YjklI2CMxmtGaY8joXj1a.ZRIk.CBYcYsFgkpo6H4xA1EwWUKgbuO', 'test3', '00000003', 1, 'activo', NULL, NULL, NULL, NULL),
 (5, 'usuario4', '$2y$10$bnrFyDtgoN/4q52/lwRdtudSZMaE7ofREnMCgwGG5HjYXdu.cxVBW', 'test4', '00000004', 2, 'inactivo', NULL, NULL, NULL, NULL),
 (6, 'Supervisor1', '$2y$10$EyzaNg5FOfqX52NhWSgD6uDiScW.t57TkdP/DxyhB2O7EDS8lnEFy', 'ALASTRE ARAPE JOHAN JOSE', '27381080', 4, 'activo', NULL, NULL, NULL, NULL),
 (7, 'Despachador1', '$2y$10$/3orRmvIBPeQFK.3oZue9.CspYJnwwC.ym0ot7aG0NLMbrG6o1qOC', 'SEPULVEDA GONZALEZ WILL EDUARDO', '29590340', 3, 'activo', NULL, NULL, NULL, NULL),
@@ -3545,13 +3567,13 @@ INSERT INTO `usuarios` (`id`, `usuario`, `password`, `nombre_completo`, `cedula`
 (18, 'Operador11', '$2y$10$DbmvMubtdK2YG6IoUvFj2OJsuh6ARtHrflwIX593XwO0GiRVSqyzS', 'FERNANDEZ FERNANDEZ AMYURI CAROLINA', '18168744', 2, 'activo', NULL, NULL, NULL, NULL),
 (19, 'Operador12', '$2y$10$K0b4Z23jwlPYo5UXOGR25.h01rjSsALxamyydLmJ9Ux4AQN9g4tm2', 'PEREZ GONZALEZ NERYMAR DAYANA', '31554288', 2, 'activo', NULL, NULL, NULL, NULL),
 (20, 'Operador13', '$2y$10$1gI5.OJEZ59PLQvm2PdZb.rrysrGT9OSdQvWQHP/.FI9Gm3o5/.AO', 'CALDERON GONZALEZ KELY YULEISI', '24471305', 2, 'activo', NULL, NULL, NULL, NULL),
-(21, 'Operador14', '$2y$10$.qNb.O7WBSg41.vMfJKGnOhkTjXyF0ltH0EZQbsVrCy0QqU4.wRQO', 'MORALES HENRIQUEZ JOSE ALEJANDRO', '26011899', 2, 'activo', NULL, NULL, NULL, NULL),
+(21, 'despachador6', '$2y$10$.qNb.O7WBSg41.vMfJKGnOhkTjXyF0ltH0EZQbsVrCy0QqU4.wRQO', 'MORALES HENRIQUEZ JOSE ALEJANDRO', '26011899', 3, 'activo', NULL, NULL, NULL, NULL),
 (22, 'Despachador2', '$2y$10$ITrVrRzu4oqCAtjgWqzoe.jXJ6uQCtxmL5DII1sE3crK/tOm6ugqy', 'MENDEZ CAMBERO MEDELEYN SCARLET', '17809242', 3, 'activo', NULL, NULL, NULL, NULL),
 (23, 'Operador15', '$2y$10$jCI0EAyOxVunJT5pQvDjB..MTZ.ucldJmOB67RMDlR4B6ZgBEQ9Fq', 'ESPINOZA GONZALEZ JENNIFER DEL VALLE', '28138145', 2, 'activo', NULL, NULL, NULL, NULL),
 (24, 'Operador16', '$2y$10$aNYMQDdF87K9NWTtkf.VHuaeadrp8NgEY1fP3iew31w8ljxVZjpSK', 'PINEDA BLANCO MIGDALIA GERALDINE', '19668175', 2, 'activo', NULL, NULL, NULL, NULL),
 (25, 'Operador17', '$2y$10$ugC3FqhpwS9rwOKpO7kJcu63E5RGsNn2uDLnU0aPm3HGgrNxk7iD.', 'HERNANDEZ DOUBAIN JONATHAN ALEXANDER', '24330651', 2, 'activo', NULL, NULL, NULL, NULL),
 (26, 'Operador18', '$2y$10$9lsqnyEDNxOSwuAXxS70qOsqPHC5dUkM7I0jLg2RfUf4VswtvKOb6', 'CHAVEZ CHOURIO YEILYN YOHANA', '26086775', 2, 'activo', NULL, NULL, NULL, NULL),
-(27, 'Operador19', '$2y$10$g9yg2SEGWBciITzyMiVKdeM3L7Cowo0mn3d72kzDyrXZbN0faVtmi', 'FLORES MACHADO  YULIANGELIS ANAIS', '21217646', 2, 'activo', NULL, NULL, NULL, NULL),
+(27, 'Supervisor5', '$2y$10$g9yg2SEGWBciITzyMiVKdeM3L7Cowo0mn3d72kzDyrXZbN0faVtmi', 'FLORES MACHADO  YULIANGELIS ANAIS', '21217646', 4, 'activo', NULL, NULL, NULL, NULL),
 (28, 'Operador20', '$2y$10$Q8GDqDJpSbiBi6Y8tYAX0u/pfKCxGR6nWx/Cmz0E0Nr9eRoJ3ajEC', 'CASTILLO CARLOS JOSE', '16206008', 2, 'activo', NULL, NULL, NULL, NULL),
 (29, 'Despachador3', '$2y$10$BiSDu1kYKnpEuYHl7PAqXeNwXuYjst5Rw44gAEPEy3sV5zVHkWXUi', 'PERDOMO PEREZ JULEXIS CAROLINA', '22422858', 3, 'activo', NULL, NULL, NULL, NULL),
 (30, 'Operador21', '$2y$10$Z0oWImH0szx5dLkyiUw5k.wcovUU8F0gmZ7FcOoLGvvCx0poBlFGK', 'URBINA BENITEZ VICTOR ONEIVI', '26642313', 2, 'activo', NULL, NULL, NULL, NULL),
@@ -3575,16 +3597,16 @@ INSERT INTO `usuarios` (`id`, `usuario`, `password`, `nombre_completo`, `cedula`
 (48, 'operador39', '$2y$10$RjoupedT4UK68h0VL9MEFOu/bo/wijpziPMmmvSIDHeVO1SSLuw2O', 'BALLESTER GONZALEZ DAVIANA VIDALINA', '24641279', 2, 'activo', NULL, NULL, NULL, NULL),
 (49, 'operador40', '$2y$10$CBz4zJiOUSl1/XyqA8nak.Ri4UI32UEC9IQ8K3RCSsTSVyFGv63VC', 'SAEZ LOBERA RAIRUTH CARVELIS', '27238853', 2, 'activo', NULL, NULL, NULL, NULL),
 (50, 'operador41', '$2y$10$3..4/KZzXUbFDf.PNJKIqueuI.55c96wJjPXEiGfsQU2ARFidZuZK', 'SEGURA ACOSTA BARBARA SARAI', '21585217', 2, 'activo', NULL, NULL, NULL, NULL),
-(51, 'operador42', '$2y$10$AI4RnsE.M4zERHIHCgSB2.bg4MlQL88H/JA.MZbElkaZfBKPvonpe', 'MARE VARGAS YAIZABETH DEL VALLE', '25550771', 2, 'activo', NULL, NULL, NULL, NULL),
-(52, 'operador43', '$2y$10$fiz/9YJGCwlK0gSAVVRSQe6ghvb1IYgQzcbAQwIubIHQs/lJPB6tC', 'CEDEÑO GARRIDO SERGIO DANIEL', '29849203', 2, 'activo', NULL, NULL, NULL, NULL),
+(51, 'Supervisor3', '$2y$10$AI4RnsE.M4zERHIHCgSB2.bg4MlQL88H/JA.MZbElkaZfBKPvonpe', 'MARE VARGAS YAIZABETH DEL VALLE', '25550771', 4, 'activo', NULL, NULL, NULL, NULL),
+(52, 'despachador4', '$2y$10$fiz/9YJGCwlK0gSAVVRSQe6ghvb1IYgQzcbAQwIubIHQs/lJPB6tC', 'CEDEÑO GARRIDO SERGIO DANIEL', '29849203', 3, 'activo', NULL, NULL, NULL, NULL),
 (53, 'operador44', '$2y$10$wyFlNBvsTApl0x3i2lYEG.9jLu69KX8OGaTEPVy0nWspikNjL24oC', 'CHAUSTRE PERNIA AHYSKELL DEL CARMEN', '19606964', 2, 'activo', NULL, NULL, NULL, NULL),
-(54, 'operador45', '$2y$10$9nZ8TWg5hTz5mNTmqEdHQ.0PrZ7OT7VxV89H8htN5GTKtjgKl5aDq', 'TEJERA CASTILLO MARILIN ELENA', '17031209', 2, 'activo', NULL, NULL, NULL, NULL),
+(54, 'Despachador5', '$2y$10$9nZ8TWg5hTz5mNTmqEdHQ.0PrZ7OT7VxV89H8htN5GTKtjgKl5aDq', 'TEJERA CASTILLO MARILYN ELENA', '17031209', 3, 'activo', NULL, NULL, NULL, NULL),
 (55, 'operador46', '$2y$10$fGVPju903QvGsAdjA71ile.ez9Ul1ohepvHMW9o3Iv8MCYLiABevm', 'CRUZ PEREZ DIEGO ERNESTO', '25682317', 2, 'activo', NULL, NULL, NULL, NULL),
 (56, 'operador47', '$2y$10$Cf.A7LPaSRFAnSL/semBS.a24iCt45rqlgCPgluEjrv6DRKVvLdES', 'LOPEZ MORALES LUZ MARINA', '18613445', 2, 'activo', NULL, NULL, NULL, NULL),
 (57, 'operador48', '$2y$10$a5KALSHog/RoaTSx70FS5.e4Nmahyci5e6MAn7zGrvwDGWpdG9M2m', 'CHAVEZ VALECILLO HUGO RAFAEL', '27517969', 2, 'activo', NULL, NULL, NULL, NULL),
 (58, 'operador49', '$2y$10$QoQ3QnlrIQ4otSEJOHMfUeJ6wc3bK5ZV7NeImXDVfSajpmt5QHA6.', 'ROSALES LEAL YORGELIS ALEJANDRA', '26338369', 2, 'activo', NULL, NULL, NULL, NULL),
 (59, 'operador50', '$2y$10$1nFzt4p6nAsTVORL8o8qsOuA9YwD7EmQbpw5qD2xNehwlCsNUkmyG', 'GONZALEZ MAYORCA LEIDY JOSELIN', '18661349', 2, 'activo', NULL, NULL, NULL, NULL),
-(60, 'operador51', '$2y$10$kcAUvFmsm1vF.2DW3iX9suOSchitjIDKgDgzjhsU30OWX5dwqVxQa', 'CASTILLO ROSALES PABLO JESUS', '26634075', 2, 'activo', NULL, NULL, NULL, NULL),
+(60, 'Supervisor6', '$2y$10$kcAUvFmsm1vF.2DW3iX9suOSchitjIDKgDgzjhsU30OWX5dwqVxQa', 'CASTILLO ROSALES PABLO JESUS', '26634075', 4, 'activo', NULL, NULL, NULL, NULL),
 (61, 'operador52', '$2y$10$aFwzUAiN2wCFHgdsnCldr.Ztvdkf6KTsFlCs/ShJyYBqoq4n8Z0Qm', 'MALDONADO MOSQUERA MARILYN DEL CARMEN', '16895927', 2, 'activo', NULL, NULL, NULL, NULL),
 (62, 'operador53', '$2y$10$rSHoDP6m4ibG1F7cqH2ozuh8JdEw0uRtdStHeoNFxKyR9mqFhnuXG', 'ARAUJO LIZARAZO CARLOS EDUARDO', '18362266', 2, 'activo', NULL, NULL, NULL, NULL),
 (63, 'operador54', '$2y$10$8p6TIq6L6Dm6hl69eASq4uK9mmrQSYqMjnXMwuCyYerVeicM3ljx2', 'NAVEA RAUSEO JONATHAN EDUARDO', '18470206', 2, 'activo', NULL, NULL, NULL, NULL),
@@ -3595,7 +3617,9 @@ INSERT INTO `usuarios` (`id`, `usuario`, `password`, `nombre_completo`, `cedula`
 (68, 'operador59', '$2y$10$/wV/V6QzQYfVvPDz34pl8OEYcPfx7Vh5shIOr0XAYBOdEhjDdXo2.', 'PEREZ GONZALEZ LUZCENIL DEL VALLE', '24972751', 2, 'activo', NULL, NULL, NULL, NULL),
 (69, 'operador60', '$2y$10$56KcjelY5fMwgKRiqGGOrOjEN7L..cXZbqj/PwKkBRtZ3fRbxq4Di', 'MONJES MENDOZA MILEXA CAROLINA', '21402509', 2, 'activo', NULL, NULL, NULL, NULL),
 (70, 'operador61', '$2y$10$6KD.Msx7.n97zmq10zF72eoZ9J0w7e2TXYKh2WAGeYMS1Rn596Z6y', 'LEON PURICA ANAILETH', '29785375', 2, 'activo', NULL, NULL, NULL, NULL),
-(71, 'operador62', '$2y$10$K.ZI.2tqNITUsIlDRhpMlOOZ8dCm.jB1U26axPXhGzerQsJ/Q4Rme', 'ACOSTA MORALES DANELIS GABRIELA', '30912468', 2, 'activo', NULL, NULL, NULL, NULL);
+(71, 'operador62', '$2y$10$K.ZI.2tqNITUsIlDRhpMlOOZ8dCm.jB1U26axPXhGzerQsJ/Q4Rme', 'ACOSTA MORALES DANELIS GABRIELA', '30912468', 2, 'activo', NULL, NULL, NULL, NULL),
+(72, 'Supervisor2', '$2y$10$PVBgv0OGKS3wZo3/5mZuJuNVofBbD1CuP3/xQuXeQCMInt1Vle9MS', 'SANCHEZ PEDRO LUIS', '28203989', 4, 'activo', NULL, NULL, NULL, NULL),
+(73, 'Supervisor4', '$2y$10$mizeAZBJH9LQHnaj4A2o7OGoD4XjtUYOCyGSsw5t02aKlG.1SHXtO', 'Carrillo Carreño Carlos Luis', '18021193', 4, 'activo', NULL, NULL, NULL, NULL);
 
 --
 -- Índices para tablas volcadas
@@ -3822,7 +3846,7 @@ ALTER TABLE `eventos_fichas`
 -- AUTO_INCREMENT de la tabla `eventos_sistema`
 --
 ALTER TABLE `eventos_sistema`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT de la tabla `fichas_emergencia`
@@ -3852,7 +3876,7 @@ ALTER TABLE `municipios`
 -- AUTO_INCREMENT de la tabla `notificaciones`
 --
 ALTER TABLE `notificaciones`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
 
 --
 -- AUTO_INCREMENT de la tabla `organismos`
@@ -3906,7 +3930,7 @@ ALTER TABLE `tipos_emergencia`
 -- AUTO_INCREMENT de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=72;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=74;
 
 --
 -- Restricciones para tablas volcadas
